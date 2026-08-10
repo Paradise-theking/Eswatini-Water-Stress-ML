@@ -1,0 +1,40 @@
+{
+    "model": "Ridge Regression",
+    "forecast_horizon_months": 1,
+    "number_of_features": 15,
+    "ridge_alpha": 0.05,
+    "training_period": {
+        "start": "2015-07-01",
+        "end": "2021-12-01"
+    },
+    "validation_period": {
+        "start": "2022-01-01",
+        "end": "2023-12-01"
+    },
+    "test_period": {
+        "start": "2024-01-01",
+        "end": "2025-12-01"
+    },
+    "selected_features": [
+        "soil_moisture_layer1_lag1",
+        "precipitation_mm_lag1",
+        "pet_mm",
+        "soil_moisture_layer2_lag1",
+        "precipitation_mm",
+        "soil_moisture_layer2",
+        "precipitation_3month",
+        "soil_moisture_layer1",
+        "pet_mm_lag1",
+        "temperature_max_c",
+        "surface_runoff_mm_lag1",
+        "runoff_mm_lag1",
+        "pet_3month",
+        "solar_radiation",
+        "solar_radiation_lag1"
+    ],
+    "validation_performance": {
+        "MAE": 0.9420013361699807,
+        "RMSE": 1.3150200405718155,
+        "R2": 0.25001238274673643
+    }
+}
