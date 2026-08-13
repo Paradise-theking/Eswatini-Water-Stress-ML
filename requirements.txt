@@ -1,28 +1,7 @@
-# Core data analysis
+fastapi==0.141.1
+joblib==1.5.3
+matplotlib==3.11.1
 numpy==2.4.6
 pandas==3.0.5
-
-# Machine learning
 scikit-learn==1.9.0
-xgboost==3.2.0
-
-# Scientific computing
-scipy==1.17.1
-
-# Visualisation
-matplotlib==3.11.1
-seaborn==0.13.2
-
-# Geospatial processing
-geopandas==1.1.4
-shapely==2.1.2
-pyproj==3.7.2
-fiona==1.10.1
-
-# Google Earth Engine / remote sensing
-earthengine-api==1.7.38
-geemap==0.37.2
-
-# Notebook environment
-jupyter==1.1.1
-ipykernel==7.3.0
+uvicorn==0.52.3
