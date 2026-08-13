@@ -1,0 +1,621 @@
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #17324d;
+  background: #f3f7fa;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+.dashboard {
+  min-height: 100vh;
+}
+
+.topbar {
+  background: linear-gradient(
+    135deg,
+    #063b48,
+    #096b73
+  );
+
+  color: white;
+
+  padding: 34px max(30px, calc((100vw - 1200px) / 2));
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+
+.eyebrow,
+.section-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.73rem;
+  font-weight: 800;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #a7e8df;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  font-size: 0.9rem;
+
+  background: rgba(255, 255, 255, 0.12);
+
+  padding: 10px 15px;
+  border-radius: 100px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+
+  background: #6ce6a6;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 4px rgba(108, 230, 166, 0.16);
+}
+
+main {
+  width: min(1200px, calc(100% - 40px));
+  margin: 38px auto 60px;
+}
+
+.hero-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.7fr)
+    minmax(280px, 1fr);
+
+  gap: 24px;
+}
+
+.forecast-card,
+.interpretation-card,
+.method-card {
+  background: white;
+
+  border: 1px solid #dfe9ef;
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 12px 35px rgba(37, 72, 94, 0.07);
+}
+
+.forecast-card {
+  padding: 32px;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 25px;
+}
+
+.section-label {
+  color: #247f85;
+}
+
+h2 {
+  margin: 6px 0 0;
+  font-size: 1.45rem;
+}
+
+#predict-btn {
+  border: 0;
+
+  background: #087b75;
+  color: white;
+
+  border-radius: 11px;
+
+  padding: 12px 19px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+#predict-btn:hover {
+  transform: translateY(-1px);
+}
+
+#predict-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.forecast-loading {
+  margin-top: 35px;
+
+  padding: 30px;
+
+  text-align: center;
+
+  border: 1px dashed #b9ccd5;
+
+  border-radius: 15px;
+
+  color: #718694;
+
+  background: #f8fbfc;
+}
+
+.forecast-result {
+  margin-top: 30px;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1.4fr;
+
+  gap: 30px;
+}
+
+.score-area {
+  padding-right: 30px;
+
+  border-right: 1px solid #e2eaee;
+}
+
+.score-label {
+  display: block;
+
+  color: #6f8592;
+
+  font-size: 0.86rem;
+
+  font-weight: 650;
+}
+
+.score {
+  font-size: clamp(3rem, 8vw, 5rem);
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  color: #0b6871;
+
+  margin: 16px 0 12px;
+}
+
+.score-caption {
+  color: #80919d;
+  font-size: 0.8rem;
+}
+
+.risk-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.risk-badge {
+  display: inline-flex;
+  align-self: flex-start;
+
+  margin-top: 16px;
+
+  padding: 9px 14px;
+
+  border-radius: 100px;
+
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.risk-area p {
+  margin: 20px 0 0;
+
+  line-height: 1.65;
+
+  color: #536a77;
+}
+
+.risk-extreme {
+  background: #fde9e9;
+  color: #9c2020;
+}
+
+.risk-severe {
+  background: #fff0e3;
+  color: #9a4a00;
+}
+
+.risk-high {
+  background: #fff4da;
+  color: #886000;
+}
+
+.risk-moderate {
+  background: #fdf7d7;
+  color: #786d00;
+}
+
+.risk-normal {
+  background: #eef2f4;
+  color: #546975;
+}
+
+.risk-low {
+  background: #e6f6ef;
+  color: #176a4a;
+}
+
+.risk-very-low,
+.risk-wet {
+  background: #e4f4f8;
+  color: #12677b;
+}
+
+.interpretation-card {
+  padding: 30px;
+}
+
+.interpretation-card > p {
+  color: #627783;
+
+  line-height: 1.65;
+
+  margin-top: 18px;
+}
+
+.interpretation-scale {
+  margin-top: 25px;
+}
+
+.interpretation-scale div {
+  padding: 15px 0;
+
+  border-top: 1px solid #e4ecef;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.interpretation-scale strong {
+  color: #264b5b;
+}
+
+.interpretation-scale span {
+  color: #718592;
+
+  font-size: 0.86rem;
+}
+
+.section-block {
+  margin-top: 34px;
+}
+
+.section-heading {
+  margin-bottom: 18px;
+}
+
+.indicator-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+.indicator-card {
+  background: white;
+
+  border: 1px solid #dfe9ef;
+
+  border-radius: 16px;
+
+  padding: 23px;
+
+  display: flex;
+  flex-direction: column;
+
+  box-shadow:
+    0 8px 25px rgba(37, 72, 94, 0.05);
+}
+
+.indicator-card span {
+  color: #667c88;
+
+  font-size: 0.88rem;
+}
+
+.indicator-card strong {
+  margin-top: 11px;
+
+  color: #153d4b;
+
+  font-size: 1.65rem;
+}
+
+.indicator-card small {
+  margin-top: 5px;
+
+  color: #8a9ba5;
+}
+
+.method-card {
+  margin-top: 34px;
+
+  padding: 30px;
+}
+
+.method-items {
+  margin-top: 25px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 12px;
+}
+
+.method-items div {
+  background: #f5f9fa;
+
+  border-radius: 13px;
+
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.method-items strong {
+  font-size: 1.2rem;
+  color: #0b6770;
+}
+
+.method-items span {
+  margin-top: 4px;
+
+  color: #738791;
+
+  font-size: 0.82rem;
+}
+
+footer {
+  text-align: center;
+
+  padding: 30px;
+
+  color: #8798a1;
+
+  font-size: 0.82rem;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .indicator-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .method-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Historical Water Stress Chart */
+
+.chart-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.history-meta {
+  color: #718592;
+  font-size: 0.85rem;
+}
+
+.history-card {
+  background: white;
+  border: 1px solid #dfe9ef;
+  border-radius: 22px;
+  padding: 28px;
+
+  box-shadow:
+    0 12px 35px rgba(37, 72, 94, 0.06);
+}
+
+.chart-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.chart-summary div {
+  background: #f5f9fa;
+  border-radius: 13px;
+  padding: 16px 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.chart-summary span {
+  color: #738791;
+  font-size: 0.8rem;
+}
+
+.chart-summary strong {
+  color: #0b6770;
+  font-size: 1.15rem;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 330px;
+}
+
+#history-chart {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.chart-legend {
+  margin-top: 20px;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+
+  color: #657b87;
+  font-size: 0.8rem;
+}
+
+.chart-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-line {
+  width: 24px;
+  height: 3px;
+  display: inline-block;
+  border-radius: 20px;
+}
+
+.legend-line.historical {
+  background: #087b75;
+}
+
+.legend-line.normal {
+  background: #a7b6bd;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.forecast {
+  background: #d38b20;
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 25px 20px;
+
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  main {
+    width: min(100% - 24px, 1200px);
+    margin-top: 20px;
+  }
+
+  .forecast-card,
+  .interpretation-card,
+  .method-card {
+    padding: 22px;
+  }
+
+  .card-header {
+    flex-direction: column;
+  }
+
+  #predict-btn {
+    width: 100%;
+  }
+
+  .forecast-result {
+    grid-template-columns: 1fr;
+  }
+
+  .score-area {
+    border-right: 0;
+
+    border-bottom: 1px solid #e2eaee;
+
+    padding-right: 0;
+    padding-bottom: 25px;
+  }
+
+  .indicator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .method-items {
+    grid-template-columns: 1fr;
+  }
+    .chart-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    height: 280px;
+  }
+}
