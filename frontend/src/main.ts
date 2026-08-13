@@ -172,6 +172,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <div>
               <span class="section-label">Next-month forecast</span>
               <h2 id="forecast-title">Water Stress Outlook</h2>
+              <p id="forecast-source-note" class="forecast-source-note">
+  Based on the latest available observation in the research dataset.
+</p>
             </div>
 
             <button id="predict-btn" type="button">
@@ -402,6 +405,9 @@ const forecastDescription =
   document.querySelector<HTMLParagraphElement>('#forecast-description')!
   const forecastTitle =
   document.querySelector<HTMLHeadingElement>('#forecast-title')!
+
+const forecastSourceNote =
+  document.querySelector<HTMLParagraphElement>('#forecast-source-note')!
   const indicatorPrecipitation =
   document.querySelector<HTMLElement>('#indicator-precipitation')!
 
@@ -625,19 +631,22 @@ async function loadHistory() {
 
     const result: HistoryResponse =
       await response.json()
+historicalData = result.data
+forecastDate = getNextMonthDate(result.end_date)
 
-    historicalData = result.data
-    forecastDate = getNextMonthDate(result.end_date)
-    forecastTitle.textContent =
+forecastSourceNote.textContent =
+  `Forecast based on latest available observation: ${formatMonthYear(result.end_date)}`
+
+forecastTitle.textContent =
   `${formatMonthYear(forecastDate)} Water Stress Outlook`
 
-    historyCount.textContent =
-      result.count.toString()
+historyCount.textContent =
+  result.count.toString()
 
-    historyPeriod.textContent =
-      `${result.start_date} — ${result.end_date}`
+historyPeriod.textContent =
+  `${result.start_date} — ${result.end_date}`
 
-    if (historicalData.length > 0) {
+if (historicalData.length > 0) {
       const latest =
         historicalData[historicalData.length - 1]
 
