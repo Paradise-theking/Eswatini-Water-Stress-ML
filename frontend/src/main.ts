@@ -3,9 +3,23 @@ import './style.css'
 
 type PredictionResponse = {
   status: string
-  input_date: string
-  prediction: number
-  features: {
+  observation_month: string
+  forecast_month: string
+  water_stress_index: number
+  category: string
+  description: string
+
+  latest_indicators: {
+    precipitation_mm: number
+    pet_mm: number
+    temperature_max_c: number
+    soil_moisture_layer1: number
+    soil_moisture_layer2: number
+    runoff_mm: number
+    solar_radiation: number
+  }
+
+  model_features: {
     soil_moisture_layer1_lag1: number
     precipitation_mm_lag1: number
     pet_mm: number
@@ -676,7 +690,7 @@ predictButton.addEventListener('click', async () => {
     forecastResult.classList.add('hidden')
 
   const response = await fetch(
-  'http://127.0.0.1:8000/forecast/latest'
+  'http://127.0.0.1:8000/forecast/live'
 )
 
     if (!response.ok) {
@@ -684,43 +698,37 @@ predictButton.addEventListener('click', async () => {
     }
 
     const data: PredictionResponse = await response.json()
-    indicatorPrecipitation.textContent =
-  `${data.features.precipitation_mm.toFixed(1)} mm`
 
-indicatorPrecipitation3Month.textContent =
-  `${data.features.precipitation_3month.toFixed(1)} mm`
+    forecastTitle.textContent =
+      `${formatMonthYear(`${data.forecast_month}-01`)} Water Stress Outlook`
+    forecastSourceNote.textContent =
+      `Forecast based on latest available observation: ${formatMonthYear(`${data.observation_month}-01`)}`
 
-indicatorSoil1.textContent =
-  data.features.soil_moisture_layer1.toFixed(3)
+    indicatorPrecipitation.textContent = `${data.latest_indicators.precipitation_mm.toFixed(1)} mm`
+    indicatorPrecipitation3Month.textContent = `${data.model_features.precipitation_3month.toFixed(1)} mm`
+    indicatorSoil1.textContent = data.latest_indicators.soil_moisture_layer1.toFixed(3)
+    indicatorSoil2.textContent = data.latest_indicators.soil_moisture_layer2.toFixed(3)
+    indicatorTemperature.textContent = `${data.latest_indicators.temperature_max_c.toFixed(1)}°C`
+    indicatorPet.textContent = `${data.latest_indicators.pet_mm.toFixed(1)} mm`
 
-indicatorSoil2.textContent =
-  data.features.soil_moisture_layer2.toFixed(3)
+    const classification = classifyWaterStress(data.water_stress_index)
 
-indicatorTemperature.textContent =
-  `${data.features.temperature_max_c.toFixed(1)}°C`
+    latestForecast = data.water_stress_index
 
-indicatorPet.textContent =
-  `${data.features.pet_mm.toFixed(1)} mm`
+    chartForecast.textContent = data.water_stress_index.toFixed(3)
 
-    const classification = classifyWaterStress(data.prediction)
+    drawHistoryChart(
+      historicalData,
+      latestForecast
+    )
 
-    latestForecast = data.prediction
+    predictionValue.textContent = data.water_stress_index.toFixed(3)
 
-chartForecast.textContent =
-  data.prediction.toFixed(3)
-
-drawHistoryChart(
-  historicalData,
-  latestForecast
-)
-
-    predictionValue.textContent = data.prediction.toFixed(3)
-
-    riskBadge.textContent = classification.label
+    riskBadge.textContent = data.category || classification.label
     riskBadge.className = `risk-badge ${classification.className}`
 
     forecastDescription.textContent =
-      classification.description
+      data.description || classification.description
 
     forecastLoading.classList.add('hidden')
     forecastResult.classList.remove('hidden')

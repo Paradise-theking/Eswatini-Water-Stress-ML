@@ -28,3 +28,8 @@ Thumbs.db
 .env.*
 
 .kilo/
+# Temporary climate/API downloads
+backend/era5_test*
+*.nc
+*.grib
+*.grib2

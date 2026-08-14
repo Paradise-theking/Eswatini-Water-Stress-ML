@@ -5,6 +5,11 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
+from backend.live_forecast import (
+    generate_live_forecast,
+    clear_live_forecast_cache,
+)
+from backend.data_ingestion import initialize_earth_engine
 
 
 # ---------------------------------------------------------
@@ -176,6 +181,53 @@ def forecast_latest():
         raise HTTPException(
             status_code=500,
             detail=f"Latest forecast failed: {str(exc)}"
+        )
+
+@app.post("/forecast/live/refresh")
+def refresh_live_forecast():
+    """
+    Clear the cached forecast and regenerate it
+    using the latest available Earth Engine data.
+    """
+    try:
+        clear_live_forecast_cache()
+
+        initialize_earth_engine()
+
+        result = generate_live_forecast()
+
+        return {
+            "status": "success",
+            "refreshed": True,
+            **result,
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Live forecast refresh failed: {str(exc)}",
+        )
+    
+@app.get("/forecast/live")
+def live_water_stress_forecast():
+    """
+    Generate a one-month-ahead forecast using the latest
+    commonly available ERA5-Land and CHIRPS observations.
+    """
+    try:
+        initialize_earth_engine()
+
+        result = generate_live_forecast()
+
+        return {
+            "status": "success",
+            **result,
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Live forecast failed: {str(exc)}",
         )
     
 @app.post("/predict")
