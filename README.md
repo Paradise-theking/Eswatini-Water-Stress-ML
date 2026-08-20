@@ -1,485 +1,838 @@
-Eswatini Water Stress ML
+﻿# Machine Learning-Based Forecasting of Hydroclimatic Water Stress in Eswatini
 
-A deployed machine-learning system for one-month-ahead hydroclimatic water-stress forecasting in Eswatini using Earth-observation data.
+A leakage-aware machine learning framework and interactive forecasting application for **one-month-ahead prediction of hydroclimatic water stress in Eswatini** using remotely sensed and reanalysis-derived environmental variables.
 
-Live Demo
+The project investigates whether hydroclimatic conditions observed at month **t** can provide useful predictive information about water stress at month **t+1**, with particular emphasis on chronological validation, leakage prevention, regularization, independent testing, and comparison against simple forecasting baselines.
 
-Web application: https://eswatiniwaterstress.web.app
+The trained forecasting pipeline is also integrated into a **FastAPI backend** and **TypeScript/Vite dashboard** for interactive model inference and historical Water Stress Index visualization.
 
-Production API: https://eswatini-water-stress-api.onrender.com
+---
 
-API health check: https://eswatini-water-stress-api.onrender.com/health
+## Research Overview
 
-The Render free-tier backend may need a short cold-start period after inactivity.
+Eswatini is vulnerable to recurrent drought, rainfall variability, increasing temperatures, and associated pressures on agriculture and water resources.
 
-Project Overview
+Reliable short-term hydroclimatic forecasting could complement conventional drought monitoring by providing advance information to support climate-resilient water-resource management.
 
-                    DATA SOURCES
-              ┌─────────┴─────────┐
-              │                   │
-           CHIRPS             ERA5-Land
-              │                   │
-              └─────────┬─────────┘
-                        ↓
-              Google Earth Engine
-                        ↓
-                Data Ingestion
-                        ↓
-              Feature Engineering
-                        ↓
-              15 Model Predictors
-                        ↓
-          ┌─────────────────────────┐
-          │   Ridge Regression ML   │
-          │       α = 0.05          │
-          └────────────┬────────────┘
-                       ↓
-                  FastAPI API
-                       ↓
-                    Render
-                       ↓
-              TypeScript / Vite
-                       ↓
-               Firebase Hosting
-                       ↓
-        Eswatini Water Stress Dashboard
+This project develops a monthly water-stress forecasting framework using environmental variables including:
 
-This project investigates whether hydroclimatic conditions observed at month t can provide useful predictive information about hydroclimatic water stress at month t+1.
+- precipitation;
+- potential evapotranspiration (PET);
+- temperature;
+- soil moisture;
+- runoff;
+- surface runoff;
+- solar radiation;
+- dew point;
+- wind speed; and
+- lagged and accumulated hydroclimatic variables.
 
-It combines two connected components:
+The final modelling experiment uses **Ridge Regression** to forecast the Water Stress Index one month ahead.
 
-Research pipeline — leakage-aware feature engineering, chronological model development, validation, independent testing, baseline comparison, residual analysis, and model interpretation.
+---
 
-Operational forecasting application — automated retrieval of newly available Earth-observation data, feature construction, model inference through FastAPI, and an interactive web dashboard.
+## Forecasting Objective
 
-The current production system uses a frozen Ridge Regression pipeline with 15 predictors and a one-month forecast horizon.
+The forecasting problem is formulated as:
 
-Data Sources
+> Use hydroclimatic information available at month **t** to predict the Water Stress Index at month **t+1**.
 
-The system uses Earth-observation and reanalysis-derived environmental variables, primarily CHIRPS precipitation and ERA5-Land atmospheric/land-surface variables, plus monthly lags and three-month accumulated features. The operational backend retrieves the latest commonly available observations through Google Earth Engine and constructs the exact feature vector required by the trained model.
+This distinction is important because the project is designed as a genuine forecasting experiment rather than a same-month estimation exercise.
 
-Water Stress Index
+The forecasting horizon is therefore:
 
-The target is a standardized hydroclimatic Water Stress Index (WSI) derived from the three-month accumulated climatic water balance.
+```text
+Current hydroclimatic conditions (month t)
+                    â†“
+             Machine learning
+                    â†“
+      Water Stress Index (month t+1)
+```
 
+---
+
+## Data
+
+The analysis uses monthly environmental information derived from remotely sensed and reanalysis products covering Eswatini.
+
+Primary data sources include:
+
+- **CHIRPS** â€” precipitation;
+- **ERA5-Land** â€” atmospheric and land-surface hydroclimatic variables; and
+- derived temporal variables including monthly lags and rolling accumulations.
+
+The modelling dataset contains variables representing precipitation, PET, temperature, dew point, soil moisture, runoff, surface runoff, solar radiation, wind speed, and related lagged predictors.
+
+Raw/external and processed datasets used by the project are stored under:
+
+```text
+data/
+â”œâ”€â”€ external/
+â””â”€â”€ processed/
+```
+
+---
+
+## Water Stress Index
+
+The target variable is a standardized hydroclimatic Water Stress Index derived from the three-month accumulated climatic water balance.
+
+Monthly climatic water balance is defined as:
+
+```text
 Water Balance = Precipitation - Potential Evapotranspiration
+```
+
+The three-month accumulated water balance is then standardized relative to the corresponding calendar month's climatology.
 
 Conceptually:
 
-WSI = (WB3 - calendar-month climatological mean)
-      ------------------------------------------
-        calendar-month climatological standard deviation
+```text
+WSI = (WB3 - training-month climatological mean)
+      ------------------------------------------------
+        training-month climatological standard deviation
+```
 
-Negative WSI values indicate drier-than-normal hydroclimatic conditions, values near zero indicate conditions near the climatological norm, and positive values indicate wetter-than-normal conditions. The continuous WSI is the primary scientific output; dashboard labels are an application-level interpretation layer.
+where `WB3` represents the three-month accumulated climatic water balance.
 
-Leakage-Aware Experimental Design
+To prevent validation and test information from influencing the definition of the target, the final index uses climatological statistics calculated from the **training period only**.
 
-The final experiment orders observations chronologically, derives the target climatology from training data only, shifts the target one month forward, ranks predictors using training data only, selects feature count and Ridge regularization using validation data only, and leaves the 2024–2025 test period untouched until final evaluation.
+The same training-period climatology is retained throughout validation and independent testing.
 
-Partition
+### Interpretation
 
-Period
+Because the index represents standardized climatic water balance:
 
-Training
+```text
+Negative WSI  â†’ drier-than-normal hydroclimatic conditions
+WSI near 0    â†’ conditions near the climatological norm
+Positive WSI  â†’ wetter-than-normal hydroclimatic conditions
+```
 
-July 2015 – December 2021
+A positive value should therefore **not** be interpreted as a percentage probability of water stress.
 
-Validation
+---
 
-January 2022 – December 2023
+## Leakage Prevention
 
-Independent test
+Special attention was given to preventing temporal and target leakage.
 
-January 2024 – December 2025
+The final workflow:
 
-The independent test contains 24 monthly forecasts.
+1. orders observations chronologically;
+2. constructs the Water Stress Index climatology from the training period only;
+3. shifts the target one month forward;
+4. performs feature ranking using training data only;
+5. selects feature count using validation performance only;
+6. tunes the Ridge regularization parameter using validation data only; and
+7. leaves the 2024â€“2025 test period untouched until final model evaluation.
 
-Final Model
+Variables directly involved in constructing the target were excluded from the predictor set where their inclusion could create target leakage.
 
-The final scikit-learn pipeline is:
+---
 
-Median Imputation -> Standard Scaling -> Ridge Regression
+## Chronological Evaluation
 
-Parameter
+Random train/test splitting was avoided because neighbouring observations in hydroclimatic time series are temporally dependent.
 
-Value
+The project instead uses chronological partitions.
 
-Model
+The final independent evaluation covers:
 
+```text
+January 2024 â€“ December 2025
+```
+
+with:
+
+```text
+N = 24 monthly forecasts
+```
+
+Training and validation observations preceding the test period were used to fit the final model after model configuration had been selected.
+
+This design provides a more realistic assessment of future forecasting performance than randomly mixing earlier and later observations.
+
+---
+
+## Feature Selection
+
+Candidate predictors were ranked according to their absolute relationship with the one-month-ahead target using **training data only**.
+
+Different feature-set sizes were evaluated on the validation period.
+
+The best validation performance was obtained using **15 predictors**.
+
+### Final Selected Features
+
+1. `soil_moisture_layer1_lag1`
+2. `precipitation_mm_lag1`
+3. `pet_mm`
+4. `soil_moisture_layer2_lag1`
+5. `precipitation_mm`
+6. `soil_moisture_layer2`
+7. `precipitation_3month`
+8. `soil_moisture_layer1`
+9. `pet_mm_lag1`
+10. `temperature_max_c`
+11. `surface_runoff_mm_lag1`
+12. `runoff_mm_lag1`
+13. `pet_3month`
+14. `solar_radiation`
+15. `solar_radiation_lag1`
+
+---
+
+## Final Model
+
+The final forecasting model is **Ridge Regression** implemented as a preprocessing and modelling pipeline:
+
+```text
+Median Imputation
+        â†“
+Standard Scaling
+        â†“
 Ridge Regression
+```
 
-Forecast horizon
+Final configuration:
 
-1 month
+```text
+Model:            Ridge Regression
+Ridge alpha:      0.05
+Predictors:       15
+Forecast horizon: 1 month
+```
 
-Predictors
+Ridge Regression was selected because the environmental predictors exhibit substantial correlation arising from related hydroclimatic processes, temporal lags, and accumulated variables.
 
-15
+Regularization allows correlated predictors to be retained while constraining coefficient magnitude.
 
-Ridge alpha
+The complete preprocessing and Ridge model are stored as a reusable scikit-learn pipeline for application inference.
 
-0.05
+---
 
-Selected Predictors
+## Independent Test Performance
 
-soil_moisture_layer1_lag1
+The final Ridge model was evaluated exclusively on the independent **January 2024â€“December 2025** test period.
 
-precipitation_mm_lag1
+| Metric | Final Ridge |
+|---|---:|
+| MAE | 0.9625 |
+| RMSE | 1.3906 |
+| RÂ² | 0.2124 |
 
-pet_mm
+The model was also compared against two simple forecasting benchmarks.
 
-soil_moisture_layer2_lag1
+| Model | RMSE |
+|---|---:|
+| **Final Ridge t+1** | **1.3906** |
+| Persistence | 1.7568 |
+| Climatology | 1.7589 |
 
-precipitation_mm
+The Ridge model reduced RMSE by approximately:
 
-soil_moisture_layer2
+- **20.84% relative to persistence**
+- **20.93% relative to climatology**
 
-precipitation_3month
+These results indicate that the environmental predictors contain useful one-month-ahead predictive information beyond simply assuming that current water-stress conditions will persist into the following month.
 
-soil_moisture_layer1
+---
 
-pet_mm_lag1
+## Extreme Events
 
-temperature_max_c
+Forecast performance deteriorated substantially during unusually extreme Water Stress Index conditions.
 
-surface_runoff_mm_lag1
+Two independent-test observations had an absolute WSI of at least 2.
 
-runoff_mm_lag1
+| Observation Type | MAE | RMSE |
+|---|---:|---:|
+| Extreme observations | 2.9851 | 3.6728 |
+| Non-extreme observations | 0.7786 | 0.9399 |
 
-pet_3month
+The largest error occurred in **May 2024**, when:
 
-solar_radiation
+```text
+Observed WSI = 7.0614
+Ridge forecast = 1.9365
+Absolute error = 5.1248
+```
 
-solar_radiation_lag1
+A sensitivity analysis excluding this observation produced:
 
-Independent Test Results
+```text
+MAE  = 0.7815
+RMSE = 0.9360
+```
 
-Model
+However, the observation was **not removed from the official test evaluation**.
 
-MAE
+The complete 24-month test results remain the primary reported results.
 
-RMSE
+This highlights an important limitation of the model: it provides useful predictive skill under more typical conditions but has difficulty reproducing rare hydroclimatic extremes.
 
-R²
+---
 
-Final Ridge t+1
+## Model Interpretation
 
-0.9625
+Because all predictors are standardized before Ridge estimation, coefficient magnitudes provide a useful indication of relative model influence, although they should not be interpreted as causal effects.
 
-1.3906
+The five largest absolute coefficients in the final model were:
 
-0.2124
+| Rank | Feature | Coefficient |
+|---:|---|---:|
+| 1 | `soil_moisture_layer1_lag1` | 1.1918 |
+| 2 | `pet_3month` | -0.9542 |
+| 3 | `precipitation_mm` | 0.8025 |
+| 4 | `pet_mm_lag1` | 0.7738 |
+| 5 | `solar_radiation_lag1` | -0.6897 |
 
-Persistence
+The model therefore draws predictive information from multiple components of the hydroclimatic system rather than from precipitation alone.
 
-1.0290
+Coefficient signs should be interpreted cautiously because correlated predictors can redistribute explanatory weight across related variables.
 
-1.7568
+---
 
--0.2570
+# Interactive Forecasting Application
 
-Climatology (WSI = 0)
+The trained Ridge pipeline is integrated into an interactive forecasting application consisting of:
 
-1.1358
+```text
+FastAPI backend
+      +
+TypeScript / Vite frontend
+```
 
-1.7589
+The purpose of the application is to translate the research model into a usable inference system while preserving the same trained preprocessing and Ridge pipeline.
 
--0.2600
+---
 
-The Ridge model reduced RMSE by 20.84% relative to persistence and 20.93% relative to climatology.
+## Application Architecture
 
-Extreme-Event Performance
+```text
+Processed hydroclimatic dataset
+             â”‚
+             â–¼
+Latest available environmental observation
+             â”‚
+             â–¼
+15 selected environmental features
+             â”‚
+             â–¼
+Saved scikit-learn Pipeline
+             â”‚
+             â”œâ”€â”€ Median Imputation
+             â”œâ”€â”€ Standard Scaling
+             â””â”€â”€ Ridge Regression
+             â”‚
+             â–¼
+        FastAPI Backend
+             â”‚
+       â”Œâ”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”
+       â”‚           â”‚
+       â–¼           â–¼
+ Historical WSI   Next-month forecast
+       â”‚           â”‚
+       â””â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”˜
+             â–¼
+     TypeScript / Vite
+          Dashboard
+```
 
-Observation type
+The frontend does **not** perform machine-learning inference.
 
-MAE
+Feature selection, model loading, preprocessing, and prediction are handled by the FastAPI backend.
 
-RMSE
+---
 
-Extreme (`
+## FastAPI Backend
 
-WSI
+The backend is implemented in:
 
->= 2`)
+```text
+backend/main.py
+```
 
-2.9851
+It loads the trained scikit-learn pipeline and exposes model inference and historical information through REST endpoints.
 
-3.6728
+### API Endpoints
 
-Non-extreme
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/` | API status message |
+| `GET` | `/health` | Confirms that the trained ML pipeline is available |
+| `GET` | `/history` | Returns the historical monthly WSI series |
+| `GET` | `/forecast/latest` | Generates a forecast from the latest available feature observation |
+| `POST` | `/predict` | Generates a prediction from a supplied 15-feature observation |
 
-0.7786
+### Historical API
 
-0.9399
+The `/history` endpoint currently exposes:
 
-The largest error occurred in May 2024:
+```text
+Historical observations: 126 months
+Start:                   July 2015
+End:                     December 2025
+Missing WSI values:      0
+```
 
-Observed WSI:   7.0614
-Ridge forecast: 1.9365
-Absolute error: 5.1248
+The endpoint supplies the historical series used by the frontend visualization.
 
-The complete 24-month test period remains the official evaluation.
+### Latest Forecast API
 
-Production Forecasting System
+`/forecast/latest` retrieves the most recent row in the processed modelling dataset, extracts the same 15 features required by the trained Ridge pipeline, and generates the corresponding one-month-ahead forecast.
 
-Architecture
+This means the frontend does not contain a hard-coded ML feature vector.
 
-Google Earth Engine
-CHIRPS + ERA5-Land
-        |
-        v
-backend/data_ingestion.py
-        |
-        v
-backend/feature_engineering.py
-        |
-        v
-15-feature model input
-        |
-        v
-models/water_stress_ridge.joblib
-        |
-        v
-backend/live_forecast.py
-        |
-        v
-FastAPI on Render
-        |
-        v
-TypeScript/Vite frontend
-        |
-        v
-Firebase Hosting
+---
 
-The frontend does not perform ML inference. Data acquisition, feature engineering, preprocessing, model loading, and prediction are handled by the backend.
+## Interactive Dashboard
 
-Live Forecasting
+The frontend is implemented using **TypeScript and Vite**.
 
-The production backend initializes Google Earth Engine, checks the latest available observations, retrieves recent CHIRPS and ERA5-Land data, constructs lagged and accumulated predictors, preserves the trained model feature order, runs the frozen Ridge pipeline, and returns the next-month forecast and environmental indicators.
+The dashboard presents:
 
-Research Dataset vs Live Forecast Data
+- the forecast month;
+- predicted Water Stress Index;
+- interpreted hydroclimatic condition;
+- environmental indicators used for inference;
+- historical WSI observations;
+- latest observed WSI;
+- one-month-ahead forecast point;
+- historical WSI visualization; and
+- model metadata.
 
-Historical research dataset: July 2015 – December 2025, used for model development, independent evaluation, and historical visualization.
+### Environmental Indicators
 
-Live operational input: newer Earth-observation data retrieved through Google Earth Engine for current forecasting.
+The dashboard dynamically displays environmental values returned by the forecasting API, including:
 
-This separation preserves the frozen research experiment while allowing the deployed application to generate forecasts beyond the historical dataset.
+- monthly precipitation;
+- three-month accumulated precipitation;
+- top-layer soil moisture;
+- deeper-layer soil moisture;
+- maximum temperature; and
+- potential evapotranspiration.
 
-API Endpoints
+These values correspond to the feature observation used by the backend to generate the forecast.
 
-Method
+---
 
-Endpoint
+## Historical Water Stress Visualization
 
-Purpose
+The dashboard retrieves the historical Water Stress Index through `/history`.
 
-GET
+The visualization displays:
 
-/
+```text
+Historical WSI observations
+        +
+Climatological normal (WSI = 0)
+        +
+Next-month model forecast
+```
 
-API information
+The forecast is visually distinguished from the observed historical record so that a predicted value is not confused with an observation.
 
-GET
+The current historical dataset contains **126 monthly observations from July 2015 through December 2025**.
 
-/health
+---
 
-Backend/model health check
+## Dashboard Forecast Categories
 
-GET
+For communication in the interactive dashboard, the continuous WSI output is mapped to descriptive hydroclimatic categories.
 
-/history
+The current interpretation layer uses categories such as:
 
-Historical monthly WSI observations
+| WSI | Dashboard Interpretation |
+|---:|---|
+| â‰¤ -2.0 | Extreme Water Stress |
+| -2.0 to -1.5 | Severe Water Stress |
+| -1.5 to -1.0 | High Water Stress |
+| -1.0 to -0.5 | Moderate Water Stress |
+| -0.5 to +0.5 | Near Normal |
+| +0.5 to +1.0 | Low Water Stress |
+| +1.0 to +2.0 | Very Low Water Stress |
+| > +2.0 | Exceptionally Wet |
 
-GET
+**Important:** these categories form an application-level interpretation layer over the continuous WSI.
 
-/forecast/latest
+They should **not** currently be interpreted as independently validated operational drought-warning thresholds.
 
-Forecast from latest historical modelling row
+The continuous model prediction remains the primary scientific output.
 
-GET
+---
 
-/forecast/live
+## Forecast Date and Data Availability
 
-Current Earth-Engine-based forecast
+The application determines the forecast month from the latest observation available in the processed dataset.
 
-POST
+The current processed dataset ends in:
 
-/forecast/live/refresh
+```text
+December 2025
+```
 
-Clear cache and regenerate live forecast
+Because the model forecasts one month ahead, the latest available feature observation therefore produces a forecast for:
 
-POST
+```text
+January 2026
+```
 
-/predict
+This distinction is important.
 
-Predict from a supplied 15-feature observation
+The current application demonstrates **model inference using the latest observation available in the research dataset**.
 
-Deployment
+It does **not yet automatically retrieve live hydroclimatic observations for the present calendar month**.
 
-Component
+Therefore, the January 2026 output should not be described as a live present-day forecast when the application is run at a later date.
 
-Platform
+A future operational implementation could extend the ingestion pipeline to retrieve newly available CHIRPS and ERA5-Land observations automatically before constructing the required model features.
 
-Frontend
+---
 
-Firebase Hosting
+## Repository Structure
 
-Backend API
-
-Render
-
-Environmental data
-
-Google Earth Engine
-
-ML model
-
-scikit-learn Ridge pipeline
-
-Repository Structure
-
+```text
 Eswatini-Water-Stress-ML/
-|-- backend/
-|   |-- main.py
-|   |-- data_ingestion.py
-|   |-- feature_engineering.py
-|   `-- live_forecast.py
-|-- data/
-|-- documentation/
-|-- figures/
-|-- frontend/
-|-- models/
-|   `-- water_stress_ridge.joblib
-|-- notebooks/
-|   |-- 01_data_acquisition.ipynb
-|   |-- 02_data_preparation.ipynb
-|   |-- 03_target_feature_engineering.ipynb
-|   |-- 04_model_development.ipynb
-|   `-- 05_final_evaluation.ipynb
-|-- results/
-|-- screenshots/
-|-- requirements.txt
-|-- firebase.json
-`-- README.md
+â”‚
+â”œâ”€â”€ backend/
+â”‚   â””â”€â”€ main.py
+â”‚
+â”œâ”€â”€ data/
+â”‚   â”œâ”€â”€ external/
+â”‚   â”‚   â”œâ”€â”€ mnjoli_chirps_daily_2015_2025.csv
+â”‚   â”‚   â”œâ”€â”€ mnjoli_era5_land_daily_2015_2025_processed.csv
+â”‚   â”‚   â”œâ”€â”€ mnjoli_era5_land_daily_2015_2025_raw.csv
+â”‚   â”‚   â””â”€â”€ mnjoli_w60e_catchment.geojson
+â”‚   â”‚
+â”‚   â””â”€â”€ processed/
+â”‚       â”œâ”€â”€ mnjoli_water_stress_features_daily.csv
+â”‚       â”œâ”€â”€ mnjoli_water_stress_ml_dataset.csv
+â”‚       â””â”€â”€ mnjoli_water_stress_monthly.csv
+â”‚
+â”œâ”€â”€ documentation/
+â”‚   â”œâ”€â”€ research manuscript (.docx)
+â”‚   â””â”€â”€ research manuscript (.pdf)
+â”‚
+â”œâ”€â”€ figures/
+â”‚   â”œâ”€â”€ independent_test_forecasts.png
+â”‚   â”œâ”€â”€ observed_vs_ridge_scatter.png
+â”‚   â”œâ”€â”€ ridge_standardized_coefficients.png
+â”‚   â””â”€â”€ validation_rmse_feature_count.png
+â”‚
+â”œâ”€â”€ frontend/
+â”‚   â”œâ”€â”€ public/
+â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”œâ”€â”€ assets/
+â”‚   â”‚   â”œâ”€â”€ main.ts
+â”‚   â”‚   â””â”€â”€ style.css
+â”‚   â”œâ”€â”€ package.json
+â”‚   â””â”€â”€ tsconfig.json
+â”‚
+â”œâ”€â”€ models/
+â”‚   â””â”€â”€ final_ridge_pipeline.joblib
+â”‚
+â”œâ”€â”€ notebooks/
+â”‚   â”œâ”€â”€ 01_data_acquisition.ipynb
+â”‚   â”œâ”€â”€ 02_data_preparation.ipynb
+â”‚   â”œâ”€â”€ 03_target_feature_engineering.ipynb
+â”‚   â”œâ”€â”€ 04_model_development.ipynb
+â”‚   â””â”€â”€ 05_final_evaluation.ipynb
+â”‚
+â”œâ”€â”€ .gitignore
+â””â”€â”€ README.md
+```
 
-Running Locally
+---
 
-1. Clone
+# Running the Application Locally
 
+## Prerequisites
+
+You will need:
+
+- Python 3;
+- pip;
+- Node.js;
+- npm; and
+- Git if cloning the repository.
+
+---
+
+## 1. Clone the Repository
+
+```bash
 git clone https://github.com/Paradise-theking/Eswatini-Water-Stress-ML.git
 cd Eswatini-Water-Stress-ML
+```
 
-2. Python Environment
+---
 
+## 2. Backend Setup
+
+Create a Python virtual environment from the project root.
+
+### Windows PowerShell
+
+```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+```
 
-3. Earth Engine Credentials
+Install the backend dependencies:
 
-Configure your own Earth Engine-enabled Google Cloud service account:
+```powershell
+pip install fastapi uvicorn pandas scikit-learn joblib
+```
 
-$env:EE_SERVICE_ACCOUNT="your-service-account@your-project.iam.gserviceaccount.com"
-$env:EE_PROJECT_ID="your-google-cloud-project-id"
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-service-account-key.json"
+Move into the backend directory:
 
-Never commit service-account JSON keys or other credentials.
+```powershell
+cd backend
+```
 
-4. Start Backend
+Start FastAPI:
 
-From the project root:
+```powershell
+uvicorn main:app --reload
+```
 
-uvicorn backend.main:app --reload
+The API should become available at:
 
-5. Start Frontend
+```text
+http://127.0.0.1:8000
+```
 
-In a second terminal:
+Interactive Swagger documentation is available at:
 
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+## 3. Frontend Setup
+
+Open a second terminal and move into the frontend directory:
+
+```powershell
 cd frontend
+```
+
+Install the Node dependencies:
+
+```powershell
 npm install
+```
+
+Start the Vite development server:
+
+```powershell
 npm run dev
+```
 
-The frontend normally runs at http://localhost:5173.
+Vite will normally expose the application at:
 
-Research Reproducibility
+```text
+http://localhost:5173
+```
 
+Keep both the **FastAPI backend** and **Vite frontend** running while using the application.
+
+---
+
+# Research Reproducibility
+
+The research workflow is organized across the Jupyter notebooks in approximately the following order:
+
+```text
 01_data_acquisition.ipynb
-          |
-          v
+            â†“
 02_data_preparation.ipynb
-          |
-          v
+            â†“
 03_target_feature_engineering.ipynb
-          |
-          v
+            â†“
 04_model_development.ipynb
-          |
-          v
+            â†“
 05_final_evaluation.ipynb
+```
 
-The frozen model specification is stored in data/processed/final_model_specification.json. Publication-oriented figures are available in figures/.
+Core Python packages used across the research and application include:
 
-Key Technologies
+```text
+pandas
+numpy
+scikit-learn
+matplotlib
+joblib
+FastAPI
+Uvicorn
+```
 
-Data/ML: Python, pandas, NumPy, scikit-learn, joblib, matplotlib, Google Earth Engine, CHIRPS, ERA5-Land
-Backend: FastAPI, Uvicorn
-Frontend/Deployment: TypeScript, Vite, Firebase Hosting, Render
+The frontend uses:
 
-Limitations
+```text
+TypeScript
+Vite
+```
 
-The monthly research dataset is relatively small.
+For strict environment reproducibility, a dedicated Python dependency specification should be maintained alongside the repository.
 
-Hydroclimatic predictors are strongly correlated.
+---
 
-Performance is substantially weaker during rare extreme events.
+## Research Figures
 
-The WSI represents hydroclimatic conditions, not complete operational water scarcity.
+The repository contains final evaluation and interpretation figures under `figures/`, including:
 
-Reservoir storage, groundwater, demand, abstraction, infrastructure, and socioeconomic exposure are not directly represented.
+- `independent_test_forecasts.png`
+- `observed_vs_ridge_scatter.png`
+- `ridge_standardized_coefficients.png`
+- `validation_rmse_feature_count.png`
 
-Ridge coefficients indicate predictive associations, not causality.
+These figures document model performance, feature-set selection, observed-versus-predicted behaviour, and standardized Ridge coefficients.
 
-Dashboard categories are descriptive and are not official drought-warning thresholds.
+---
 
-Live forecasts depend on upstream Earth-observation availability and latency.
+## Limitations
 
-Free-tier cloud hosting can introduce backend cold-start delays.
+Several limitations should be considered when interpreting the results.
 
-Future Development
+### 1. Dataset Size
 
-forecast archiving and prospective verification;
+The monthly dataset is relatively small, restricting the complexity of models that can be estimated reliably.
 
-uncertainty-aware forecasting;
+### 2. Correlated Predictors
 
-improved modelling of extreme events;
+Strong correlations exist among environmental predictors because temperature variables, precipitation accumulations, PET, runoff, soil moisture, and their temporal lags represent interconnected physical processes.
 
-reservoir and hydrological data integration;
+### 3. Extreme Conditions
 
-spatial forecasting across additional Eswatini catchments/regions;
+The final model performs substantially worse during rare extreme conditions, particularly the May 2024 event.
 
-comparison with additional time-series and ML approaches; and
+The model should therefore not be assumed to reproduce unprecedented or highly unusual hydroclimatic extremes reliably.
 
-operational warning-threshold calibration.
+### 4. Hydroclimatic Rather Than Operational Water Scarcity
 
-Version
+The modelling framework represents temporally aggregated hydroclimatic conditions.
 
-The first stable deployed release is tagged v1.0.0.
+It should not be interpreted as a complete representation of:
 
-Research Significance
+- reservoir storage;
+- groundwater availability;
+- water demand;
+- distribution infrastructure;
+- abstraction;
+- agricultural demand; or
+- operational water scarcity.
 
-The project demonstrates a complete research-to-deployment workflow for one-month-ahead hydroclimatic water-stress forecasting in Eswatini: Earth-observation data acquisition, leakage-aware feature engineering, independent evaluation, machine-learning inference, API deployment, and a public forecasting interface.
+### 5. Predictive Rather Than Causal Interpretation
 
-Author
+Ridge coefficients describe predictive associations within the fitted model.
 
-Paradise Sengeto Nxumalo
-Bachelor of Computer Science, First Class Honours
+They should not be interpreted as evidence of causal hydroclimatic relationships.
+
+### 6. Current Data Availability
+
+The interactive application currently performs inference using the latest observation already present in the research dataset.
+
+It does not yet automatically download and preprocess newly released environmental observations.
+
+### 7. Dashboard Categories
+
+The descriptive dashboard categories are an interpretation layer and have not yet been independently calibrated as operational drought-warning thresholds for Eswatini.
+
+---
+
+## Future Development
+
+Potential extensions include:
+
+- automated ingestion of newly available CHIRPS precipitation data;
+- automated ingestion of ERA5-Land variables;
+- scheduled feature engineering and forecast generation;
+- spatial forecasting beyond the current study representation;
+- integration of reservoir and hydrological observations;
+- probabilistic or uncertainty-aware forecasting;
+- improved modelling of rare extreme events;
+- comparison with additional time-series and machine-learning models;
+- deployment of the FastAPI service;
+- deployment of the interactive dashboard;
+- forecast archiving and verification as new observations become available; and
+- calibration of operational warning categories with domain and impact data.
+
+---
+
+## Research Significance
+
+The project demonstrates a leakage-aware framework for evaluating whether remotely sensed and reanalysis-derived environmental information can support short-term water-stress forecasting in Eswatini.
+
+The results suggest that a relatively simple regularized linear model can outperform persistence and climatological benchmarks while remaining computationally efficient and comparatively interpretable.
+
+The work also demonstrates how a research forecasting pipeline can be translated into an interactive software application without moving preprocessing or machine-learning inference into the client.
+
+The project contributes toward the broader development of data-driven early-warning approaches for climate-resilient water-resource management in data-constrained environments.
+
+---
+
+# Current Status
+
+The repository currently includes both the completed one-month-ahead forecasting experiment and an interactive inference application.
+
+## Research Model
+
+```text
+Model:             Ridge Regression
+Forecast horizon:  1 month
+Predictors:        15
+Alpha:             0.05
+
+Independent test:
+January 2024 â€“ December 2025
+N = 24
+
+MAE:   0.9625
+RMSE:  1.3906
+RÂ²:    0.2124
+
+RMSE improvement over persistence: 20.84%
+RMSE improvement over climatology: 20.93%
+```
+
+## Application
+
+```text
+Backend:             FastAPI
+Frontend:            TypeScript + Vite
+Historical records:  126 monthly observations
+Historical period:   July 2015 â€“ December 2025
+Forecast horizon:    1 month ahead
+Latest input month:  December 2025
+Current forecast:    January 2026
+```
+
+The application currently performs inference from the latest observation available in the research dataset.
+
+Automated ingestion of newly available hydroclimatic observations remains future work.
+
+---
+
+## Author
+
+**Paradise Sengeto Nxumalo**
+
+Bachelor of Computer Science, First Class Honours  
 Eswatini
 
-Citation
+---
 
-This repository supports ongoing work on machine-learning-based hydroclimatic water-stress forecasting in Eswatini. A formal citation and DOI can be added following publication or archival release.
+## Citation
 
-License
+This repository supports an ongoing research manuscript on machine-learning-based hydroclimatic water-stress forecasting in Eswatini.
 
-A formal software and data license should be specified before the repository is used as a permanent public research archive.
+A formal citation and DOI will be added following publication or archival release.
+
+---
+
+## License
+
+A formal open-source and data license will be specified before the repository is released as the permanent research archive.
