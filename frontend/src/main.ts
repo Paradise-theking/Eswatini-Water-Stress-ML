@@ -635,7 +635,7 @@ function drawHistoryChart(
 async function loadHistory() {
   try {
     const response =
-      await fetch('http://127.0.0.1:8000/history')
+      await fetch('https://eswatini-water-stress-api.onrender.com/history')
 
     if (!response.ok) {
       throw new Error(
@@ -690,7 +690,7 @@ predictButton.addEventListener('click', async () => {
     forecastResult.classList.add('hidden')
 
   const response = await fetch(
-  'http://127.0.0.1:8000/forecast/live'
+  'https://eswatini-water-stress-api.onrender.com/forecast/live'
 )
 
     if (!response.ok) {
