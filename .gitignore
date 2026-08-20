@@ -36,3 +36,6 @@ backend/era5_test*
 
 # Firebase local cache
 .firebase/
+
+# Local equation image assets
+equations/
