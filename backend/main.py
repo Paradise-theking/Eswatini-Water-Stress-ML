@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from fastapi.middleware.cors import CORSMiddleware
 from backend.live_forecast import (
     generate_live_forecast,
     clear_live_forecast_cache,
