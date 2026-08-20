@@ -14,6 +14,36 @@ The Render free-tier backend may need a short cold-start period after inactivity
 
 Project Overview
 
+                    DATA SOURCES
+              ┌─────────┴─────────┐
+              │                   │
+           CHIRPS             ERA5-Land
+              │                   │
+              └─────────┬─────────┘
+                        ↓
+              Google Earth Engine
+                        ↓
+                Data Ingestion
+                        ↓
+              Feature Engineering
+                        ↓
+              15 Model Predictors
+                        ↓
+          ┌─────────────────────────┐
+          │   Ridge Regression ML   │
+          │       α = 0.05          │
+          └────────────┬────────────┘
+                       ↓
+                  FastAPI API
+                       ↓
+                    Render
+                       ↓
+              TypeScript / Vite
+                       ↓
+               Firebase Hosting
+                       ↓
+        Eswatini Water Stress Dashboard
+
 This project investigates whether hydroclimatic conditions observed at month t can provide useful predictive information about hydroclimatic water stress at month t+1.
 
 It combines two connected components:
