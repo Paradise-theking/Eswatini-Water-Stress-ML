@@ -40,8 +40,44 @@ ERA5_BANDS = [
 
 
 def initialize_earth_engine() -> None:
-    """Initialize Google Earth Engine."""
-    ee.Initialize()
+    """
+    Initialize Earth Engine.
+
+    Local development:
+        Uses the authenticated local Earth Engine account.
+
+    Production:
+        Uses a service account when EE_SERVICE_ACCOUNT and
+        GOOGLE_APPLICATION_CREDENTIALS are available.
+    """
+
+    import os
+
+    service_account = os.getenv("EE_SERVICE_ACCOUNT")
+    project_id = os.getenv(
+        "EE_PROJECT_ID",
+        "eswatiniwaterstress",
+    )
+    credentials_path = os.getenv(
+        "GOOGLE_APPLICATION_CREDENTIALS"
+    )
+
+    if service_account and credentials_path:
+        credentials = ee.ServiceAccountCredentials(
+            service_account,
+            credentials_path,
+        )
+
+        ee.Initialize(
+            credentials,
+            project=project_id,
+        )
+
+        return
+
+    ee.Initialize(
+        project=project_id
+    )
 
 def get_region() -> ee.Geometry:
     """
