@@ -33,3 +33,6 @@ backend/era5_test*
 *.nc
 *.grib
 *.grib2
+
+# Firebase local cache
+.firebase/
