@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import joblib
+from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -21,9 +22,12 @@ app = FastAPI(
     description="Machine-learning API for forecasting water stress in Eswatini.",
     version="1.0.0"
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://eswatiniwaterstress.web.app",
+        "https://eswatiniwaterstress.firebaseapp.com",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
