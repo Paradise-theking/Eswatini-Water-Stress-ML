@@ -11,6 +11,10 @@ from backend.live_forecast import (
 )
 from backend.data_ingestion import initialize_earth_engine
 
+from backend.live_history import (
+    fetch_live_observed_history,
+)
+
 
 # ---------------------------------------------------------
 # APP CONFIGURATION
@@ -142,6 +146,66 @@ def get_history():
         raise HTTPException(
             status_code=500,
             detail=f"Could not load historical data: {str(exc)}"
+        )
+
+@app.get("/history/live")
+def get_live_history():
+    """
+    Return observed SWBA values from January 2026
+    through the latest complete Earth Engine month.
+
+    This endpoint is temporary while the live-history
+    calculations are being validated.
+    """
+    try:
+        initialize_earth_engine()
+
+        history = fetch_live_observed_history()
+
+        if history.empty:
+            return {
+                "status": "success",
+                "count": 0,
+                "start_date": None,
+                "end_date": None,
+                "data": [],
+            }
+
+        data = []
+
+        for _, row in history.iterrows():
+            data.append(
+                {
+                    "date": row[
+                        "month_date"
+                    ].strftime("%Y-%m-%d"),
+                    "swba": float(
+                        row["swba"]
+                    ),
+                    "water_balance_mm": float(
+                        row["water_balance_mm"]
+                    ),
+                    "water_balance_3month": float(
+                        row["water_balance_3month"]
+                    ),
+                }
+            )
+
+        return {
+            "status": "success",
+            "count": len(data),
+            "start_date": data[0]["date"],
+            "end_date": data[-1]["date"],
+            "data": data,
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Could not generate live "
+                f"SWBA history: {str(exc)}"
+            ),
         )
 
 @app.get("/forecast/latest")
