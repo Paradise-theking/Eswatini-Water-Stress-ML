@@ -307,7 +307,7 @@ def validate_dec2025():
         )
 
         start_date = "2025-10-01"
-        end_date = "2026-01-01"
+        end_date = "2025-12-31"
 
         print(
             f"VALIDATION: fetching {start_date} to {end_date}",
