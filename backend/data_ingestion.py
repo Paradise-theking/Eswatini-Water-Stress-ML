@@ -213,7 +213,7 @@ def _reduce_image(
         .reduceRegion(
             reducer=ee.Reducer.mean(),
             geometry=get_region(),
-            scale=10000,
+            scale=11132,
             bestEffort=True,
             maxPixels=1_000_000_000,
         )
@@ -331,7 +331,7 @@ def fetch_chirps_daily(
             image.reduceRegion(
                 reducer=ee.Reducer.mean(),
                 geometry=get_region(),
-                scale=5000,
+                scale=5566,
                 bestEffort=True,
                 maxPixels=1_000_000_000,
             )
