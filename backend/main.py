@@ -9,10 +9,16 @@ from backend.live_forecast import (
     generate_live_forecast,
     clear_live_forecast_cache,
 )
-from backend.data_ingestion import initialize_earth_engine
-
+from backend.data_ingestion import (
+    initialize_earth_engine,
+    fetch_era5_daily,
+    fetch_chirps_daily,
+    transform_daily_data,
+    aggregate_monthly,
+)
 from backend.live_history import (
     fetch_live_observed_history,
+    TRAINING_CLIMATOLOGY,
 )
 
 
@@ -277,6 +283,209 @@ def test_live_history():
             status_code=500,
             detail=str(exc),
         )    
+
+@app.get("/history/live/validate-dec2025")
+def validate_dec2025():
+    """
+    Temporary validation endpoint.
+
+    Recalculates December 2025 SWBA using the live
+    Earth Engine ingestion pipeline and compares it
+    with the official research value.
+    """
+    try:
+        print(
+            "VALIDATION: starting December 2025 validation",
+            flush=True,
+        )
+
+        initialize_earth_engine()
+
+        print(
+            "VALIDATION: Earth Engine initialized",
+            flush=True,
+        )
+
+        start_date = "2025-10-01"
+        end_date = "2026-01-01"
+
+        print(
+            f"VALIDATION: fetching {start_date} to {end_date}",
+            flush=True,
+        )
+
+        era5 = fetch_era5_daily(
+            start_date,
+            end_date,
+        )
+
+        print(
+            f"VALIDATION: ERA5 rows = {len(era5)}",
+            flush=True,
+        )
+
+        chirps = fetch_chirps_daily(
+            start_date,
+            end_date,
+        )
+
+        print(
+            f"VALIDATION: CHIRPS rows = {len(chirps)}",
+            flush=True,
+        )
+
+        daily = transform_daily_data(
+            era5,
+            chirps,
+        )
+
+        print(
+            f"VALIDATION: transformed rows = {len(daily)}",
+            flush=True,
+        )
+
+        monthly = aggregate_monthly(
+            daily,
+        )
+
+        print(
+            f"VALIDATION: monthly rows = {len(monthly)}",
+            flush=True,
+        )
+
+        monthly = (
+            monthly
+            .copy()
+            .sort_values("month_date")
+            .reset_index(drop=True)
+        )
+
+        monthly["water_balance_mm"] = (
+            monthly["precipitation_mm"]
+            - monthly["pet_mm"]
+        )
+
+        monthly["water_balance_3month"] = (
+            monthly["water_balance_mm"]
+            .rolling(
+                window=3,
+                min_periods=3,
+            )
+            .sum()
+        )
+
+        monthly["calendar_month"] = (
+            pd.to_datetime(
+                monthly["month_date"]
+            ).dt.month
+        )
+
+        monthly["wb3_train_mean"] = (
+            monthly["calendar_month"]
+            .map(
+                {
+                    month: values["mean"]
+                    for month, values
+                    in TRAINING_CLIMATOLOGY.items()
+                }
+            )
+        )
+
+        monthly["wb3_train_std"] = (
+            monthly["calendar_month"]
+            .map(
+                {
+                    month: values["std"]
+                    for month, values
+                    in TRAINING_CLIMATOLOGY.items()
+                }
+            )
+        )
+
+        monthly["swba"] = (
+            (
+                monthly["water_balance_3month"]
+                - monthly["wb3_train_mean"]
+            )
+            / monthly["wb3_train_std"]
+        )
+
+        result = monthly[
+            pd.to_datetime(monthly["month_date"])
+            == pd.Timestamp("2025-12-01")
+        ]
+
+        if result.empty:
+            raise ValueError(
+                "December 2025 was not found in "
+                "the aggregated live data."
+            )
+
+        row = result.iloc[0]
+
+        live_swba = float(row["swba"])
+        official_swba = 1.470839
+        difference = live_swba - official_swba
+
+        print(
+            f"VALIDATION: live SWBA = {live_swba}",
+            flush=True,
+        )
+
+        print(
+            f"VALIDATION: official SWBA = {official_swba}",
+            flush=True,
+        )
+
+        print(
+            f"VALIDATION: difference = {difference}",
+            flush=True,
+        )
+
+        return {
+            "status": "success",
+            "month": "2025-12-01",
+            "live_pipeline": {
+                "precipitation_mm": float(
+                    row["precipitation_mm"]
+                ),
+                "pet_mm": float(
+                    row["pet_mm"]
+                ),
+                "water_balance_mm": float(
+                    row["water_balance_mm"]
+                ),
+                "water_balance_3month": float(
+                    row["water_balance_3month"]
+                ),
+                "training_mean": float(
+                    row["wb3_train_mean"]
+                ),
+                "training_std": float(
+                    row["wb3_train_std"]
+                ),
+                "swba": live_swba,
+            },
+            "official_research": {
+                "swba": official_swba,
+            },
+            "comparison": {
+                "difference": difference,
+                "absolute_difference": abs(difference),
+            },
+        }
+
+    except Exception as exc:
+        print(
+            f"VALIDATION ERROR: "
+            f"{type(exc).__name__}: {exc}",
+            flush=True,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )
 
 @app.get("/forecast/latest")
 def forecast_latest():
