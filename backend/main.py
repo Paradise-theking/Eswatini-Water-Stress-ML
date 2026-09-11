@@ -151,18 +151,25 @@ def get_history():
 @app.get("/history/live")
 def get_live_history():
     """
-    Return observed SWBA values from January 2026
-    through the latest complete Earth Engine month.
-
-    This endpoint is temporary while the live-history
-    calculations are being validated.
+    Temporary diagnostic endpoint for validating live SWBA history.
     """
     try:
-        initialize_earth_engine()
+        print("LIVE HISTORY: starting", flush=True)
 
+        print("LIVE HISTORY: initializing Earth Engine", flush=True)
+        initialize_earth_engine()
+        print("LIVE HISTORY: Earth Engine initialized", flush=True)
+
+        print("LIVE HISTORY: fetching observed history", flush=True)
         history = fetch_live_observed_history()
+        print(
+            f"LIVE HISTORY: history fetched, rows={len(history)}",
+            flush=True,
+        )
 
         if history.empty:
+            print("LIVE HISTORY: history is empty", flush=True)
+
             return {
                 "status": "success",
                 "count": 0,
@@ -170,6 +177,8 @@ def get_live_history():
                 "end_date": None,
                 "data": [],
             }
+
+        print("LIVE HISTORY: converting rows to response", flush=True)
 
         data = []
 
@@ -191,6 +200,11 @@ def get_live_history():
                 }
             )
 
+        print(
+            f"LIVE HISTORY: response prepared, rows={len(data)}",
+            flush=True,
+        )
+
         return {
             "status": "success",
             "count": len(data),
@@ -200,6 +214,11 @@ def get_live_history():
         }
 
     except Exception as exc:
+        print(
+            f"LIVE HISTORY ERROR: {type(exc).__name__}: {exc}",
+            flush=True,
+        )
+
         raise HTTPException(
             status_code=500,
             detail=(
@@ -207,7 +226,6 @@ def get_live_history():
                 f"SWBA history: {str(exc)}"
             ),
         )
-
 @app.get("/forecast/latest")
 def forecast_latest():
     try:
