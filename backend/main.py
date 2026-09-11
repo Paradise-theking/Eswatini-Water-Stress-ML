@@ -245,13 +245,26 @@ def test_live_history():
             return {
                 "status": "success",
                 "count": 0,
+                "data": [],
             }
+
+        data = [
+            {
+                "date": row["month_date"].strftime("%Y-%m-%d"),
+                "swba": float(row["swba"]),
+            }
+            for _, row in history.iterrows()
+        ]
+
+        print(
+            f"LIVE TEST: response prepared, rows={len(data)}",
+            flush=True,
+        )
 
         return {
             "status": "success",
-            "count": len(history),
-            "start_date": history["month_date"].min().strftime("%Y-%m-%d"),
-            "end_date": history["month_date"].max().strftime("%Y-%m-%d"),
+            "count": len(data),
+            "data": data,
         }
 
     except Exception as exc:
@@ -263,8 +276,8 @@ def test_live_history():
         raise HTTPException(
             status_code=500,
             detail=str(exc),
-        )
-    
+        )    
+
 @app.get("/forecast/latest")
 def forecast_latest():
     try:
