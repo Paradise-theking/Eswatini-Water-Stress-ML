@@ -226,6 +226,45 @@ def get_live_history():
                 f"SWBA history: {str(exc)}"
             ),
         )
+
+@app.get("/history/live/test")
+def test_live_history():
+    try:
+        print("LIVE TEST: starting", flush=True)
+
+        initialize_earth_engine()
+        print("LIVE TEST: Earth Engine initialized", flush=True)
+
+        history = fetch_live_observed_history()
+        print(
+            f"LIVE TEST: fetched {len(history)} rows",
+            flush=True,
+        )
+
+        if history.empty:
+            return {
+                "status": "success",
+                "count": 0,
+            }
+
+        return {
+            "status": "success",
+            "count": len(history),
+            "start_date": history["month_date"].min().strftime("%Y-%m-%d"),
+            "end_date": history["month_date"].max().strftime("%Y-%m-%d"),
+        }
+
+    except Exception as exc:
+        print(
+            f"LIVE TEST ERROR: {type(exc).__name__}: {exc}",
+            flush=True,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )
+    
 @app.get("/forecast/latest")
 def forecast_latest():
     try:
