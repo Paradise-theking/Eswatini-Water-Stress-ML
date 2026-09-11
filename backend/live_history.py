@@ -32,8 +32,16 @@ TRAINING_CLIMATOLOGY = {
 }
 
 
+# ============================================================
+# LIVE HISTORY SETTINGS
+# ============================================================
+
 LIVE_HISTORY_START = pd.Timestamp("2026-01-01")
 
+
+# ============================================================
+# OBSERVED SWBA CALCULATION
+# ============================================================
 
 def calculate_observed_swba(
     monthly_df: pd.DataFrame,
@@ -48,6 +56,8 @@ def calculate_observed_swba(
     calendar-month climatology.
     """
 
+    print("LIVE HISTORY: calculating observed SWBA...")
+
     df = (
         monthly_df
         .copy()
@@ -55,13 +65,19 @@ def calculate_observed_swba(
         .reset_index(drop=True)
     )
 
+    # --------------------------------------------------------
     # Monthly water balance
+    # --------------------------------------------------------
+
     df["water_balance_mm"] = (
         df["precipitation_mm"]
         - df["pet_mm"]
     )
 
+    # --------------------------------------------------------
     # 3-month accumulated water balance
+    # --------------------------------------------------------
+
     df["water_balance_3month"] = (
         df["water_balance_mm"]
         .rolling(
@@ -71,35 +87,46 @@ def calculate_observed_swba(
         .sum()
     )
 
+    # --------------------------------------------------------
     # Calendar month
+    # --------------------------------------------------------
+
     df["calendar_month"] = (
         pd.to_datetime(
             df["month_date"]
         ).dt.month
     )
 
+    # --------------------------------------------------------
     # Frozen training climatology
+    # --------------------------------------------------------
+
     df["wb3_train_mean"] = (
         df["calendar_month"]
-        .apply(
-            lambda month:
-            TRAINING_CLIMATOLOGY[
-                int(month)
-            ]["mean"]
+        .map(
+            {
+                month: values["mean"]
+                for month, values
+                in TRAINING_CLIMATOLOGY.items()
+            }
         )
     )
 
     df["wb3_train_std"] = (
         df["calendar_month"]
-        .apply(
-            lambda month:
-            TRAINING_CLIMATOLOGY[
-                int(month)
-            ]["std"]
+        .map(
+            {
+                month: values["std"]
+                for month, values
+                in TRAINING_CLIMATOLOGY.items()
+            }
         )
     )
 
+    # --------------------------------------------------------
     # Standardized Water-Balance Anomaly
+    # --------------------------------------------------------
+
     df["swba"] = (
         (
             df["water_balance_3month"]
@@ -108,8 +135,16 @@ def calculate_observed_swba(
         / df["wb3_train_std"]
     )
 
+    print(
+        "LIVE HISTORY: observed SWBA calculated."
+    )
+
     return df
 
+
+# ============================================================
+# FETCH LIVE OBSERVED HISTORY
+# ============================================================
 
 def fetch_live_observed_history() -> pd.DataFrame:
     """
@@ -120,19 +155,63 @@ def fetch_live_observed_history() -> pd.DataFrame:
     October–December 2025 are fetched only to provide
     the antecedent months required by the 3-month
     rolling water-balance calculation.
+
+    Diagnostic logging is included to identify which
+    Earth Engine/data-processing stage is slow on Render.
     """
+
+    print(
+        "\n========================================"
+    )
+    print(
+        "LIVE HISTORY: starting retrieval"
+    )
+    print(
+        "========================================"
+    )
+
+    # --------------------------------------------------------
+    # Determine latest complete month
+    # --------------------------------------------------------
+
+    print(
+        "LIVE HISTORY: determining latest complete month..."
+    )
 
     latest_month = (
         latest_common_complete_month()
     )
 
+    print(
+        "LIVE HISTORY: latest complete month =",
+        latest_month,
+    )
+
+    # --------------------------------------------------------
+    # Check whether live history is available
+    # --------------------------------------------------------
+
     if latest_month < LIVE_HISTORY_START:
+
+        print(
+            "LIVE HISTORY: latest month is before "
+            "live-history start date."
+        )
+
         return pd.DataFrame(
             columns=[
                 "month_date",
+                "water_balance_mm",
+                "water_balance_3month",
+                "wb3_train_mean",
+                "wb3_train_std",
                 "swba",
             ]
         )
+
+    # --------------------------------------------------------
+    # Fetch window
+    # --------------------------------------------------------
 
     fetch_start = pd.Timestamp(
         "2025-10-01"
@@ -144,6 +223,21 @@ def fetch_live_observed_history() -> pd.DataFrame:
         + pd.Timedelta(days=1)
     )
 
+    print(
+        "LIVE HISTORY: fetch window:",
+        fetch_start.strftime("%Y-%m-%d"),
+        "to",
+        end_date.strftime("%Y-%m-%d"),
+    )
+
+    # --------------------------------------------------------
+    # Fetch ERA5-Land
+    # --------------------------------------------------------
+
+    print(
+        "LIVE HISTORY: fetching ERA5-Land..."
+    )
+
     era5 = fetch_era5_daily(
         fetch_start.strftime(
             "%Y-%m-%d"
@@ -151,6 +245,18 @@ def fetch_live_observed_history() -> pd.DataFrame:
         end_date.strftime(
             "%Y-%m-%d"
         ),
+    )
+
+    print(
+        "LIVE HISTORY: ERA5-Land fetched."
+    )
+
+    # --------------------------------------------------------
+    # Fetch CHIRPS
+    # --------------------------------------------------------
+
+    print(
+        "LIVE HISTORY: fetching CHIRPS..."
     )
 
     chirps = fetch_chirps_daily(
@@ -162,17 +268,57 @@ def fetch_live_observed_history() -> pd.DataFrame:
         ),
     )
 
+    print(
+        "LIVE HISTORY: CHIRPS fetched."
+    )
+
+    # --------------------------------------------------------
+    # Transform daily data
+    # --------------------------------------------------------
+
+    print(
+        "LIVE HISTORY: transforming daily data..."
+    )
+
     daily = transform_daily_data(
         era5,
         chirps,
+    )
+
+    print(
+        "LIVE HISTORY: daily data transformed."
+    )
+
+    # --------------------------------------------------------
+    # Aggregate to monthly data
+    # --------------------------------------------------------
+
+    print(
+        "LIVE HISTORY: aggregating monthly data..."
     )
 
     monthly = aggregate_monthly(
         daily
     )
 
+    print(
+        "LIVE HISTORY: monthly data aggregated."
+    )
+
+    # --------------------------------------------------------
+    # Calculate SWBA
+    # --------------------------------------------------------
+
     history = calculate_observed_swba(
         monthly
+    )
+
+    # --------------------------------------------------------
+    # Select live period
+    # --------------------------------------------------------
+
+    print(
+        "LIVE HISTORY: filtering 2026 observations..."
     )
 
     live_history = (
@@ -192,8 +338,34 @@ def fetch_live_observed_history() -> pd.DataFrame:
         .reset_index(drop=True)
     )
 
+    print(
+        "LIVE HISTORY: filtered history contains",
+        len(live_history),
+        "rows."
+    )
+
+    if not live_history.empty:
+
+        print(
+            "LIVE HISTORY: first observation =",
+            live_history["month_date"].min(),
+        )
+
+        print(
+            "LIVE HISTORY: last observation =",
+            live_history["month_date"].max(),
+        )
+
+    print(
+        "LIVE HISTORY: retrieval complete."
+    )
+
     return live_history
 
+
+# ============================================================
+# DIRECT EXECUTION
+# ============================================================
 
 if __name__ == "__main__":
 
@@ -211,22 +383,59 @@ if __name__ == "__main__":
         "========================================"
     )
 
+    # --------------------------------------------------------
+    # Initialize Earth Engine
+    # --------------------------------------------------------
+
+    print(
+        "LIVE HISTORY: initializing Earth Engine..."
+    )
+
     initialize_earth_engine()
+
+    print(
+        "LIVE HISTORY: Earth Engine initialized."
+    )
+
+    # --------------------------------------------------------
+    # Fetch history
+    # --------------------------------------------------------
 
     history = fetch_live_observed_history()
 
+    # --------------------------------------------------------
+    # Display results
+    # --------------------------------------------------------
+
     print(
-        history.to_string(
-            index=False
+        "\n========================================"
+    )
+    print(
+        "RESULT"
+    )
+    print(
+        "========================================"
+    )
+
+    if history.empty:
+
+        print(
+            "No live observed history available."
         )
-    )
 
-    print(
-        "\nObservations:",
-        len(history),
-    )
+    else:
 
-    if not history.empty:
+        print(
+            history.to_string(
+                index=False
+            )
+        )
+
+        print(
+            "\nObservations:",
+            len(history),
+        )
+
         print(
             "Start:",
             history["month_date"].min(),
