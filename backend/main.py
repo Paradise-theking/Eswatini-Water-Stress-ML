@@ -424,7 +424,7 @@ def validate_dec2025():
         row = result.iloc[0]
 
         live_swba = float(row["swba"])
-        official_swba = 1.470839
+        official_swba = 1.740321  # Final Dec 2025 target_t_plus_1
         difference = live_swba - official_swba
 
         print(
