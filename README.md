@@ -57,8 +57,8 @@ The analysis uses monthly environmental information derived from remotely sensed
 
 Primary data sources include:
 
-- **CHIRPS** â€” precipitation;
-- **ERA5-Land** â€” atmospheric and land-surface hydroclimatic variables; and
+- **CHIRPS** ” precipitation;
+- **ERA5-Land** ” atmospheric and land-surface hydroclimatic variables; and
 - derived temporal variables including monthly lags and rolling accumulations.
 
 The modelling dataset contains variables representing precipitation, PET, temperature, dew point, soil moisture, runoff, surface runoff, solar radiation, wind speed, and related lagged predictors.
