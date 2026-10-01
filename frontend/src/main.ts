@@ -185,15 +185,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="dashboard">
 
     <header class="topbar">
-      <div>
-        <p class="eyebrow">Water Intelligence Platform</p>
-        <h1>Eswatini Water Stress Forecast</h1>
+      <p class="eyebrow">Water Intelligence Platform</p>
+      <div class="api-status">
+        <span id="api-status-dot" class="status-dot"></span>
+        <span id="api-status-text">Checking API...</span>
       </div>
-
-     <div class="api-status">
-  <span id="api-status-dot" class="status-dot"></span>
-  <span id="api-status-text">Checking API...</span>
-</div>
     </header>
 
     <section class="project-hero" aria-labelledby="project-hero-title">
@@ -206,7 +202,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="project-hero-mark" aria-hidden="true">
         <span class="hero-water-ring ring-one"></span>
         <span class="hero-water-ring ring-two"></span>
-        <span class="hero-water-drop">⌁</span>
+        <span class="hero-water-drop"></span>
       </div>
     </section>
 
