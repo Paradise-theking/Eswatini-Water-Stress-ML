@@ -196,9 +196,23 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 </div>
     </header>
 
+    <section class="project-hero" aria-labelledby="project-hero-title">
+      <div class="project-hero-content">
+        <span class="project-hero-kicker">Climate resilience • Eswatini</span>
+        <h2 id="project-hero-title">Eswatini Water Stress Forecast</h2>
+        <p>AI-powered water stress forecasting for climate resilience.</p>
+        <a class="hero-cta" href="#forecast">Explore the forecast <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="project-hero-mark" aria-hidden="true">
+        <span class="hero-water-ring ring-one"></span>
+        <span class="hero-water-ring ring-two"></span>
+        <span class="hero-water-drop">⌁</span>
+      </div>
+    </section>
+
     <main>
 
-      <section class="hero-grid">
+      <section class="hero-grid" id="forecast">
 
         <article class="forecast-card">
           <div class="card-header">
