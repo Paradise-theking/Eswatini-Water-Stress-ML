@@ -136,11 +136,12 @@ button {
 }
 
 .hero-water-drop {
-  color: rgba(255,255,255,.95);
-  font-size: 6rem;
-  font-weight: 300;
-  line-height: 1;
-  transform: rotate(-35deg);
+  display: block;
+  width: 49px;
+  height: 66px;
+  background: linear-gradient(145deg, #ffffff, #a7e8df);
+  clip-path: polygon(50% 0, 89% 49%, 98% 66%, 94% 81%, 82% 93%, 66% 99%, 50% 100%, 34% 99%, 18% 93%, 6% 81%, 2% 66%, 11% 49%);
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,.15));
 }
 
 .topbar {
@@ -173,9 +174,10 @@ button {
   color: #a7e8df;
 }
 
-.topbar h1 {
+.topbar .eyebrow {
   margin: 0;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  color: #a7e8df;
+  font-size: 0.78rem;
 }
 
 .api-status {
