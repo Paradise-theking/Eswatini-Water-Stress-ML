@@ -33,6 +33,116 @@ button {
   min-height: 100vh;
 }
 
+.project-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 270px;
+  padding: 48px max(30px, calc((100vw - 1200px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  color: #fff;
+  background: linear-gradient(115deg, #073d49 0%, #087b75 62%, #15958b 100%);
+}
+
+.project-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: 0.16;
+  background-image: radial-gradient(rgba(255,255,255,.65) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(90deg, transparent, #000);
+}
+
+.project-hero-content {
+  max-width: 720px;
+}
+
+.project-hero-kicker {
+  display: inline-block;
+  margin-bottom: 13px;
+  color: #a7e8df;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.project-hero h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.12;
+  letter-spacing: -.035em;
+}
+
+.project-hero p {
+  margin: 15px 0 25px;
+  color: rgba(255,255,255,.84);
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.6;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 11px;
+  color: #073d49;
+  background: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 8px 22px rgba(0,0,0,.14);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 11px 26px rgba(0,0,0,.2);
+}
+
+.hero-cta:focus-visible {
+  outline: 3px solid #f4c95d;
+  outline-offset: 3px;
+}
+
+.project-hero-mark {
+  position: relative;
+  flex: 0 0 210px;
+  height: 180px;
+  margin-right: max(0px, calc((100vw - 1200px) / 2 - 30px));
+  display: grid;
+  place-items: center;
+}
+
+.hero-water-ring {
+  position: absolute;
+  width: 155px;
+  height: 155px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 50%;
+}
+
+.ring-two {
+  width: 112px;
+  height: 112px;
+  border-color: rgba(255,255,255,.42);
+}
+
+.hero-water-drop {
+  color: rgba(255,255,255,.95);
+  font-size: 6rem;
+  font-weight: 300;
+  line-height: 1;
+  transform: rotate(-35deg);
+}
+
 .topbar {
   background: linear-gradient(
     135deg,
@@ -560,6 +670,15 @@ footer {
 }
 
 @media (max-width: 600px) {
+  .project-hero {
+    min-height: 0;
+    padding: 38px 22px;
+  }
+
+  .project-hero-mark {
+    display: none;
+  }
+
   .topbar {
     padding: 25px 20px;
 
