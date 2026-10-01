@@ -184,20 +184,16 @@ function formatDateLabel(dateString: string): string {
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="dashboard">
 
-    <header class="topbar">
-      <p class="eyebrow">Water Intelligence Platform</p>
-      <div class="api-status">
-        <span id="api-status-dot" class="status-dot"></span>
-        <span id="api-status-text">Checking API...</span>
-      </div>
-    </header>
-
     <section class="project-hero" aria-labelledby="project-hero-title">
       <div class="project-hero-content">
         <span class="project-hero-kicker">Climate resilience • Eswatini</span>
         <h2 id="project-hero-title">Eswatini Water Stress Forecast</h2>
         <p>AI-powered water stress forecasting for climate resilience.</p>
         <a class="hero-cta" href="#forecast">Explore the forecast <span aria-hidden="true">→</span></a>
+        <div class="api-status hero-api-status" aria-live="polite">
+          <span id="api-status-dot" class="status-dot"></span>
+          <span id="api-status-text">Checking API...</span>
+        </div>
       </div>
       <div class="project-hero-mark" aria-hidden="true">
         <span class="hero-water-ring ring-one"></span>
