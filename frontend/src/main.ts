@@ -705,10 +705,10 @@ function drawHistoryChart(
     rect.height
 
   const padding = {
-    top: 25,
-    right: 35,
-    bottom: 45,
-    left: 50,
+    top: 28,
+    right: 48,
+    bottom: 58,
+    left: 58,
   }
 
   const values =
@@ -935,19 +935,20 @@ function drawHistoryChart(
       ctx.setLineDash([])
 
       ctx.beginPath()
-
-      ctx.fillStyle =
-        '#d38b20'
-
-      ctx.arc(
-        x2,
-        y2,
-        5,
-        0,
-        Math.PI * 2
-      )
-
+      ctx.fillStyle = '#ffffff'
+      ctx.arc(x2, y2, 7, 0, Math.PI * 2)
       ctx.fill()
+
+      ctx.beginPath()
+      ctx.fillStyle = '#d38b20'
+      ctx.arc(x2, y2, 5, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.fillStyle = '#9a6412'
+      ctx.font = '600 11px Inter, system-ui, sans-serif'
+      ctx.textAlign = 'right'
+      ctx.textBaseline = y2 < padding.top + 24 ? 'top' : 'bottom'
+      ctx.fillText('Forecast', x2 - 10, y2 < padding.top + 24 ? y2 + 10 : y2 - 10)
     }
   }
 
@@ -974,6 +975,20 @@ function drawHistoryChart(
       6,
       data.length
     )
+
+  ctx.fillStyle = '#718592'
+  ctx.font = '600 11px Inter, system-ui, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'bottom'
+  ctx.fillText('Year', padding.left + plotWidth / 2, height - 2)
+
+  ctx.save()
+  ctx.translate(13, padding.top + plotHeight / 2)
+  ctx.rotate(-Math.PI / 2)
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('SWBA (standard deviations)', 0, 0)
+  ctx.restore()
 
   for (
     let i = 0;
