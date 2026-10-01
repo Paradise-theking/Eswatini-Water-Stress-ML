@@ -172,8 +172,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </div>
 
       <div class="api-status">
-        <span class="status-dot"></span>
-        ML API connected
+        <span id="api-status-dot" class="status-dot"></span>
+        <span id="api-status-text">Checking API...</span>
       </div>
     </header>
 
@@ -399,6 +399,26 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
   </div>
 `
+
+const apiStatusText =
+  document.querySelector<HTMLSpanElement>('#api-status-text')!
+
+const apiStatusDot =
+  document.querySelector<HTMLSpanElement>('#api-status-dot')!
+
+function setApiStatus(connected: boolean) {
+  apiStatusText.textContent = connected
+    ? 'ML API connected'
+    : 'ML API unavailable'
+
+  apiStatusDot.style.background = connected
+    ? '#6ce6a6'
+    : '#ef5350'
+
+  apiStatusDot.style.boxShadow = connected
+    ? '0 0 0 4px rgba(108, 230, 166, 0.16)'
+    : '0 0 0 4px rgba(239, 83, 80, 0.16)'
+}
 
 const predictButton =
   document.querySelector<HTMLButtonElement>('#predict-btn')!
@@ -645,7 +665,8 @@ async function loadHistory() {
 
     const result: HistoryResponse =
       await response.json()
-historicalData = result.data
+    setApiStatus(true)
+    historicalData = result.data
 forecastDate = getNextMonthDate(result.end_date)
 
 forecastSourceNote.textContent =
@@ -672,6 +693,7 @@ if (historicalData.length > 0) {
 
   } catch (error) {
     console.error(error)
+    setApiStatus(false)
 
     historyPeriod.textContent =
       'Historical data unavailable'
@@ -698,6 +720,7 @@ predictButton.addEventListener('click', async () => {
     }
 
     const data: PredictionResponse = await response.json()
+    setApiStatus(true)
 
     forecastTitle.textContent =
       `${formatMonthYear(`${data.forecast_month}-01`)} Water Stress Outlook`
@@ -735,6 +758,7 @@ predictButton.addEventListener('click', async () => {
 
   } catch (error) {
     console.error(error)
+    setApiStatus(false)
 
     forecastLoading.classList.remove('hidden')
     forecastLoading.textContent =
