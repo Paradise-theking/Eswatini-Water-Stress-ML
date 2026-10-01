@@ -181,16 +181,20 @@ button {
 }
 
 .api-status {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 9px;
-
-  font-size: 0.9rem;
-
-  background: rgba(255, 255, 255, 0.12);
-
-  padding: 10px 15px;
+  width: fit-content;
+  font-size: 0.82rem;
+  color: #42616b;
+  background: #edf8f3;
+  border: 1px solid #d5eee2;
+  padding: 7px 11px;
   border-radius: 100px;
+}
+
+.forecast-api-status {
+  margin-top: 12px;
 }
 
 .status-dot {
