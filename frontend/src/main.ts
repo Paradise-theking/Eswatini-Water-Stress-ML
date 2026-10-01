@@ -190,10 +190,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <h2 id="project-hero-title">Eswatini Water Stress Forecast</h2>
         <p>AI-powered water stress forecasting for climate resilience.</p>
         <a class="hero-cta" href="#forecast">Explore the forecast <span aria-hidden="true">→</span></a>
-        <div class="api-status hero-api-status" aria-live="polite">
-          <span id="api-status-dot" class="status-dot"></span>
-          <span id="api-status-text">Checking API...</span>
-        </div>
       </div>
       <div class="project-hero-mark" aria-hidden="true">
         <span class="hero-water-ring ring-one"></span>
@@ -218,6 +214,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
               <p id="forecast-source-note" class="forecast-source-note">
                 Forecast based on the latest available observation.
               </p>
+              <div class="api-status forecast-api-status" aria-live="polite">
+                <span id="api-status-dot" class="status-dot"></span>
+                <span id="api-status-text">Checking API...</span>
+              </div>
             </div>
 
             <button id="predict-btn" type="button">
