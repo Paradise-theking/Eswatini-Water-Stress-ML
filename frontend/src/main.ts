@@ -1,11 +1,14 @@
 import './style.css'
 
-
 type PredictionResponse = {
   status: string
   observation_month: string
   forecast_month: string
+
+  // Backend retains this field name for compatibility.
+  // Frontend interprets the returned value as SWBA.
   water_stress_index: number
+
   category: string
   description: string
 
@@ -40,53 +43,57 @@ type PredictionResponse = {
 
 type HistoryPoint = {
   date: string
-  wsi: number
+  swba: number
 }
 
-type HistoryResponse = {
+type HistoryApiPoint = {
+  date: string
+  wsi?: number
+  swba?: number
+}
+
+type HistoryApiResponse = {
   status: string
-  count: number
-  start_date: string
-  end_date: string
-  data: HistoryPoint[]
+  count?: number
+  start_date?: string
+  end_date?: string
+  data?: HistoryApiPoint[]
 }
 
-
-
-function classifyWaterStress(value: number) {
+function classifySWBA(value: number) {
   if (value <= -2) {
     return {
-      label: 'Extreme Water Stress',
+      label: 'Exceptionally Dry',
       className: 'risk-extreme',
       description:
-        'Exceptionally dry conditions are forecast, indicating very high water stress.'
+        'Exceptionally drier-than-normal conditions are indicated relative to the historical monthly climatology.'
     }
   }
 
   if (value <= -1.5) {
     return {
-      label: 'Severe Water Stress',
+      label: 'Severely Dry',
       className: 'risk-severe',
       description:
-        'Significantly drier-than-normal conditions are forecast.'
+        'Substantially drier-than-normal conditions are indicated relative to the historical monthly climatology.'
     }
   }
 
   if (value <= -1) {
     return {
-      label: 'High Water Stress',
+      label: 'Drier Than Normal',
       className: 'risk-high',
       description:
-        'Dry conditions are forecast, with elevated water stress.'
+        'Drier-than-normal hydroclimatic conditions are indicated relative to the historical monthly climatology.'
     }
   }
 
   if (value <= -0.5) {
     return {
-      label: 'Moderate Water Stress',
+      label: 'Slightly Dry',
       className: 'risk-moderate',
       description:
-        'Slightly drier-than-normal conditions are forecast.'
+        'Slightly drier-than-normal conditions are indicated relative to the historical monthly climatology.'
     }
   }
 
@@ -95,25 +102,25 @@ function classifyWaterStress(value: number) {
       label: 'Near Normal',
       className: 'risk-normal',
       description:
-        'Water conditions are forecast to remain close to the historical monthly norm.'
+        'Hydroclimatic conditions are forecast to remain close to the historical monthly climatology.'
     }
   }
 
   if (value < 1) {
     return {
-      label: 'Low Water Stress',
+      label: 'Wetter Than Normal',
       className: 'risk-low',
       description:
-        'Wetter-than-normal conditions are forecast, suggesting relatively low water stress.'
+        'Wetter-than-normal hydroclimatic conditions are indicated relative to the historical monthly climatology.'
     }
   }
 
   if (value <= 2) {
     return {
-      label: 'Very Low Water Stress',
+      label: 'Substantially Wet',
       className: 'risk-very-low',
       description:
-        'Substantially wetter-than-normal conditions are forecast.'
+        'Substantially wetter-than-normal conditions are indicated relative to the historical monthly climatology.'
     }
   }
 
@@ -121,9 +128,10 @@ function classifyWaterStress(value: number) {
     label: 'Exceptionally Wet',
     className: 'risk-wet',
     description:
-      'Exceptionally wet conditions are forecast relative to the historical climatology.'
+      'Exceptionally wetter-than-normal conditions are indicated relative to the historical monthly climatology.'
   }
 }
+
 function getNextMonthDate(lastDate: string): string {
   const [year, month] = lastDate
     .split('-')
@@ -162,6 +170,17 @@ function formatMonthYear(dateString: string): string {
 
   return `${monthNames[month - 1]} ${year}`
 }
+
+function formatDateLabel(dateString: string): string {
+  return formatMonthYear(dateString)
+}
+
+/*
+ * --------------------------------------------------------------------------
+ * Dashboard markup
+ * --------------------------------------------------------------------------
+ */
+
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="dashboard">
 
@@ -171,10 +190,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <h1>Eswatini Water Stress Forecast</h1>
       </div>
 
-      <div class="api-status">
-        <span class="status-dot"></span>
-        ML API connected
-      </div>
+     <div class="api-status">
+  <span id="api-status-dot" class="status-dot"></span>
+  <span id="api-status-text">Checking API...</span>
+</div>
     </header>
 
     <main>
@@ -185,10 +204,14 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class="card-header">
             <div>
               <span class="section-label">Next-month forecast</span>
-              <h2 id="forecast-title">Water Stress Outlook</h2>
+
+              <h2 id="forecast-title">
+                September 2026 Water Stress Outlook
+              </h2>
+
               <p id="forecast-source-note" class="forecast-source-note">
-  Based on the latest available observation in the research dataset.
-</p>
+                Forecast based on the latest available observation.
+              </p>
             </div>
 
             <button id="predict-btn" type="button">
@@ -197,13 +220,15 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           </div>
 
           <div id="forecast-loading" class="forecast-loading">
-            Run the model to generate the forecast.
+            Run the model to generate the one-month-ahead forecast.
           </div>
 
           <div id="forecast-result" class="forecast-result hidden">
 
             <div class="score-area">
-              <span class="score-label">Water Stress Index</span>
+              <span class="score-label">
+                Standardized Water Balance Anomaly
+              </span>
 
               <div id="prediction-value" class="score">
                 --
@@ -215,7 +240,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             </div>
 
             <div class="risk-area">
-              <span class="score-label">Forecast category</span>
+              <span class="score-label">
+                Forecast interpretation
+              </span>
 
               <div id="risk-badge" class="risk-badge">
                 --
@@ -228,28 +255,29 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </article>
 
         <article class="interpretation-card">
-          <span class="section-label">How to read the index</span>
+          <span class="section-label">How to read SWBA</span>
 
           <h2>Forecast interpretation</h2>
 
           <p>
-            The model forecasts the Water Stress Index one month ahead using
-            current and lagged environmental conditions.
+            The model forecasts the Standardized Water Balance Anomaly
+            (SWBA) one month ahead using current and lagged environmental
+            conditions.
           </p>
 
           <div class="interpretation-scale">
             <div>
-              <strong>Negative WSI</strong>
+              <strong>Negative SWBA</strong>
               <span>Drier than normal</span>
             </div>
 
             <div>
-              <strong>WSI near 0</strong>
+              <strong>SWBA near 0</strong>
               <span>Near climatological normal</span>
             </div>
 
             <div>
-              <strong>Positive WSI</strong>
+              <strong>Positive SWBA</strong>
               <span>Wetter than normal</span>
             </div>
           </div>
@@ -264,88 +292,101 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <h2>Environmental Indicators</h2>
           </div>
         </div>
-<div class="indicator-grid">
 
-  <article class="indicator-card">
-    <span>Monthly precipitation</span>
-    <strong id="indicator-precipitation">--</strong>
-    <small>Current month</small>
-  </article>
+        <div class="indicator-grid">
 
-  <article class="indicator-card">
-    <span>3-month precipitation</span>
-    <strong id="indicator-precipitation-3month">--</strong>
-    <small>Accumulated rainfall</small>
-  </article>
+          <article class="indicator-card">
+            <span>Monthly precipitation</span>
+            <strong id="indicator-precipitation">--</strong>
+            <small>Latest observation</small>
+          </article>
 
-  <article class="indicator-card">
-    <span>Top-layer soil moisture</span>
-    <strong id="indicator-soil1">--</strong>
-    <small>Current condition</small>
-  </article>
+          <article class="indicator-card">
+            <span>3-month precipitation</span>
+            <strong id="indicator-precipitation-3month">--</strong>
+            <small>Accumulated rainfall</small>
+          </article>
 
-  <article class="indicator-card">
-    <span>Deep-layer soil moisture</span>
-    <strong id="indicator-soil2">--</strong>
-    <small>Current condition</small>
-  </article>
+          <article class="indicator-card">
+            <span>Top-layer soil moisture</span>
+            <strong id="indicator-soil1">--</strong>
+            <small>Latest condition</small>
+          </article>
 
-  <article class="indicator-card">
-    <span>Maximum temperature</span>
-    <strong id="indicator-temperature">--</strong>
-    <small>Monthly indicator</small>
-  </article>
+          <article class="indicator-card">
+            <span>Deep-layer soil moisture</span>
+            <strong id="indicator-soil2">--</strong>
+            <small>Latest condition</small>
+          </article>
 
-  <article class="indicator-card">
-    <span>Potential evapotranspiration</span>
-    <strong id="indicator-pet">--</strong>
-    <small>Atmospheric water demand</small>
-  </article>
+          <article class="indicator-card">
+            <span>Maximum temperature</span>
+            <strong id="indicator-temperature">--</strong>
+            <small>Latest monthly indicator</small>
+          </article>
 
-</div>
+          <article class="indicator-card">
+            <span>Potential evapotranspiration</span>
+            <strong id="indicator-pet">--</strong>
+            <small>Atmospheric water demand</small>
+          </article>
+
+        </div>
       </section>
-            <section class="section-block">
+
+      <section class="section-block">
+
         <div class="section-heading chart-heading">
           <div>
-            <span class="section-label">Historical monitoring</span>
-            <h2>Water Stress History</h2>
+            <span class="section-label">Historical and live monitoring</span>
+            <h2>SWBA History</h2>
           </div>
 
           <div class="history-meta">
-            <span id="history-period">Loading historical record...</span>
+            <span id="history-period">
+              Loading historical record...
+            </span>
           </div>
         </div>
 
         <article class="history-card">
 
           <div class="chart-summary">
+
             <div>
-              <span>Historical observations</span>
+              <span>Research observations</span>
               <strong id="history-count">--</strong>
             </div>
 
             <div>
-              <span>Latest observed WSI</span>
+              <span>Latest observed SWBA</span>
               <strong id="latest-wsi">--</strong>
+            </div>
+
+            <div>
+              <span>Latest observation</span>
+              <strong id="latest-observation-month">--</strong>
             </div>
 
             <div>
               <span>Forecast</span>
               <strong id="chart-forecast">Not generated</strong>
             </div>
+
           </div>
 
           <div class="chart-container">
             <canvas
               id="history-chart"
-              aria-label="Historical Water Stress Index chart"
+              aria-label="Historical and live Standardized Water Balance Anomaly chart"
             ></canvas>
           </div>
 
           <div class="chart-legend">
+
             <span>
               <i class="legend-line historical"></i>
-              Historical WSI
+              Observed SWBA
             </span>
 
             <span>
@@ -357,18 +398,21 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
               <i class="legend-line normal"></i>
               Climatological normal
             </span>
+
           </div>
 
         </article>
       </section>
 
       <section class="method-card">
+
         <div>
           <span class="section-label">Machine-learning model</span>
           <h2>Forecast Method</h2>
         </div>
 
         <div class="method-items">
+
           <div>
             <strong>15</strong>
             <span>Environmental features</span>
@@ -388,17 +432,78 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <strong>2015–2021</strong>
             <span>Training climatology</span>
           </div>
+
         </div>
+
+      </section>
+
+      <section class="method-card">
+
+        <div>
+          <span class="section-label">Data provenance</span>
+          <h2>Research and Live Data</h2>
+        </div>
+
+        <div class="method-items">
+
+          <div>
+            <strong>CHIRPS</strong>
+            <span>Precipitation data</span>
+          </div>
+
+          <div>
+            <strong>ERA5-Land</strong>
+            <span>Environmental variables</span>
+          </div>
+
+          <div>
+            <strong>MnJoli W60E</strong>
+            <span>Study catchment</span>
+          </div>
+
+          <div>
+            <strong id="provenance-latest-month">--</strong>
+            <span>Latest observation</span>
+          </div>
+
+        </div>
+
       </section>
 
     </main>
 
     <footer>
-      Eswatini Water Stress Forecasting System
+      Eswatini Water Stress Forecasting Research Prototype
     </footer>
 
   </div>
 `
+
+/*
+ * --------------------------------------------------------------------------
+ * DOM references
+ * --------------------------------------------------------------------------
+ */
+
+const apiStatusText =
+  document.querySelector<HTMLSpanElement>('#api-status-text')!
+
+const apiStatusDot =
+  document.querySelector<HTMLSpanElement>('#api-status-dot')!
+
+function setApiStatus(connected: boolean) {
+  apiStatusText.textContent = connected
+    ? 'ML API connected'
+    : 'ML API unavailable'
+
+  apiStatusDot.style.background = connected
+    ? '#6ce6a6'
+    : '#ef5350'
+
+  apiStatusDot.style.boxShadow = connected
+    ? '0 0 0 4px rgba(108, 230, 166, 0.16)'
+    : '0 0 0 4px rgba(239, 83, 80, 0.16)'
+}
 
 const predictButton =
   document.querySelector<HTMLButtonElement>('#predict-btn')!
@@ -417,16 +522,20 @@ const riskBadge =
 
 const forecastDescription =
   document.querySelector<HTMLParagraphElement>('#forecast-description')!
-  const forecastTitle =
+
+const forecastTitle =
   document.querySelector<HTMLHeadingElement>('#forecast-title')!
 
 const forecastSourceNote =
   document.querySelector<HTMLParagraphElement>('#forecast-source-note')!
-  const indicatorPrecipitation =
+
+const indicatorPrecipitation =
   document.querySelector<HTMLElement>('#indicator-precipitation')!
 
 const indicatorPrecipitation3Month =
-  document.querySelector<HTMLElement>('#indicator-precipitation-3month')!
+  document.querySelector<HTMLElement>(
+    '#indicator-precipitation-3month'
+  )!
 
 const indicatorSoil1 =
   document.querySelector<HTMLElement>('#indicator-soil1')!
@@ -439,7 +548,8 @@ const indicatorTemperature =
 
 const indicatorPet =
   document.querySelector<HTMLElement>('#indicator-pet')!
-  const historyCanvas =
+
+const historyCanvas =
   document.querySelector<HTMLCanvasElement>('#history-chart')!
 
 const historyPeriod =
@@ -451,32 +561,142 @@ const historyCount =
 const latestWsi =
   document.querySelector<HTMLElement>('#latest-wsi')!
 
+const latestObservationMonth =
+  document.querySelector<HTMLElement>(
+    '#latest-observation-month'
+  )!
+
 const chartForecast =
   document.querySelector<HTMLElement>('#chart-forecast')!
 
+const provenanceLatestMonth =
+  document.querySelector<HTMLElement>(
+    '#provenance-latest-month'
+  )!
+
+/*
+ * --------------------------------------------------------------------------
+ * State
+ * --------------------------------------------------------------------------
+ */
+
 let historicalData: HistoryPoint[] = []
+
+let researchObservationCount = 0
+
 let latestForecast: number | null = null
+
 let forecastDate: string | null = null
+
+/*
+ * --------------------------------------------------------------------------
+ * Utility: normalize API history records
+ * --------------------------------------------------------------------------
+ */
+
+function normalizeHistoryData(
+  points: HistoryApiPoint[]
+): HistoryPoint[] {
+
+  return points
+    .filter(
+      point =>
+        typeof point.date === 'string' &&
+        (
+          typeof point.swba === 'number' ||
+          typeof point.wsi === 'number'
+        )
+    )
+    .map(point => ({
+      date: point.date,
+      swba:
+        typeof point.swba === 'number'
+          ? point.swba
+          : point.wsi as number,
+    }))
+}
+
+/*
+ * --------------------------------------------------------------------------
+ * Utility: merge research and live observations
+ * --------------------------------------------------------------------------
+ *
+ * The research endpoint supplies the historical 2015–2025 record.
+ * The live endpoint supplies the updated 2026 observations.
+ *
+ * If the two datasets ever overlap on a date, the live observation
+ * takes precedence.
+ */
+
+function mergeHistoryData(
+  researchData: HistoryPoint[],
+  liveData: HistoryPoint[]
+): HistoryPoint[] {
+
+  const merged =
+    new Map<string, HistoryPoint>()
+
+  researchData.forEach(point => {
+    merged.set(point.date, point)
+  })
+
+  liveData.forEach(point => {
+    merged.set(point.date, point)
+  })
+
+  return Array.from(merged.values())
+    .sort(
+      (a, b) =>
+        new Date(`${a.date}T00:00:00`).getTime() -
+        new Date(`${b.date}T00:00:00`).getTime()
+    )
+}
+
+/*
+ * --------------------------------------------------------------------------
+ * History chart
+ * --------------------------------------------------------------------------
+ */
 
 function drawHistoryChart(
   data: HistoryPoint[],
   forecast: number | null = null
 ) {
+
   const canvas = historyCanvas
+
   const ctx = canvas.getContext('2d')
 
-  if (!ctx || data.length === 0) return
+  if (!ctx || data.length === 0) {
+    return
+  }
 
-  const rect = canvas.getBoundingClientRect()
-  const dpr = window.devicePixelRatio || 1
+  const rect =
+    canvas.getBoundingClientRect()
 
-  canvas.width = rect.width * dpr
-  canvas.height = rect.height * dpr
+  const dpr =
+    window.devicePixelRatio || 1
 
-  ctx.scale(dpr, dpr)
+  canvas.width =
+    rect.width * dpr
 
-  const width = rect.width
-  const height = rect.height
+  canvas.height =
+    rect.height * dpr
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  )
+
+  const width =
+    rect.width
+
+  const height =
+    rect.height
 
   const padding = {
     top: 25,
@@ -485,67 +705,125 @@ function drawHistoryChart(
     left: 50,
   }
 
-  const values = data.map(point => point.wsi)
+  const values =
+    data.map(
+      point => point.swba
+    )
 
   if (forecast !== null) {
     values.push(forecast)
   }
 
-  const rawMin = Math.min(...values, 0)
-  const rawMax = Math.max(...values, 0)
+  const rawMin =
+    Math.min(...values, 0)
 
-  const yMin = Math.floor(rawMin - 0.5)
-  const yMax = Math.ceil(rawMax + 0.5)
+  const rawMax =
+    Math.max(...values, 0)
+
+  const yMin =
+    Math.floor(rawMin - 0.5)
+
+  const yMax =
+    Math.ceil(rawMax + 0.5)
 
   const plotWidth =
-    width - padding.left - padding.right
+    width -
+    padding.left -
+    padding.right
 
   const plotHeight =
-    height - padding.top - padding.bottom
+    height -
+    padding.top -
+    padding.bottom
 
   const totalPoints =
-    data.length + (forecast !== null ? 1 : 0)
+    data.length +
+    (forecast !== null ? 1 : 0)
 
-  const xScale = (index: number) => {
-    if (totalPoints <= 1) {
-      return padding.left
+  const xScale =
+    (index: number) => {
+
+      if (totalPoints <= 1) {
+        return padding.left
+      }
+
+      return (
+        padding.left +
+        (index /
+          (totalPoints - 1)) *
+          plotWidth
+      )
     }
 
-    return (
-      padding.left +
-      (index / (totalPoints - 1)) * plotWidth
-    )
-  }
+  const yScale =
+    (value: number) => {
 
-  const yScale = (value: number) => {
-    return (
-      padding.top +
-      ((yMax - value) / (yMax - yMin)) * plotHeight
-    )
-  }
+      return (
+        padding.top +
+        ((yMax - value) /
+          (yMax - yMin)) *
+          plotHeight
+      )
+    }
 
-  ctx.clearRect(0, 0, width, height)
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  )
 
-  // Horizontal grid
-  ctx.font = '12px Inter, system-ui, sans-serif'
-  ctx.textAlign = 'right'
-  ctx.textBaseline = 'middle'
+  /*
+   * ------------------------------------------------------------------------
+   * Horizontal grid
+   * ------------------------------------------------------------------------
+   */
 
-  for (let value = yMin; value <= yMax; value++) {
-    const y = yScale(value)
+  ctx.font =
+    '12px Inter, system-ui, sans-serif'
+
+  ctx.textAlign =
+    'right'
+
+  ctx.textBaseline =
+    'middle'
+
+  for (
+    let value = yMin;
+    value <= yMax;
+    value++
+  ) {
+
+    const y =
+      yScale(value)
 
     ctx.beginPath()
+
     ctx.strokeStyle =
-      value === 0 ? '#9fb1b9' : '#e8eef1'
+      value === 0
+        ? '#9fb1b9'
+        : '#e8eef1'
 
     ctx.lineWidth =
-      value === 0 ? 1.5 : 1
+      value === 0
+        ? 1.5
+        : 1
 
-    ctx.moveTo(padding.left, y)
-    ctx.lineTo(width - padding.right, y)
+    ctx.moveTo(
+      padding.left,
+      y
+    )
+
+    ctx.lineTo(
+      width - padding.right,
+      y
+    )
+
     ctx.stroke()
 
-    ctx.fillStyle = '#718592'
+    ctx.fillStyle =
+      '#718592'
+
     ctx.fillText(
       value.toFixed(0),
       padding.left - 10,
@@ -553,204 +831,612 @@ function drawHistoryChart(
     )
   }
 
-  // Historical line
+  /*
+   * ------------------------------------------------------------------------
+   * Observed SWBA line
+   * ------------------------------------------------------------------------
+   */
+
   ctx.beginPath()
-  ctx.strokeStyle = '#087b75'
-  ctx.lineWidth = 2.5
-  ctx.lineJoin = 'round'
-  ctx.lineCap = 'round'
 
-  data.forEach((point, index) => {
-    const x = xScale(index)
-    const y = yScale(point.wsi)
+  ctx.strokeStyle =
+    '#087b75'
 
-    if (index === 0) {
-      ctx.moveTo(x, y)
-    } else {
-      ctx.lineTo(x, y)
+  ctx.lineWidth =
+    2.5
+
+  ctx.lineJoin =
+    'round'
+
+  ctx.lineCap =
+    'round'
+
+  data.forEach(
+    (point, index) => {
+
+      const x =
+        xScale(index)
+
+      const y =
+        yScale(point.swba)
+
+      if (index === 0) {
+        ctx.moveTo(x, y)
+      } else {
+        ctx.lineTo(x, y)
+      }
     }
-  })
+  )
 
   ctx.stroke()
 
-  // Forecast connector and point
+  /*
+   * ------------------------------------------------------------------------
+   * Forecast connector and point
+   * ------------------------------------------------------------------------
+   */
+
   if (forecast !== null) {
-    const historicalIndex = data.length - 1
-    const forecastIndex = data.length
 
-    const lastPoint = data[historicalIndex]
+    const historicalIndex =
+      data.length - 1
 
-    const x1 = xScale(historicalIndex)
-    const y1 = yScale(lastPoint.wsi)
+    const forecastIndex =
+      data.length
 
-    const x2 = xScale(forecastIndex)
-    const y2 = yScale(forecast)
+    const lastPoint =
+      data[historicalIndex]
 
-    ctx.beginPath()
-    ctx.setLineDash([6, 5])
-    ctx.strokeStyle = '#d38b20'
-    ctx.lineWidth = 2
+    if (lastPoint) {
 
-    ctx.moveTo(x1, y1)
-    ctx.lineTo(x2, y2)
-    ctx.stroke()
+      const x1 =
+        xScale(historicalIndex)
 
-    ctx.setLineDash([])
+      const y1 =
+        yScale(lastPoint.swba)
 
-    ctx.beginPath()
-    ctx.fillStyle = '#d38b20'
-    ctx.arc(x2, y2, 5, 0, Math.PI * 2)
-    ctx.fill()
+      const x2 =
+        xScale(forecastIndex)
+
+      const y2 =
+        yScale(forecast)
+
+      ctx.beginPath()
+
+      ctx.setLineDash([
+        6,
+        5
+      ])
+
+      ctx.strokeStyle =
+        '#d38b20'
+
+      ctx.lineWidth =
+        2
+
+      ctx.moveTo(
+        x1,
+        y1
+      )
+
+      ctx.lineTo(
+        x2,
+        y2
+      )
+
+      ctx.stroke()
+
+      ctx.setLineDash([])
+
+      ctx.beginPath()
+
+      ctx.fillStyle =
+        '#d38b20'
+
+      ctx.arc(
+        x2,
+        y2,
+        5,
+        0,
+        Math.PI * 2
+      )
+
+      ctx.fill()
+    }
   }
 
-  // X-axis labels
-  ctx.fillStyle = '#718592'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'top'
+  /*
+   * ------------------------------------------------------------------------
+   * X-axis labels
+   * ------------------------------------------------------------------------
+   *
+   * With 10+ years of monthly data, showing every month would be unreadable.
+   * We therefore show six evenly distributed year labels.
+   */
 
-  const labelCount = 6
+  ctx.fillStyle =
+    '#718592'
 
-  for (let i = 0; i < labelCount; i++) {
-    const index = Math.round(
-      (i / (labelCount - 1)) * (data.length - 1)
+  ctx.textAlign =
+    'center'
+
+  ctx.textBaseline =
+    'top'
+
+  const labelCount =
+    Math.min(
+      6,
+      data.length
     )
 
-    const point = data[index]
+  for (
+    let i = 0;
+    i < labelCount;
+    i++
+  ) {
 
-    const date = new Date(
-      `${point.date}T00:00:00`
-    )
+    const index =
+      Math.round(
+        (i /
+          Math.max(
+            1,
+            labelCount - 1
+          )) *
+          (data.length - 1)
+      )
+
+    const point =
+      data[index]
+
+    if (!point) {
+      continue
+    }
+
+    const date =
+      new Date(
+        `${point.date}T00:00:00`
+      )
 
     const label =
-      date.getFullYear().toString()
+      date.getFullYear()
+        .toString()
 
     ctx.fillText(
       label,
       xScale(index),
-      height - padding.bottom + 14
+      height -
+        padding.bottom +
+        14
     )
+  }
+
+  /*
+   * ------------------------------------------------------------------------
+   * Latest observed point
+   * ------------------------------------------------------------------------
+   */
+
+  const latestIndex =
+    data.length - 1
+
+  const latestPoint =
+    data[latestIndex]
+
+  if (latestPoint) {
+
+    const latestX =
+      xScale(latestIndex)
+
+    const latestY =
+      yScale(latestPoint.swba)
+
+    ctx.beginPath()
+
+    ctx.fillStyle =
+      '#087b75'
+
+    ctx.arc(
+      latestX,
+      latestY,
+      4,
+      0,
+      Math.PI * 2
+    )
+
+    ctx.fill()
   }
 }
 
-async function loadHistory() {
-  try {
-    const response =
-      await fetch('https://eswatini-water-stress-api.onrender.com/history')
+/*
+ * --------------------------------------------------------------------------
+ * History loading
+ * --------------------------------------------------------------------------
+ */
 
-    if (!response.ok) {
+async function loadHistory() {
+
+  try {
+
+    /*
+     * IMPORTANT:
+     *
+     * /history
+     *     = fixed research record
+     *
+     * /history/live
+     *     = current Earth Engine observations
+     *
+     * We combine them on the frontend.
+     */
+
+    const [
+      researchResponse,
+      liveResponse
+    ] =
+      await Promise.all([
+        fetch(
+          'https://eswatini-water-stress-api.onrender.com/history'
+        ),
+        fetch(
+          'https://eswatini-water-stress-api.onrender.com/history/live'
+        ),
+      ])
+
+    if (!researchResponse.ok) {
+
       throw new Error(
-        `History API returned ${response.status}`
+        `Research history API returned ${researchResponse.status}`
       )
     }
 
-    const result: HistoryResponse =
-      await response.json()
-historicalData = result.data
-forecastDate = getNextMonthDate(result.end_date)
+    if (!liveResponse.ok) {
 
-forecastSourceNote.textContent =
-  `Forecast based on latest available observation: ${formatMonthYear(result.end_date)}`
-
-forecastTitle.textContent =
-  `${formatMonthYear(forecastDate)} Water Stress Outlook`
-
-historyCount.textContent =
-  result.count.toString()
-
-historyPeriod.textContent =
-  `${result.start_date} — ${result.end_date}`
-
-if (historicalData.length > 0) {
-      const latest =
-        historicalData[historicalData.length - 1]
-
-      latestWsi.textContent =
-        latest.wsi.toFixed(3)
+      throw new Error(
+        `Live history API returned ${liveResponse.status}`
+      )
     }
 
-    drawHistoryChart(historicalData)
+    const researchResult:
+      HistoryApiResponse =
+      await researchResponse.json()
+
+    const liveResult:
+      HistoryApiResponse =
+      await liveResponse.json()
+
+    /*
+     * Normalize both API datasets.
+     */
+
+    const researchData =
+      normalizeHistoryData(
+        researchResult.data || []
+      )
+
+    const liveData =
+      normalizeHistoryData(
+        liveResult.data || []
+      )
+
+    /*
+     * Keep the research observation count separate.
+     *
+     * For the current research dataset this should correspond
+     * to the monthly 2015–2025 record.
+     */
+
+    researchObservationCount =
+      researchResult.count ??
+      researchData.length
+
+    /*
+     * Combine research + live observations.
+     *
+     * If a date exists in both datasets, live data takes precedence.
+     */
+
+    historicalData =
+      mergeHistoryData(
+        researchData,
+        liveData
+      )
+
+      setApiStatus(true)
+
+    if (
+      historicalData.length === 0
+    ) {
+
+      throw new Error(
+        'No historical observations were returned by either endpoint.'
+      )
+    }
+
+    /*
+     * Latest observed record.
+     */
+
+    const latest =
+      historicalData[
+        historicalData.length - 1
+      ]
+
+    latestWsi.textContent =
+      latest.swba.toFixed(3)
+
+    latestObservationMonth.textContent =
+      formatDateLabel(
+        latest.date
+      )
+
+    provenanceLatestMonth.textContent =
+      formatDateLabel(
+        latest.date
+      )
+
+    /*
+     * Research observation count.
+     *
+     * This remains the 2015–2025 research record count,
+     * rather than incorrectly showing the eight live months.
+     */
+
+    historyCount.textContent =
+      String(
+        researchObservationCount
+      )
+
+    /*
+     * Display the actual combined observed period.
+     */
+
+    const firstObserved =
+      historicalData[0]
+
+    historyPeriod.textContent =
+      `${formatDateLabel(firstObserved.date)} – ${formatDateLabel(latest.date)}`
+
+    /*
+     * Determine the next forecast month from
+     * the latest observed month.
+     */
+
+    forecastDate =
+      getNextMonthDate(
+        latest.date
+      )
+
+    forecastSourceNote.textContent =
+      `Forecast based on latest available observation: ${formatMonthYear(latest.date)}`
+
+    forecastTitle.textContent =
+      `${formatMonthYear(forecastDate)} Water Stress Outlook`
+
+    /*
+     * Draw the observed history.
+     */
+
+    drawHistoryChart(
+      historicalData
+    )
 
   } catch (error) {
-    console.error(error)
+
+    console.error(
+      'History loading error:',
+      error
+    )
 
     historyPeriod.textContent =
       'Historical data unavailable'
+
+    historyCount.textContent =
+      '--'
+
+    latestWsi.textContent =
+      '--'
+
+    latestObservationMonth.textContent =
+      '--'
+
+    provenanceLatestMonth.textContent =
+      '--'
   }
 }
+
 loadHistory()
 
-predictButton.addEventListener('click', async () => {
-  try {
-    predictButton.disabled = true
-    predictButton.textContent = 'Forecasting...'
+/*
+ * --------------------------------------------------------------------------
+ * Live forecast
+ * --------------------------------------------------------------------------
+ */
 
-    forecastLoading.textContent =
-      'Processing environmental indicators...'
+predictButton.addEventListener(
+  'click',
+  async () => {
 
-    forecastResult.classList.add('hidden')
+    try {
 
-  const response = await fetch(
-  'https://eswatini-water-stress-api.onrender.com/forecast/live'
+      predictButton.disabled =
+        true
+
+      predictButton.textContent =
+        'Forecasting...'
+
+      forecastLoading.textContent =
+        'Processing environmental indicators...'
+
+      forecastResult.classList.add(
+        'hidden'
+      )
+
+      const response =
+        await fetch(
+          'https://eswatini-water-stress-api.onrender.com/forecast/live'
+        )
+
+      if (!response.ok) {
+
+        throw new Error(
+          `API returned ${response.status}`
+        )
+      }
+
+      const data:
+        PredictionResponse =
+        await response.json()
+
+        setApiStatus(true)
+
+      /*
+       * Backend retains "water_stress_index"
+       * for compatibility.
+       *
+       * The returned value is the SWBA forecast.
+       */
+
+      const forecastSwba =
+        data.water_stress_index
+
+      latestForecast =
+        forecastSwba
+
+      /*
+       * Forecast month.
+       */
+
+      const forecastMonthDate =
+        `${data.forecast_month}-01`
+
+      forecastDate =
+        forecastMonthDate
+
+      forecastTitle.textContent =
+        `${formatMonthYear(forecastMonthDate)} Water Stress Outlook`
+
+      /*
+       * Identify the observation used to generate
+       * the forecast.
+       */
+
+      forecastSourceNote.textContent =
+        `Forecast based on latest live observation: ${formatMonthYear(`${data.observation_month}-01`)}`
+
+      /*
+       * Environmental indicators.
+       */
+
+      indicatorPrecipitation.textContent =
+        `${data.latest_indicators.precipitation_mm.toFixed(1)} mm`
+
+      indicatorPrecipitation3Month.textContent =
+        `${data.model_features.precipitation_3month.toFixed(1)} mm`
+
+      indicatorSoil1.textContent =
+        data.latest_indicators
+          .soil_moisture_layer1
+          .toFixed(3)
+
+      indicatorSoil2.textContent =
+        data.latest_indicators
+          .soil_moisture_layer2
+          .toFixed(3)
+
+      indicatorTemperature.textContent =
+        `${data.latest_indicators.temperature_max_c.toFixed(1)}°C`
+
+      indicatorPet.textContent =
+        `${data.latest_indicators.pet_mm.toFixed(1)} mm`
+
+      /*
+       * SWBA classification.
+       */
+
+      const classification =
+        classifySWBA(
+          forecastSwba
+        )
+
+      predictionValue.textContent =
+        forecastSwba.toFixed(3)
+
+      chartForecast.textContent =
+        forecastSwba.toFixed(3)
+
+      riskBadge.textContent =
+        classification.label
+
+      riskBadge.className =
+        `risk-badge ${classification.className}`
+
+      forecastDescription.textContent =
+        data.description ||
+        classification.description
+
+      /*
+       * Redraw the complete research + live
+       * historical record with the forecast appended.
+       */
+
+      drawHistoryChart(
+        historicalData,
+        latestForecast
+      )
+
+      forecastLoading.classList.add(
+        'hidden'
+      )
+
+      forecastResult.classList.remove(
+        'hidden'
+      )
+
+    } catch (error) {
+
+      console.error(
+        'Forecast error:',
+        error
+      )
+      setApiStatus(false)
+
+      forecastLoading.classList.remove(
+        'hidden'
+      )
+      
+
+      forecastLoading.textContent =
+        'Forecast failed. Confirm that the FastAPI server is available and try again.'
+
+    } finally {
+
+      predictButton.disabled =
+        false
+
+      predictButton.textContent =
+        'Run Forecast'
+    }
+  }
 )
 
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`)
+/*
+ * --------------------------------------------------------------------------
+ * Responsive chart redraw
+ * --------------------------------------------------------------------------
+ */
+
+window.addEventListener(
+  'resize',
+  () => {
+
+    if (
+      historicalData.length > 0
+    ) {
+
+      drawHistoryChart(
+        historicalData,
+        latestForecast
+      )
     }
-
-    const data: PredictionResponse = await response.json()
-
-    forecastTitle.textContent =
-      `${formatMonthYear(`${data.forecast_month}-01`)} Water Stress Outlook`
-    forecastSourceNote.textContent =
-      `Forecast based on latest available observation: ${formatMonthYear(`${data.observation_month}-01`)}`
-
-    indicatorPrecipitation.textContent = `${data.latest_indicators.precipitation_mm.toFixed(1)} mm`
-    indicatorPrecipitation3Month.textContent = `${data.model_features.precipitation_3month.toFixed(1)} mm`
-    indicatorSoil1.textContent = data.latest_indicators.soil_moisture_layer1.toFixed(3)
-    indicatorSoil2.textContent = data.latest_indicators.soil_moisture_layer2.toFixed(3)
-    indicatorTemperature.textContent = `${data.latest_indicators.temperature_max_c.toFixed(1)}°C`
-    indicatorPet.textContent = `${data.latest_indicators.pet_mm.toFixed(1)} mm`
-
-    const classification = classifyWaterStress(data.water_stress_index)
-
-    latestForecast = data.water_stress_index
-
-    chartForecast.textContent = data.water_stress_index.toFixed(3)
-
-    drawHistoryChart(
-      historicalData,
-      latestForecast
-    )
-
-    predictionValue.textContent = data.water_stress_index.toFixed(3)
-
-    riskBadge.textContent = data.category || classification.label
-    riskBadge.className = `risk-badge ${classification.className}`
-
-    forecastDescription.textContent =
-      data.description || classification.description
-
-    forecastLoading.classList.add('hidden')
-    forecastResult.classList.remove('hidden')
-
-  } catch (error) {
-    console.error(error)
-
-    forecastLoading.classList.remove('hidden')
-    forecastLoading.textContent =
-      'Forecast failed. Confirm that the FastAPI server is running.'
-
-  } finally {
-    predictButton.disabled = false
-    predictButton.textContent = 'Run Forecast'
-    
   }
-})
-window.addEventListener('resize', () => {
-  if (historicalData.length > 0) {
-    drawHistoryChart(
-      historicalData,
-      latestForecast
-    )
-  }
-})
+)
