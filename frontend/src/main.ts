@@ -1141,8 +1141,6 @@ async function loadHistory() {
         liveData
       )
 
-      setApiStatus(true)
-
     if (
       historicalData.length === 0
     ) {
@@ -1151,6 +1149,8 @@ async function loadHistory() {
         'No historical observations were returned by either endpoint.'
       )
     }
+
+    setApiStatus(true)
 
     /*
      * Latest observed record.
@@ -1226,6 +1226,8 @@ async function loadHistory() {
       'History loading error:',
       error
     )
+
+    setApiStatus(false)
 
     historyPeriod.textContent =
       'Historical data unavailable'
