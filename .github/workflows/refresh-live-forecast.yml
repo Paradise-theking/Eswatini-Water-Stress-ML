@@ -1,0 +1,29 @@
+name: Refresh live water stress forecast
+
+on:
+  schedule:
+    # Run weekly at 04:15 Eswatini time (UTC+2).
+    - cron: '15 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh-forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Refresh live forecast cache
+        env:
+          FORECAST_API_URL: https://eswatini-water-stress-api.onrender.com
+        run: |
+          set -euo pipefail
+          echo "Requesting live forecast refresh..."
+          curl --fail --show-error --silent \
+            --max-time 1500 \
+            --request POST \
+            --header "Accept: application/json" \
+            "$FORECAST_API_URL/forecast/live/refresh"
+          echo
+          echo "Live forecast refresh completed successfully."
