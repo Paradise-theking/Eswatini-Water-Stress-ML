@@ -1276,6 +1276,67 @@ loadHistory()
  * --------------------------------------------------------------------------
  */
 
+function displayForecast(data: PredictionResponse) {
+  const forecastSwba = data.water_stress_index
+  latestForecast = forecastSwba
+
+  const forecastMonthDate = `${data.forecast_month}-01`
+  forecastDate = forecastMonthDate
+  forecastTitle.textContent =
+    `${formatMonthYear(forecastMonthDate)} Water Stress Outlook`
+  forecastSourceNote.textContent =
+    `Forecast based on latest live observation: ${formatMonthYear(`${data.observation_month}-01`)}`
+
+  indicatorPrecipitation.textContent =
+    `${data.latest_indicators.precipitation_mm.toFixed(1)} mm`
+  indicatorPrecipitation3Month.textContent =
+    `${data.model_features.precipitation_3month.toFixed(1)} mm`
+  indicatorSoil1.textContent =
+    data.latest_indicators.soil_moisture_layer1.toFixed(3)
+  indicatorSoil2.textContent =
+    data.latest_indicators.soil_moisture_layer2.toFixed(3)
+  indicatorTemperature.textContent =
+    `${data.latest_indicators.temperature_max_c.toFixed(1)}°C`
+  indicatorPet.textContent =
+    `${data.latest_indicators.pet_mm.toFixed(1)} mm`
+
+  const classification = classifySWBA(forecastSwba)
+  predictionValue.textContent = forecastSwba.toFixed(3)
+  chartForecast.textContent = forecastSwba.toFixed(3)
+  riskBadge.textContent = classification.label
+  riskBadge.className = `risk-badge ${classification.className}`
+  forecastDescription.textContent =
+    data.description || classification.description
+
+  drawHistoryChart(historicalData, latestForecast)
+  forecastLoading.classList.add('hidden')
+  forecastResult.classList.remove('hidden')
+}
+
+function restoreSavedForecast() {
+  try {
+    const saved = localStorage.getItem('eswatini-water-stress-latest-forecast')
+    if (!saved) return
+    const data = JSON.parse(saved) as PredictionResponse
+    if (
+      data?.status !== 'success' ||
+      typeof data.water_stress_index !== 'number' ||
+      typeof data.observation_month !== 'string' ||
+      typeof data.forecast_month !== 'string' ||
+      !data.latest_indicators ||
+      !data.model_features
+    ) return
+    displayForecast(data)
+    forecastLoading.textContent =
+      'Showing your last saved forecast. Run Forecast to check for an update.'
+    forecastLoading.classList.remove('hidden')
+  } catch (error) {
+    console.warn('Could not restore saved forecast:', error)
+  }
+}
+
+restoreSavedForecast()
+
 predictButton.addEventListener(
   'click',
   async () => {
@@ -1290,10 +1351,6 @@ predictButton.addEventListener(
 
       forecastLoading.textContent =
         'Processing environmental indicators...'
-
-      forecastResult.classList.add(
-        'hidden'
-      )
 
       const response =
         await fetch(
@@ -1313,108 +1370,15 @@ predictButton.addEventListener(
 
         setApiStatus(true)
 
-      /*
-       * Backend retains "water_stress_index"
-       * for compatibility.
-       *
-       * The returned value is the SWBA forecast.
-       */
-
-      const forecastSwba =
-        data.water_stress_index
-
-      latestForecast =
-        forecastSwba
-
-      /*
-       * Forecast month.
-       */
-
-      const forecastMonthDate =
-        `${data.forecast_month}-01`
-
-      forecastDate =
-        forecastMonthDate
-
-      forecastTitle.textContent =
-        `${formatMonthYear(forecastMonthDate)} Water Stress Outlook`
-
-      /*
-       * Identify the observation used to generate
-       * the forecast.
-       */
-
-      forecastSourceNote.textContent =
-        `Forecast based on latest live observation: ${formatMonthYear(`${data.observation_month}-01`)}`
-
-      /*
-       * Environmental indicators.
-       */
-
-      indicatorPrecipitation.textContent =
-        `${data.latest_indicators.precipitation_mm.toFixed(1)} mm`
-
-      indicatorPrecipitation3Month.textContent =
-        `${data.model_features.precipitation_3month.toFixed(1)} mm`
-
-      indicatorSoil1.textContent =
-        data.latest_indicators
-          .soil_moisture_layer1
-          .toFixed(3)
-
-      indicatorSoil2.textContent =
-        data.latest_indicators
-          .soil_moisture_layer2
-          .toFixed(3)
-
-      indicatorTemperature.textContent =
-        `${data.latest_indicators.temperature_max_c.toFixed(1)}°C`
-
-      indicatorPet.textContent =
-        `${data.latest_indicators.pet_mm.toFixed(1)} mm`
-
-      /*
-       * SWBA classification.
-       */
-
-      const classification =
-        classifySWBA(
-          forecastSwba
+      displayForecast(data)
+      try {
+        localStorage.setItem(
+          'eswatini-water-stress-latest-forecast',
+          JSON.stringify(data)
         )
-
-      predictionValue.textContent =
-        forecastSwba.toFixed(3)
-
-      chartForecast.textContent =
-        forecastSwba.toFixed(3)
-
-      riskBadge.textContent =
-        classification.label
-
-      riskBadge.className =
-        `risk-badge ${classification.className}`
-
-      forecastDescription.textContent =
-        data.description ||
-        classification.description
-
-      /*
-       * Redraw the complete research + live
-       * historical record with the forecast appended.
-       */
-
-      drawHistoryChart(
-        historicalData,
-        latestForecast
-      )
-
-      forecastLoading.classList.add(
-        'hidden'
-      )
-
-      forecastResult.classList.remove(
-        'hidden'
-      )
+      } catch (storageError) {
+        console.warn('Could not save latest forecast:', storageError)
+      }
 
     } catch (error) {
 
