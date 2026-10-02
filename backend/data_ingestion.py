@@ -257,21 +257,32 @@ def fetch_era5_daily(
             "ERA5-Land request returned no images."
         )
 
-    images = collection.toList(count)
-
-    rows = []
-
-    for i in range(count):
-        image = ee.Image(
-            images.get(i)
+    def image_to_feature(image):
+        image = ee.Image(image)
+        values = image.select(ERA5_BANDS).reduceRegion(
+            reducer=ee.Reducer.mean(),
+            geometry=get_region(),
+            scale=11132,
+            bestEffort=True,
+            maxPixels=1_000_000_000,
         )
-
-        row = _reduce_image(
-            image,
-            ERA5_BANDS,
+        values = values.set(
+            "date",
+            image.date().format("YYYY-MM-dd"),
         )
+        return ee.Feature(None, values)
 
-        rows.append(row)
+    # Reduce all daily images server-side and transfer the
+    # resulting table in one request instead of one request
+    # per image.
+    result = ee.FeatureCollection(
+        collection.map(image_to_feature)
+    ).getInfo()
+
+    rows = [
+        feature["properties"]
+        for feature in result.get("features", [])
+    ]
 
     df = pd.DataFrame(rows)
 
@@ -318,37 +329,34 @@ def fetch_chirps_daily(
             "CHIRPS request returned no images."
         )
 
-    images = collection.toList(count)
+    def image_to_feature(image):
+        image = ee.Image(image)
+        precipitation = image.reduceRegion(
+            reducer=ee.Reducer.mean(),
+            geometry=get_region(),
+            scale=5566,
+            bestEffort=True,
+            maxPixels=1_000_000_000,
+        ).get("precipitation")
 
-    rows = []
-
-    for i in range(count):
-        image = ee.Image(
-            images.get(i)
-        )
-
-        precipitation = (
-            image.reduceRegion(
-                reducer=ee.Reducer.mean(),
-                geometry=get_region(),
-                scale=5566,
-                bestEffort=True,
-                maxPixels=1_000_000_000,
-            )
-            .get("precipitation")
-            .getInfo()
-        )
-
-        rows.append(
-            {
-                "date": (
-                    image.date()
-                    .format("YYYY-MM-dd")
-                    .getInfo()
-                ),
+        return ee.Feature(
+            None,
+            ee.Dictionary({
+                "date": image.date().format("YYYY-MM-dd"),
                 "precipitation_mm": precipitation,
-            }
+            }),
         )
+
+    # Keep the spatial reductions on Earth Engine and fetch
+    # the daily result table with a single request.
+    result = ee.FeatureCollection(
+        collection.map(image_to_feature)
+    ).getInfo()
+
+    rows = [
+        feature["properties"]
+        for feature in result.get("features", [])
+    ]
 
     df = pd.DataFrame(rows)
 
