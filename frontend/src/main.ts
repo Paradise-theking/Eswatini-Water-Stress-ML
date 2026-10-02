@@ -1238,7 +1238,8 @@ async function loadHistory() {
      */
 
     drawHistoryChart(
-      historicalData
+      historicalData,
+      latestForecast
     )
 
   } catch (error) {
