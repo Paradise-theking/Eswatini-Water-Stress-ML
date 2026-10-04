@@ -1101,3 +1101,97 @@ footer {
     padding: 22px;
   }
 }
+
+
+/* Services form alignment refinement */
+#monetization-hub > div > div:nth-child(2) {
+  padding: 28px;
+}
+
+#monetization-hub .service-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 10px;
+}
+
+#monetization-hub .service-mtn-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  border-radius: 50%;
+  color: #17324d;
+  background: #f4c95d;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: -.04em;
+}
+
+#monetization-hub .service-card-heading-copy {
+  min-width: 0;
+}
+
+#monetization-hub .service-card-heading-copy h4 {
+  margin: 0;
+  color: #17324d;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+#monetization-hub .service-card-heading-copy p {
+  margin: 4px 0 0;
+  color: #8a9ba5;
+  font-size: .7rem;
+  line-height: 1.35;
+}
+
+#monetization-hub .service-description {
+  margin: 0 0 18px;
+  color: #627783;
+  font-size: .84rem;
+  line-height: 1.6;
+}
+
+#monetization-hub .service-form {
+  display: grid;
+  gap: 14px;
+}
+
+#monetization-hub .service-field {
+  display: grid;
+  gap: 6px;
+}
+
+#monetization-hub .service-field label {
+  margin: 0;
+}
+
+#monetization-hub .phone-input {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: stretch;
+}
+
+#monetization-hub .phone-input > span {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid #dfe9ef;
+  border-right: 0;
+  border-radius: 9px 0 0 9px;
+  color: #718592;
+  background: #f8fbfc;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+#monetization-hub .phone-input input {
+  min-width: 0;
+  border-radius: 0 9px 9px 0;
+}
+
+#monetization-hub #btnSubscribeMoMo {
+  margin-top: 1px;
+}
