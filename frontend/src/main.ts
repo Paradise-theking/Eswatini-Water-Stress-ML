@@ -1545,16 +1545,14 @@ export function injectMonetizationUI(containerId: string) {
       <!-- CARD 2: THE SPONSOR PLAY (MTN MOMO RURAL SUBSCRIPTION FORM) -->
       <div class="border border-amber-200 bg-gradient-to-br from-amber-50/50 to-white rounded-xl p-6 shadow-sm flex flex-col justify-between min-h-[280px]">
         <div>
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-7 h-7 bg-amber-400 rounded-full flex items-center justify-center font-black text-black text-[10px] tracking-tighter">
-              mtn
-            </div>
-            <div>
-              <h4 class="text-sm font-bold text-slate-900">Rural USSD & SMS Broadcast Alerts</h4>
-              <p class="text-[10px] text-slate-400">Powered by MTN MoMo Open API</p>
+          <div class="service-card-heading">
+            <div class="service-mtn-mark">mtn</div>
+            <div class="service-card-heading-copy">
+              <h4>Rural USSD & SMS Broadcast Alerts</h4>
+              <p>Powered by MTN MoMo Open API</p>
             </div>
           </div>
-          <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+          <p class="service-description">
             Bridge the digital divide by pushing micro-targeted drought predictions to smallholders without internet access.
           </p>
         </div>
