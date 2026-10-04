@@ -1560,25 +1560,24 @@ export function injectMonetizationUI(containerId: string) {
         </div>
 
         <!-- Mock Form Interface -->
-        <div class="space-y-2">
-          <div>
-            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Target Agricultural Zone</label>
-            <select id="momoRegion" class="w-full text-xs bg-white border border-slate-200 rounded-md p-1.5 focus:ring-1 focus:ring-amber-400 focus:outline-none">
+        <div class="service-form">
+          <div class="service-field">
+            <label for="momoRegion">Target Agricultural Zone</label>
+            <select id="momoRegion">
               <option value="Lubombo">Lubombo Region (High Vulnerability)</option>
               <option value="Manzini">Manzini Region</option>
               <option value="Shiselweni">Shiselweni Region</option>
               <option value="Hhohho">Hhohho Region</option>
             </select>
           </div>
-          <div>
-            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">MTN Mobile Number</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-2 text-xs font-medium text-slate-400">+268</span>
-              <input type="tel" id="momoPhone" placeholder="76XX XXXX" class="w-full text-xs bg-white border border-slate-200 rounded-md p-1.5 pl-12 focus:ring-1 focus:ring-amber-400 focus:outline-none" />
+          <div class="service-field">
+            <label for="momoPhone">MTN Mobile Number</label>
+            <div class="phone-input">
+              <span>+268</span>
+              <input type="tel" id="momoPhone" placeholder="76XX XXXX" />
             </div>
           </div>
-          <button id="btnSubscribeMoMo" 
-                  class="w-full py-2 bg-amber-400 hover:bg-amber-500 text-black font-bold text-xs rounded-md shadow-sm transition-all tracking-wide cursor-pointer">
+          <button id="btnSubscribeMoMo">
             Subscribe for E10 / Month
           </button>
         </div>
