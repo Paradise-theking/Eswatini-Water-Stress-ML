@@ -1195,3 +1195,33 @@ footer {
 #monetization-hub #btnSubscribeMoMo {
   margin-top: 1px;
 }
+
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.hero-cta-secondary {
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.38);
+  box-shadow: none;
+}
+
+.hero-cta-secondary:hover {
+  background: rgba(255,255,255,.16);
+  box-shadow: 0 8px 22px rgba(0,0,0,.12);
+}
+
+@media (max-width: 600px) {
+  .hero-actions {
+    gap: 10px;
+  }
+
+  .hero-cta {
+    padding: 11px 15px;
+  }
+}
