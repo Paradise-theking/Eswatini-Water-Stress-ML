@@ -187,12 +187,16 @@ function formatDateLabel(dateString: string): string {
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="dashboard">
 
-    <section class="project-hero" aria-labelledby="project-hero-title">
+    <div id="dashboard-view">
+      <section class="project-hero" aria-labelledby="project-hero-title">
       <div class="project-hero-content">
         <span class="project-hero-kicker">Climate resilience • Eswatini</span>
         <h2 id="project-hero-title">Eswatini Water Stress Forecast</h2>
         <p>AI-powered water stress forecasting for climate resilience.</p>
-        <a class="hero-cta" href="#forecast">Explore the forecast <span aria-hidden="true">→</span></a>
+        <div class="hero-actions">
+          <a class="hero-cta" href="#forecast">Explore the forecast <span aria-hidden="true">→</span></a>
+          <a class="hero-cta hero-cta-secondary" href="/services">Services &amp; Alerts <span aria-hidden="true">→</span></a>
+        </div>
       </div>
       <div class="project-hero-mark" aria-hidden="true">
         <span class="hero-water-ring ring-one"></span>
@@ -478,13 +482,36 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </div>
 
       </section>
-            <!-- Hook container for Firestore Monetization elements -->
+          </main>
+    </div>
+
+    <section id="services-view" class="services-page" aria-labelledby="services-page-title" hidden>
+      <div class="services-page-header">
+        <div>
+          <span class="section-label">Climate resilience services</span>
+          <h1 id="services-page-title">Services &amp; Alerts</h1>
+          <p>Practical ways to receive, integrate, and use water-stress intelligence beyond the research dashboard.</p>
+        </div>
+        <a class="services-back-link" href="/">← Back to Forecast</a>
+      </div>
+
+      <div class="prototype-notice">
+        <strong>Prototype service layer</strong>
+        <span>SMS/USSD delivery and MTN MoMo payment processing shown here are currently demonstration flows, not live commercial integrations.</span>
+      </div>
+
+      <!-- Existing service functionality is rendered here. -->
       <div id="monetization-hub"></div>
 
-    </main>
-
-
-    </main>
+      <div class="services-options">
+        <article class="service-info-card">
+          <span class="section-label">Institutional &amp; research</span>
+          <h2>Data, monitoring &amp; collaboration</h2>
+          <p>Potential services for institutions, researchers, NGOs, and climate programmes that need water-stress datasets, monitoring outputs, reports, or API access.</p>
+          <span class="service-status">Available for discussion</span>
+        </article>
+      </div>
+    </section>
 
     <footer>
       Eswatini Water Stress Forecasting Research Prototype
@@ -492,6 +519,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
   </div>
 `
+
 
 /*
  * --------------------------------------------------------------------------
@@ -1278,7 +1306,41 @@ async function loadHistory() {
 
 loadHistory();
 
-// Physical initialization call to draw your Firestore modules!
+// Route between the research dashboard and the service layer without
+// changing the existing forecast application architecture.
+const dashboardView = document.querySelector<HTMLElement>('#dashboard-view')!
+const servicesView = document.querySelector<HTMLElement>('#services-view')!
+
+function renderRoute() {
+  const isServices = window.location.pathname === '/services'
+
+  dashboardView.hidden = isServices
+  servicesView.hidden = !isServices
+
+  if (isServices) {
+    document.title = 'Services & Alerts | Eswatini Water Stress Forecast'
+  } else {
+    document.title = 'Eswatini Water Stress Forecast'
+  }
+
+  window.scrollTo({ top: 0, behavior: 'auto' })
+}
+
+document.addEventListener('click', event => {
+  const target = event.target as HTMLElement
+  const link = target.closest<HTMLAnchorElement>('a[href="/services"], a[href="/"]')
+
+  if (!link) return
+
+  event.preventDefault()
+  window.history.pushState({}, '', link.href)
+  renderRoute()
+})
+
+window.addEventListener('popstate', renderRoute)
+renderRoute()
+
+// Physical initialization call to draw your Firestore service modules.
 injectMonetizationUI("monetization-hub");
 
 
