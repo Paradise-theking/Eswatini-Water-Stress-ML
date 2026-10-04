@@ -1123,21 +1123,16 @@ async function loadHistory() {
      * /history/live
      *     = current Earth Engine observations
      *
-     * We combine them on the frontend.
+     * The research record is the core historical dataset.
+     * Live observations are an optional update layer, so a
+     * temporary live-history failure must not hide the
+     * research history from the dashboard.
      */
 
-    const [
-      researchResponse,
-      liveResponse
-    ] =
-      await Promise.all([
-        fetch(
-          'https://eswatini-water-stress-api.onrender.com/history'
-        ),
-        fetch(
-          'https://eswatini-water-stress-api.onrender.com/history/live'
-        ),
-      ])
+    const researchResponse =
+      await fetch(
+        'https://eswatini-water-stress-api.onrender.com/history'
+      )
 
     if (!researchResponse.ok) {
 
@@ -1146,23 +1141,13 @@ async function loadHistory() {
       )
     }
 
-    if (!liveResponse.ok) {
-
-      throw new Error(
-        `Live history API returned ${liveResponse.status}`
-      )
-    }
-
     const researchResult:
       HistoryApiResponse =
       await researchResponse.json()
 
-    const liveResult:
-      HistoryApiResponse =
-      await liveResponse.json()
-
     /*
-     * Normalize both API datasets.
+     * Normalize the research dataset first and render it
+     * independently of the live Earth Engine request.
      */
 
     const researchData =
@@ -1170,50 +1155,32 @@ async function loadHistory() {
         researchResult.data || []
       )
 
-    const liveData =
-      normalizeHistoryData(
-        liveResult.data || []
-      )
-
-    /*
-     * Keep the research observation count separate.
-     *
-     * For the current research dataset this should correspond
-     * to the monthly 2015–2025 record.
-     */
-
     researchObservationCount =
       researchResult.count ??
       researchData.length
 
-    /*
-     * Combine research + live observations.
-     *
-     * If a date exists in both datasets, live data takes precedence.
-     */
+    if (
+      researchData.length === 0
+    ) {
+
+      throw new Error(
+        'No research observations were returned by the history endpoint.'
+      )
+    }
 
     historicalData =
       mergeHistoryData(
         researchData,
-        liveData
+        []
       )
-
-    if (
-      historicalData.length === 0
-    ) {
-
-      throw new Error(
-        'No historical observations were returned by either endpoint.'
-      )
-    }
 
     setApiStatus(true)
 
     /*
-     * Latest observed record.
+     * Display the research history immediately.
      */
 
-    const latest =
+    let latest =
       historicalData[
         historicalData.length - 1
       ]
@@ -1231,32 +1198,16 @@ async function loadHistory() {
         latest.date
       )
 
-    /*
-     * Research observation count.
-     *
-     * This remains the 2015–2025 research record count,
-     * rather than incorrectly showing the eight live months.
-     */
-
     historyCount.textContent =
       String(
         researchObservationCount
       )
 
-    /*
-     * Display the actual combined observed period.
-     */
-
-    const firstObserved =
+    const firstResearchObserved =
       historicalData[0]
 
     historyPeriod.textContent =
-      `${formatDateLabel(firstObserved.date)} – ${formatDateLabel(latest.date)}`
-
-    /*
-     * Determine the next forecast month from
-     * the latest observed month.
-     */
+      `${formatDateLabel(firstResearchObserved.date)} – ${formatDateLabel(latest.date)}`
 
     forecastDate =
       getNextMonthDate(
@@ -1269,14 +1220,98 @@ async function loadHistory() {
     forecastTitle.textContent =
       `${formatMonthYear(forecastDate)} Water Stress Outlook`
 
-    /*
-     * Draw the observed history.
-     */
-
     drawHistoryChart(
       historicalData,
       latestForecast
     )
+
+    /*
+     * Try to extend the research record with live 2026
+     * observations. A live-history failure is non-fatal:
+     * the research history remains fully usable.
+     */
+
+    try {
+
+      const liveResponse =
+        await fetch(
+          'https://eswatini-water-stress-api.onrender.com/history/live'
+        )
+
+      if (!liveResponse.ok) {
+
+        throw new Error(
+          `Live history API returned ${liveResponse.status}`
+        )
+      }
+
+      const liveResult:
+        HistoryApiResponse =
+        await liveResponse.json()
+
+      const liveData =
+        normalizeHistoryData(
+          liveResult.data || []
+        )
+
+      if (liveData.length > 0) {
+
+        historicalData =
+          mergeHistoryData(
+            researchData,
+            liveData
+          )
+
+        latest =
+          historicalData[
+            historicalData.length - 1
+          ]
+
+        latestWsi.textContent =
+          latest.swba.toFixed(3)
+
+        latestObservationMonth.textContent =
+          formatDateLabel(
+            latest.date
+          )
+
+        provenanceLatestMonth.textContent =
+          formatDateLabel(
+            latest.date
+          )
+
+        historyPeriod.textContent =
+          `${formatDateLabel(firstResearchObserved.date)} – ${formatDateLabel(latest.date)}`
+
+        forecastDate =
+          getNextMonthDate(
+            latest.date
+          )
+
+        forecastSourceNote.textContent =
+          `Forecast based on latest available observation: ${formatMonthYear(latest.date)}`
+
+        forecastTitle.textContent =
+          `${formatMonthYear(forecastDate)} Water Stress Outlook`
+
+        drawHistoryChart(
+          historicalData,
+          latestForecast
+        )
+
+      }
+
+    } catch (liveError) {
+
+      console.warn(
+        'Live history unavailable; showing research history:',
+        liveError
+      )
+
+      historyPeriod.textContent =
+        `${formatDateLabel(firstResearchObserved.date)} – ${formatDateLabel(latest.date)} · Live update unavailable`
+
+    }
 
   } catch (error) {
 
