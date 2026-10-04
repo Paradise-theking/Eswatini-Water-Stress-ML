@@ -1548,13 +1548,14 @@ export function injectMonetizationUI(containerId: string) {
           <div class="service-card-heading">
             <div class="service-mtn-mark">mtn</div>
             <div class="service-card-heading-copy">
-              <h4>Rural USSD & SMS Broadcast Alerts</h4>
+              <h4>SMS Broadcast Alerts</h4>
               <p>Powered by MTN MoMo Open API</p>
             </div>
           </div>
           <p class="service-description">
-            Bridge the digital divide by pushing micro-targeted drought predictions to smallholders without internet access.
+            Bridge the digital divide by pushing micro-targeted drought predictions straight to smallholder devices via automated SMS updates.
           </p>
+          <div id="live-subscriber-counter">● Live Network: Connecting...</div>
         </div>
 
         <!-- Mock Form Interface -->
@@ -1593,21 +1594,13 @@ function setupMonetizationListeners() {
   const btnRequestEnterprise = document.getElementById("btnRequestEnterprise");
   const btnSubscribeMoMo = document.getElementById("btnSubscribeMoMo");
 
-  // REAL-TIME VISUAL COUNTER FOR PITCH SHOWCASE:
-  // Listens live to your Cloud Firestore records and pushes counts to the screen!
-  const momoTitleArea = document.querySelector("#btnSubscribeMoMo")?.parentElement?.parentElement?.querySelector("p");
-  if (momoTitleArea) {
-    const counterSpan = document.createElement("div");
-    counterSpan.className = "mt-2 p-1.5 bg-amber-100/50 text-amber-800 rounded text-[10px] font-bold text-center border border-amber-200/50";
-    counterSpan.id = "live-subscriber-counter";
-    counterSpan.innerText = "Connecting live to Cloud Subscriptions...";
-    momoTitleArea.appendChild(counterSpan);
-
-    // Live reactive web stream listener
+  // Live subscriber count shown in the service card.
+  const counterSpan = document.getElementById("live-subscriber-counter");
+  if (counterSpan) {
     onSnapshot(collection(db, "momo_subscriptions"), (snapshot) => {
       const activeCount = snapshot.size;
-      const simulatedRevenue = activeCount * 10;
-      counterSpan.innerText = `● Live Firestore Network: ${activeCount} Active Smallholders (ARR: E${simulatedRevenue * 12}/year)`;
+      const projectedRevenue = activeCount * 10 * 12;
+      counterSpan.innerText = `● Live Network: ${activeCount} Smallholders Active (ARR: E${projectedRevenue}/yr)`;
     });
   }
 
@@ -1627,7 +1620,7 @@ function setupMonetizationListeners() {
       const phone = phoneInput.value.replace(/\s+/g, '');
       const region = regionSelect.value;
 
-      if (!/^(76|78)\d{6}\$/.test(phone)) {
+      if (!/^(76|78)\d{6}$/.test(phone)) {
         alert("Please enter a valid 8-digit MTN Eswatini mobile number (e.g., 76123456).");
         return;
       }
