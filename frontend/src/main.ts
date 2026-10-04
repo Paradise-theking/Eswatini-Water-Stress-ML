@@ -1,4 +1,7 @@
 import './style.css'
+import { db } from "./firebaseConfig";
+import { collection, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 type PredictionResponse = {
   status: string
@@ -475,6 +478,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </div>
 
       </section>
+            <!-- Hook container for Firestore Monetization elements -->
+      <div id="monetization-hub"></div>
+
+    </main>
+
 
     </main>
 
@@ -1268,7 +1276,11 @@ async function loadHistory() {
   }
 }
 
-loadHistory()
+loadHistory();
+
+// Physical initialization call to draw your Firestore modules!
+injectMonetizationUI("monetization-hub");
+
 
 /*
  * --------------------------------------------------------------------------
@@ -1428,3 +1440,162 @@ window.addEventListener(
     }
   }
 )
+
+
+// 1. Inject the Monetization HTML Component into your main dashboard layout
+export function injectMonetizationUI(containerId: string) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8 p-4 font-sans">
+      
+      <!-- CARD 1: THE AGRIBUSINESS PREMIUM BLUR HOOK -->
+      <div class="relative border border-slate-200 bg-white rounded-xl p-6 shadow-sm overflow-hidden flex flex-col justify-between min-h-[280px]">
+        
+        <!-- Background Data Preview (Blurred to showcase proprietary premium value) -->
+        <div class="filter blur-[3px] select-none pointer-events-none opacity-35 space-y-3">
+          <h4 class="text-sm font-bold text-slate-800">Lubombo Sugar Estates: 4-Week Canopy Stress Grid</h4>
+          <div class="h-3 bg-slate-300 rounded w-full"></div>
+          <div class="h-20 bg-blue-50 rounded-lg flex items-center justify-center text-[10px] text-blue-400 font-mono">
+            [High-Res Matrix Telemetry Grid Layer]
+          </div>
+        </div>
+
+        <!-- The Paywall Interactive Interface -->
+        <div class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center p-6 text-center">
+          <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2">
+            <svg xmlns="http://w3.org" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h4 class="text-sm font-bold text-slate-900 mb-1">Unlock Advanced B2B Agribusiness API</h4>
+          <p class="text-xs text-slate-500 max-w-xs mb-3">
+            Integrate high-resolution soil moisture forecasting directly into automated estate irrigation systems.
+          </p>
+          <button id="btnRequestEnterprise" 
+                  class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-md shadow-sm transition-colors cursor-pointer">
+            Request Enterprise Key
+          </button>
+        </div>
+      </div>
+
+      <!-- CARD 2: THE SPONSOR PLAY (MTN MOMO RURAL SUBSCRIPTION FORM) -->
+      <div class="border border-amber-200 bg-gradient-to-br from-amber-50/50 to-white rounded-xl p-6 shadow-sm flex flex-col justify-between min-h-[280px]">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-7 h-7 bg-amber-400 rounded-full flex items-center justify-center font-black text-black text-[10px] tracking-tighter">
+              mtn
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">Rural USSD & SMS Broadcast Alerts</h4>
+              <p class="text-[10px] text-slate-400">Powered by MTN MoMo Open API</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+            Bridge the digital divide by pushing micro-targeted drought predictions to smallholders without internet access.
+          </p>
+        </div>
+
+        <!-- Mock Form Interface -->
+        <div class="space-y-2">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Target Agricultural Zone</label>
+            <select id="momoRegion" class="w-full text-xs bg-white border border-slate-200 rounded-md p-1.5 focus:ring-1 focus:ring-amber-400 focus:outline-none">
+              <option value="Lubombo">Lubombo Region (High Vulnerability)</option>
+              <option value="Manzini">Manzini Region</option>
+              <option value="Shiselweni">Shiselweni Region</option>
+              <option value="Hhohho">Hhohho Region</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">MTN Mobile Number</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-2 text-xs font-medium text-slate-400">+268</span>
+              <input type="tel" id="momoPhone" placeholder="76XX XXXX" class="w-full text-xs bg-white border border-slate-200 rounded-md p-1.5 pl-12 focus:ring-1 focus:ring-amber-400 focus:outline-none" />
+            </div>
+          </div>
+          <button id="btnSubscribeMoMo" 
+                  class="w-full py-2 bg-amber-400 hover:bg-amber-500 text-black font-bold text-xs rounded-md shadow-sm transition-all tracking-wide cursor-pointer">
+            Subscribe for E10 / Month
+          </button>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  // 2. Attach Event Listeners inside the script scope
+  setupMonetizationListeners();
+}
+
+
+function setupMonetizationListeners() {
+  const btnRequestEnterprise = document.getElementById("btnRequestEnterprise");
+  const btnSubscribeMoMo = document.getElementById("btnSubscribeMoMo");
+
+  // REAL-TIME VISUAL COUNTER FOR PITCH SHOWCASE:
+  // Listens live to your Cloud Firestore records and pushes counts to the screen!
+  const momoTitleArea = document.querySelector("#btnSubscribeMoMo")?.parentElement?.parentElement?.querySelector("p");
+  if (momoTitleArea) {
+    const counterSpan = document.createElement("div");
+    counterSpan.className = "mt-2 p-1.5 bg-amber-100/50 text-amber-800 rounded text-[10px] font-bold text-center border border-amber-200/50";
+    counterSpan.id = "live-subscriber-counter";
+    counterSpan.innerText = "Connecting live to Cloud Subscriptions...";
+    momoTitleArea.appendChild(counterSpan);
+
+    // Live reactive web stream listener
+    onSnapshot(collection(db, "momo_subscriptions"), (snapshot) => {
+      const activeCount = snapshot.size;
+      const simulatedRevenue = activeCount * 10;
+      counterSpan.innerText = `● Live Firestore Network: ${activeCount} Active Smallholders (ARR: E${simulatedRevenue * 12}/year)`;
+    });
+  }
+
+  if (btnRequestEnterprise) {
+    btnRequestEnterprise.addEventListener("click", () => {
+      alert("[PachiPanda Demo]\n\nCommercial Consultation Request Sent! Your corporate sandbox environment endpoint accounts are initializing.");
+    });
+  }
+
+  if (btnSubscribeMoMo) {
+    btnSubscribeMoMo.addEventListener("click", async () => {
+      const phoneInput = document.getElementById("momoPhone") as HTMLInputElement;
+      const regionSelect = document.getElementById("momoRegion") as HTMLSelectElement;
+
+      if (!phoneInput || !regionSelect) return;
+
+      const phone = phoneInput.value.replace(/\s+/g, '');
+      const region = regionSelect.value;
+
+      if (!/^(76|78)\d{6}\$/.test(phone)) {
+        alert("Please enter a valid 8-digit MTN Eswatini mobile number (e.g., 76123456).");
+        return;
+      }
+
+      const formattedNumber = `+268${phone}`;
+      btnSubscribeMoMo.innerText = "Processing MoMo Prompt...";
+      (btnSubscribeMoMo as HTMLButtonElement).disabled = true;
+
+      try {
+        await setDoc(doc(db, "momo_subscriptions", formattedNumber), {
+          phoneNumber: formattedNumber,
+          agriculturalZone: region,
+          subscriptionStatus: "active",
+          lastPaymentDate: new Date().toISOString(),
+          createdTimestamp: serverTimestamp()
+        });
+
+        alert(`[PachiPanda Demo Live Success!]\n\nSubscriber ${formattedNumber} successfully logged in Cloud Firestore.\n\nMTN MoMo API push simulation complete. SMS alerts for ${region} region are now active.`);
+        phoneInput.value = "";
+      } catch (error) {
+        console.error("Firebase Database write failed:", error);
+        alert("Database sync failed. Ensure your Cloud Firestore location and Security Rules are setup in the Firebase console.");
+      } finally {
+        btnSubscribeMoMo.innerText = "Subscribe for E10 / Month";
+        (btnSubscribeMoMo as HTMLButtonElement).disabled = false;
+      }
+    });
+  }
+}
+
