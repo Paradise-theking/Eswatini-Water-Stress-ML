@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from functools import lru_cache
+
 import pandas as pd
 
 from backend.data_ingestion import (
@@ -145,6 +147,7 @@ def calculate_observed_swba(
 # FETCH LIVE OBSERVED HISTORY
 # ============================================================
 
+@lru_cache(maxsize=1)
 def fetch_live_observed_history() -> pd.DataFrame:
     """
     Fetch observations from October 2025 through the
@@ -432,6 +435,15 @@ def fetch_live_observed_history() -> pd.DataFrame:
     )
 
     return live_history
+
+
+def clear_live_history_cache() -> None:
+    """
+    Clear the cached live SWBA history so the next request
+    retrieves fresh Earth Engine observations.
+    """
+
+    fetch_live_observed_history.cache_clear()
 
 
 # ============================================================
