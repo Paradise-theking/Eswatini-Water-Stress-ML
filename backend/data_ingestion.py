@@ -232,6 +232,7 @@ def _reduce_image(
 def fetch_era5_daily(
     start_date: str,
     end_date: str,
+    bands: list[str] | None = None,
 ) -> pd.DataFrame:
     """
     Fetch ERA5-Land daily data.
@@ -240,13 +241,15 @@ def fetch_era5_daily(
     end_date is exclusive.
     """
 
+    selected_bands = bands or ERA5_BANDS
+
     collection = (
         ee.ImageCollection(ERA5_COLLECTION)
         .filterDate(
             start_date,
             end_date,
         )
-        .select(ERA5_BANDS)
+        .select(selected_bands)
         .sort("system:time_start")
     )
 
@@ -259,7 +262,7 @@ def fetch_era5_daily(
 
     def image_to_feature(image):
         image = ee.Image(image)
-        values = image.select(ERA5_BANDS).reduceRegion(
+        values = image.select(selected_bands).reduceRegion(
             reducer=ee.Reducer.mean(),
             geometry=get_region(),
             scale=11132,
