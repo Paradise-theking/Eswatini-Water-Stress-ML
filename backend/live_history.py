@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 import pandas as pd
+import ee
 
 from backend.data_ingestion import (
     fetch_era5_daily,
