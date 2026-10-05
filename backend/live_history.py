@@ -5,8 +5,6 @@ import pandas as pd
 from backend.data_ingestion import (
     fetch_era5_daily,
     fetch_chirps_daily,
-    transform_daily_data,
-    aggregate_monthly,
     latest_common_complete_month,
 )
 
@@ -245,6 +243,9 @@ def fetch_live_observed_history() -> pd.DataFrame:
         end_date.strftime(
             "%Y-%m-%d"
         ),
+        bands=[
+            "potential_evaporation_sum",
+        ],
     )
 
     print(
@@ -273,36 +274,62 @@ def fetch_live_observed_history() -> pd.DataFrame:
     )
 
     # --------------------------------------------------------
-    # Transform daily data
+    # Build only the variables required for SWBA
     # --------------------------------------------------------
 
     print(
-        "LIVE HISTORY: transforming daily data..."
+        "LIVE HISTORY: building monthly water-balance data..."
     )
 
-    daily = transform_daily_data(
-        era5,
-        chirps,
+    daily = pd.merge(
+        chirps[
+            [
+                "date",
+                "precipitation_mm",
+            ]
+        ],
+        era5[
+            [
+                "date",
+                "potential_evaporation_sum",
+            ]
+        ],
+        on="date",
+        how="inner",
+    )
+
+    if daily.empty:
+        raise RuntimeError(
+            "No matching dates between ERA5-Land and CHIRPS."
+        )
+
+    daily["pet_mm"] = (
+        -daily["potential_evaporation_sum"] * 1000
+    )
+
+    daily["month_date"] = (
+        daily["date"]
+        .dt.to_period("M")
+        .dt.to_timestamp()
+    )
+
+    monthly = (
+        daily.groupby("month_date")
+        .agg(
+            precipitation_mm=(
+                "precipitation_mm",
+                "sum",
+            ),
+            pet_mm=(
+                "pet_mm",
+                "sum",
+            ),
+        )
+        .reset_index()
     )
 
     print(
-        "LIVE HISTORY: daily data transformed."
-    )
-
-    # --------------------------------------------------------
-    # Aggregate to monthly data
-    # --------------------------------------------------------
-
-    print(
-        "LIVE HISTORY: aggregating monthly data..."
-    )
-
-    monthly = aggregate_monthly(
-        daily
-    )
-
-    print(
-        "LIVE HISTORY: monthly data aggregated."
+        "LIVE HISTORY: monthly data built."
     )
 
     # --------------------------------------------------------
