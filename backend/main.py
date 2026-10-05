@@ -18,6 +18,7 @@ from backend.data_ingestion import (
 )
 from backend.live_history import (
     fetch_live_observed_history,
+    clear_live_history_cache,
     TRAINING_CLIMATOLOGY,
 )
 
@@ -232,6 +233,45 @@ def get_live_history():
                 f"SWBA history: {str(exc)}"
             ),
         )
+
+@app.post("/history/live/refresh")
+def refresh_live_history():
+    """
+    Clear the cached live SWBA history and regenerate it
+    using the latest available Earth Engine observations.
+    """
+    try:
+        clear_live_history_cache()
+
+        initialize_earth_engine()
+
+        history = fetch_live_observed_history()
+
+        data = [
+            {
+                "date": row["month_date"].strftime("%Y-%m-%d"),
+                "swba": float(row["swba"]),
+                "water_balance_mm": float(row["water_balance_mm"]),
+                "water_balance_3month": float(row["water_balance_3month"]),
+            }
+            for _, row in history.iterrows()
+        ]
+
+        return {
+            "status": "success",
+            "refreshed": True,
+            "count": len(data),
+            "start_date": data[0]["date"] if data else None,
+            "end_date": data[-1]["date"] if data else None,
+            "data": data,
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Live history refresh failed: {str(exc)}",
+        )
+
 
 @app.get("/history/live/test")
 def test_live_history():
