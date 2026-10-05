@@ -6,6 +6,7 @@ from backend.data_ingestion import (
     fetch_era5_daily,
     fetch_chirps_daily,
     latest_common_complete_month,
+    get_region,
 )
 
 
