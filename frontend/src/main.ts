@@ -367,7 +367,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class="chart-summary">
 
             <div>
-              <span>Research observations</span>
+              <span>Research observations (2015–2025)</span>
               <strong id="history-count">--</strong>
             </div>
 
@@ -382,7 +382,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             </div>
 
             <div>
-              <span>Forecast</span>
+              <span>Next-month forecast</span>
               <strong id="chart-forecast">Not generated</strong>
             </div>
 
