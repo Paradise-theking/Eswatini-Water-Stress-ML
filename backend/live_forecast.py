@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from functools import lru_cache
 from pathlib import Path
 
 import joblib
@@ -8,6 +7,7 @@ import joblib
 from backend.data_ingestion import (
     fetch_latest_monthly_data,
     initialize_earth_engine,
+    latest_common_complete_month,
 )
 
 from backend.feature_engineering import (
@@ -84,17 +84,32 @@ def classify_water_stress(
     )
 
 
-@lru_cache(maxsize=1)
+_cached_live_forecast: dict | None = None
+_cached_observation_month = None
+
+
 def generate_live_forecast() -> dict:
     """
     Fetch the latest observations, construct the
     trained model's features and generate a
     one-month-ahead WSI forecast.
 
-    The result is cached so repeated requests during
-    the same backend session do not repeatedly query
-    Earth Engine.
+    The result is cached for the latest completed observation
+    month. Each request first checks the latest common completed
+    month available from both CHIRPS and ERA5-Land. If that month
+    has changed, a fresh forecast is generated automatically.
     """
+
+    global _cached_live_forecast
+    global _cached_observation_month
+
+    latest_observation_month = latest_common_complete_month()
+
+    if (
+        _cached_live_forecast is not None
+        and _cached_observation_month == latest_observation_month
+    ):
+        return _cached_live_forecast
 
     if not MODEL_PATH.exists():
         raise FileNotFoundError(
@@ -158,7 +173,7 @@ def generate_live_forecast() -> dict:
     # API-friendly result
     # -----------------------------------------
 
-    return {
+    result = {
         "observation_month":
             observation_month.strftime(
                 "%Y-%m"
@@ -240,6 +255,11 @@ def generate_live_forecast() -> dict:
         },
     }
 
+    _cached_live_forecast = result
+    _cached_observation_month = observation_month
+
+    return result
+
 
 def clear_live_forecast_cache() -> None:
     """
@@ -247,7 +267,11 @@ def clear_live_forecast_cache() -> None:
     retrieves fresh Earth Engine observations.
     """
 
-    generate_live_forecast.cache_clear()
+    global _cached_live_forecast
+    global _cached_observation_month
+
+    _cached_live_forecast = None
+    _cached_observation_month = None
 
 
 if __name__ == "__main__":
