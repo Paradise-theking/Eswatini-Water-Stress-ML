@@ -1356,6 +1356,15 @@ function renderRoute() {
     document.title = 'Services & Alerts | Eswatini Water Stress Forecast'
   } else {
     document.title = 'Eswatini Water Stress Forecast'
+
+    requestAnimationFrame(() => {
+      if (historicalData.length > 0) {
+        drawHistoryChart(
+          historicalData,
+          latestForecast
+        )
+      }
+    })
   }
 
   window.scrollTo({ top: 0, behavior: 'auto' })
@@ -1583,9 +1592,7 @@ export function injectMonetizationUI(containerId: string) {
           <div class="service-card-heading">
             <div class="service-mtn-mark">mtn</div>
             <div class="service-card-heading-copy">
-              <h4>SMS Broadcast Alerts</h4>
-              <p>Powered by MTN MoMo Open API</p>
-            </div>
+              </div>
           </div>
           <p class="service-description">
             Bridge the digital divide by pushing micro-targeted drought predictions straight to smallholder devices via automated SMS updates.
