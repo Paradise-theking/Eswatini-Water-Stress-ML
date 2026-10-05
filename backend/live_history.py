@@ -229,104 +229,147 @@ def fetch_live_observed_history() -> pd.DataFrame:
     )
 
     # --------------------------------------------------------
-    # Fetch ERA5-Land
+    # Fetch monthly water-balance inputs
     # --------------------------------------------------------
+    #
+    # The live-history calculation only needs monthly
+    # precipitation and PET. Aggregate the daily Earth Engine
+    # collections into monthly images before transferring data.
+    # This keeps the observed-history methodology unchanged
+    # while reducing the number of spatial reductions from
+    # hundreds of daily images to the small number of months
+    # actually required.
 
     print(
-        "LIVE HISTORY: fetching ERA5-Land..."
+        "LIVE HISTORY: fetching monthly water-balance inputs..."
     )
 
-    era5 = fetch_era5_daily(
-        fetch_start.strftime(
-            "%Y-%m-%d"
-        ),
-        end_date.strftime(
-            "%Y-%m-%d"
-        ),
-        bands=[
-            "potential_evaporation_sum",
-        ],
+    region = get_region()
+
+    month_starts = pd.date_range(
+        fetch_start,
+        latest_month,
+        freq="MS",
     )
 
-    print(
-        "LIVE HISTORY: ERA5-Land fetched."
-    )
+    era5_monthly = []
+    chirps_monthly = []
 
-    # --------------------------------------------------------
-    # Fetch CHIRPS
-    # --------------------------------------------------------
+    for month_start in month_starts:
 
-    print(
-        "LIVE HISTORY: fetching CHIRPS..."
-    )
+        month_end = (
+            month_start
+            + pd.offsets.MonthBegin(1)
+        )
 
-    chirps = fetch_chirps_daily(
-        fetch_start.strftime(
-            "%Y-%m-%d"
-        ),
-        end_date.strftime(
-            "%Y-%m-%d"
-        ),
-    )
+        start_str = month_start.strftime("%Y-%m-%d")
+        end_str = month_end.strftime("%Y-%m-%d")
 
-    print(
-        "LIVE HISTORY: CHIRPS fetched."
-    )
+        era5_image = (
+            ee.ImageCollection(
+                "ECMWF/ERA5_LAND/DAILY_AGGR"
+            )
+            .filterDate(start_str, end_str)
+            .select("potential_evaporation_sum")
+            .sum()
+        )
 
-    # --------------------------------------------------------
-    # Build only the variables required for SWBA
-    # --------------------------------------------------------
+        era5_value = (
+            era5_image
+            .reduceRegion(
+                reducer=ee.Reducer.mean(),
+                geometry=region,
+                scale=11132,
+                bestEffort=True,
+                maxPixels=1_000_000_000,
+            )
+            .get("potential_evaporation_sum")
+        )
 
-    print(
-        "LIVE HISTORY: building monthly water-balance data..."
-    )
+        chirps_image = (
+            ee.ImageCollection(
+                "UCSB-CHG/CHIRPS/DAILY"
+            )
+            .filterDate(start_str, end_str)
+            .select("precipitation")
+            .sum()
+        )
+
+        chirps_value = (
+            chirps_image
+            .reduceRegion(
+                reducer=ee.Reducer.mean(),
+                geometry=region,
+                scale=5566,
+                bestEffort=True,
+                maxPixels=1_000_000_000,
+            )
+            .get("precipitation")
+        )
+
+        era5_monthly.append(
+            {
+                "month_date": month_start,
+                "potential_evaporation_sum": (
+                    era5_value.getInfo()
+                    if era5_value is not None
+                    else None
+                ),
+            }
+        )
+
+        chirps_monthly.append(
+            {
+                "month_date": month_start,
+                "precipitation_mm": (
+                    chirps_value.getInfo()
+                    if chirps_value is not None
+                    else None
+                ),
+            }
+        )
+
+    era5 = pd.DataFrame(era5_monthly)
+    chirps = pd.DataFrame(chirps_monthly)
+
+    if era5.empty or chirps.empty:
+        raise RuntimeError(
+            "No monthly ERA5-Land or CHIRPS data were returned."
+        )
 
     daily = pd.merge(
         chirps[
             [
-                "date",
+                "month_date",
                 "precipitation_mm",
             ]
         ],
         era5[
             [
-                "date",
+                "month_date",
                 "potential_evaporation_sum",
             ]
         ],
-        on="date",
+        on="month_date",
         how="inner",
     )
 
     if daily.empty:
         raise RuntimeError(
-            "No matching dates between ERA5-Land and CHIRPS."
+            "No matching monthly dates between ERA5-Land and CHIRPS."
         )
 
     daily["pet_mm"] = (
         -daily["potential_evaporation_sum"] * 1000
     )
 
-    daily["month_date"] = (
-        daily["date"]
-        .dt.to_period("M")
-        .dt.to_timestamp()
-    )
-
-    monthly = (
-        daily.groupby("month_date")
-        .agg(
-            precipitation_mm=(
-                "precipitation_mm",
-                "sum",
-            ),
-            pet_mm=(
-                "pet_mm",
-                "sum",
-            ),
-        )
-        .reset_index()
-    )
+    monthly = daily[
+        [
+            "month_date",
+            "precipitation_mm",
+            "pet_mm",
+        ]
+    ].copy()
 
     print(
         "LIVE HISTORY: monthly data built."
