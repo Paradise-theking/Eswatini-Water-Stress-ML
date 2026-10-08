@@ -126,6 +126,32 @@ def health():
         "model_loaded": model is not None,
         "model_path": str(MODEL_PATH),
     }
+@app.get("/diagnostics/data-dates")
+def diagnose_data_dates():
+    """Report latest source dates and the selected complete month."""
+    from backend.data_ingestion import (
+        latest_available_dates,
+        latest_common_complete_month,
+    )
+
+    try:
+        initialize_earth_engine()
+        dates = latest_available_dates()
+        selected_month = latest_common_complete_month()
+
+        return {
+            "status": "success",
+            "source_dates": dates,
+            "latest_common_complete_month": selected_month.strftime("%Y-%m-%d"),
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Data-date diagnostic failed: {str(exc)}",
+        )
+
+
 @app.get("/history")
 def get_history():
     try:
