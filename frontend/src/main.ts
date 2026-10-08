@@ -1455,6 +1455,81 @@ function restoreSavedForecast() {
 
 restoreSavedForecast()
 
+/*
+ * --------------------------------------------------------------------------
+ * Automatically load the latest live forecast
+ * --------------------------------------------------------------------------
+ *
+ * The saved forecast is only a fast fallback for slow/cold-start API calls.
+ * On every page load we still ask the live API for the current forecast.
+ * The backend checks the latest completed observation month and refreshes
+ * the cached model result when that month changes.
+ */
+
+async function loadLatestForecast() {
+  try {
+    const response = await fetch(
+      'https://eswatini-water-stress-api.onrender.com/forecast/live',
+      {
+        cache: 'no-store',
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(
+        `API returned ${response.status}`
+      )
+    }
+
+    const data:
+      PredictionResponse =
+      await response.json()
+
+    if (
+      data?.status !== 'success' ||
+      typeof data.water_stress_index !== 'number' ||
+      typeof data.observation_month !== 'string' ||
+      typeof data.forecast_month !== 'string'
+    ) {
+      throw new Error(
+        'Live forecast response was incomplete.'
+      )
+    }
+
+    setApiStatus(true)
+    displayForecast(data)
+
+    try {
+      localStorage.setItem(
+        'eswatini-water-stress-latest-forecast',
+        JSON.stringify(data)
+      )
+    } catch (storageError) {
+      console.warn(
+        'Could not save latest live forecast:',
+        storageError
+      )
+    }
+  } catch (error) {
+    console.warn(
+      'Could not load the latest live forecast:',
+      error
+    )
+
+    /*
+     * Keep the saved forecast visible when available.
+     * This prevents a temporary API/cold-start failure from
+     * replacing a useful last-known forecast with an error.
+     */
+    if (latestForecast === null) {
+      forecastLoading.textContent =
+        'Latest forecast is temporarily unavailable. Run Forecast to try again.'
+    }
+  }
+}
+
+loadLatestForecast()
+
 predictButton.addEventListener(
   'click',
   async () => {
@@ -1692,4 +1767,3 @@ function setupMonetizationListeners() {
     });
   }
 }
-
