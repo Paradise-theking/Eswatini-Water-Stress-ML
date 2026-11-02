@@ -1,12 +1,13 @@
-
-from pathlib import Path
+﻿from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 # ============================================================
 # FIGURE 4: INDEPENDENT-TEST PERFORMANCE COMPARISON
+# Results loaded from Notebook 05 canonical exports
 # ============================================================
 
 # ------------------------------------------------------------
@@ -23,12 +24,98 @@ else:
     raise FileNotFoundError("Could not locate project root.")
 
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+performance_path = (
+    OUTPUT_DIR / "independent_test_performance.csv"
+)
+
+forecasts_path = (
+    OUTPUT_DIR / "independent_test_forecasts.csv"
+)
+
+if not performance_path.exists():
+    raise FileNotFoundError(
+        f"Missing evaluation export: {performance_path}"
+    )
+
+if not forecasts_path.exists():
+    raise FileNotFoundError(
+        f"Missing forecast export: {forecasts_path}"
+    )
 
 
 # ------------------------------------------------------------
-# 2. OFFICIAL INDEPENDENT-TEST RESULTS
+# 2. LOAD CANONICAL EVALUATION RESULTS
 # ------------------------------------------------------------
+
+performance = pd.read_csv(performance_path)
+
+forecasts = pd.read_csv(
+    forecasts_path,
+    parse_dates=["forecast_date"]
+)
+
+required_models = [
+    "Final Ridge t+1",
+    "Persistence",
+    "Climatology (WSI=0)"
+]
+
+if set(performance["Model"]) != set(required_models):
+    raise ValueError(
+        "Unexpected model names in performance export."
+    )
+
+if performance["Model"].duplicated().any():
+    raise ValueError(
+        "Duplicate model entries in performance export."
+    )
+
+if len(forecasts) != 24:
+    raise ValueError(
+        f"Expected 24 test forecasts; found {len(forecasts)}."
+    )
+
+if forecasts.isna().any().any():
+    raise ValueError(
+        "Missing values detected in forecast export."
+    )
+
+performance = performance.set_index("Model")
+
+rmse = [
+    performance.loc[model, "RMSE"]
+    for model in required_models
+]
+
+ridge_rmse = performance.loc[
+    "Final Ridge t+1", "RMSE"
+]
+
+persistence_rmse = performance.loc[
+    "Persistence", "RMSE"
+]
+
+climatology_rmse = performance.loc[
+    "Climatology (WSI=0)", "RMSE"
+]
+
+
+# ------------------------------------------------------------
+# 3. CALCULATE IMPROVEMENTS FROM EXPORTED METRICS
+# ------------------------------------------------------------
+
+improvement_persistence = (
+    (persistence_rmse - ridge_rmse)
+    / persistence_rmse
+    * 100
+)
+
+improvement_climatology = (
+    (climatology_rmse - ridge_rmse)
+    / climatology_rmse
+    * 100
+)
 
 models = [
     "Final Ridge Regression",
@@ -36,20 +123,11 @@ models = [
     "Climatology baseline (SWBA = 0)"
 ]
 
-rmse = [
-    1.3906,
-    1.7568,
-    1.7589
-]
-
-improvement_persistence = 20.84
-improvement_climatology = 20.93
-
 y_positions = np.arange(len(models))
 
 
 # ------------------------------------------------------------
-# 3. CREATE FIGURE
+# 4. CREATE FIGURE
 # ------------------------------------------------------------
 
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -65,7 +143,7 @@ bars = ax.barh(
 
 
 # ------------------------------------------------------------
-# 4. ANNOTATE RMSE VALUES
+# 5. ANNOTATE RMSE VALUES
 # ------------------------------------------------------------
 
 for bar, value in zip(bars, rmse):
@@ -82,7 +160,7 @@ for bar, value in zip(bars, rmse):
 
 
 # ------------------------------------------------------------
-# 5. HIGHLIGHT RIDGE IMPROVEMENT
+# 6. HIGHLIGHT RIDGE IMPROVEMENT
 # ------------------------------------------------------------
 
 ax.text(
@@ -108,7 +186,7 @@ ax.text(
 
 
 # ------------------------------------------------------------
-# 6. FORMAT AXES
+# 7. FORMAT AXES
 # ------------------------------------------------------------
 
 ax.set_yticks(y_positions)
@@ -128,7 +206,7 @@ ax.set_title(
     pad=18
 )
 
-ax.set_xlim(0, 2.15)
+ax.set_xlim(0, max(rmse) * 1.25)
 
 ax.grid(
     axis="x",
@@ -144,15 +222,20 @@ ax.spines["left"].set_visible(False)
 
 
 # ------------------------------------------------------------
-# 7. FOOTNOTE
+# 8. DYNAMIC EVALUATION FOOTNOTE
 # ------------------------------------------------------------
+
+start_date = forecasts["forecast_date"].min()
+end_date = forecasts["forecast_date"].max()
+sample_size = len(forecasts)
 
 fig.text(
     0.5,
     0.025,
     (
-        "Evaluation period: January 2024–December 2025 "
-        "| Independent test observations: n = 24"
+        f"Evaluation period: {start_date:%B %Y}–"
+        f"{end_date:%B %Y} "
+        f"| Independent test observations: n = {sample_size}"
     ),
     ha="center",
     fontsize=9,
@@ -163,7 +246,7 @@ fig.tight_layout(rect=[0, 0.07, 1, 1])
 
 
 # ------------------------------------------------------------
-# 8. SAVE PUBLICATION-QUALITY OUTPUTS
+# 9. SAVE PUBLICATION-QUALITY OUTPUTS
 # ------------------------------------------------------------
 
 png_path = OUTPUT_DIR / "figure4_baseline_comparison.png"
@@ -187,3 +270,8 @@ plt.show()
 print("\nFigure 4 generated successfully!")
 print("PNG:", png_path)
 print("PDF:", pdf_path)
+
+print("\nSource: independent_test_performance.csv")
+print("Evaluation observations:", sample_size)
+print(f"RMSE improvement vs persistence: {improvement_persistence:.2f}%")
+print(f"RMSE improvement vs climatology: {improvement_climatology:.2f}%")
