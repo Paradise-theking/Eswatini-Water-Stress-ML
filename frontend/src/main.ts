@@ -63,6 +63,61 @@ type HistoryApiResponse = {
   data?: HistoryApiPoint[]
 }
 
+type EnsembleTotal = {
+  p10: number
+  median: number
+  p90: number
+  ensemble_mean: number
+}
+
+type ClimateBalanceResponse = {
+  status: string
+  source: string
+  model_context: string
+  retrieved_at: string
+  timezone: string
+  forecast_period: {
+    start_date: string
+    end_date: string
+    days: number
+  }
+  resolved_grid_point: {
+    latitude: number | null
+    longitude: number | null
+  }
+  ensemble_member_count: number
+  precipitation_total_mm: EnsembleTotal
+  reference_et0_total_mm: EnsembleTotal
+  net_climate_balance_mm: EnsembleTotal
+  gross_rainfall_volume_ml: EnsembleTotal
+  interpretation: string
+}
+
+type SurfaceWaterResponse = {
+  status: string
+  source: string
+  retrieved_at: string
+  latest_observation: {
+    date: string
+    water_area_km2: number
+    valid_coverage_percent: number
+  }
+  previous_observation: {
+    date: string
+    water_area_km2: number
+    valid_coverage_percent: number
+  } | null
+  area_change_percent_vs_previous_scene: number | null
+  boundary: {
+    name: string
+    source: string
+    osm_relation_id: number
+    attribution: string
+  }
+  method: string
+  interpretation: string
+}
+
 function classifySWBA(value: number) {
   if (value <= -2) {
     return {
@@ -195,6 +250,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <p>AI-powered water stress forecasting for climate resilience.</p>
         <div class="hero-actions">
           <a class="hero-cta" href="#forecast">Explore the forecast <span aria-hidden="true">→</span></a>
+          <a class="hero-cta hero-cta-secondary" href="/water-risk">Water-Risk Watch prototype <span aria-hidden="true">→</span></a>
           <a class="hero-cta hero-cta-secondary" href="/services">Services &amp; Alerts <span aria-hidden="true">→</span></a>
         </div>
       </div>
@@ -511,6 +567,87 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <span class="service-status">Available for discussion</span>
         </article>
       </div>
+    </section>
+
+    <section id="water-risk-view" class="services-page water-risk-page" aria-labelledby="water-risk-title" hidden>
+      <div class="services-page-header">
+        <div>
+          <span class="section-label">Experimental monitoring</span>
+          <h1 id="water-risk-title">Mnjoli Water-Risk Watch</h1>
+          <p>Explore a 30-day reservoir storage trajectory under transparent, adjustable assumptions.</p>
+        </div>
+        <a class="services-back-link" href="/">← Back to Forecast</a>
+      </div>
+
+      <div class="prototype-notice water-risk-notice">
+        <strong>Prototype only</strong>
+        <span>This is a relative water-availability proxy, not a Mnjoli storage or supply forecast. Satellite surface area and modeled weather are separate indicators; neither is converted to reservoir volume or operator actions.</span>
+      </div>
+
+      <div class="water-proxy-grid">
+        <article class="watch-card proxy-card" aria-labelledby="surface-area-title">
+          <div class="watch-card-header">
+            <div>
+              <span class="section-label">Satellite observation · extent proxy</span>
+              <h2 id="surface-area-title">Mnjoli reservoir surface area</h2>
+              <p id="surface-area-status" class="proxy-status" aria-live="polite">Loading recent satellite scenes…</p>
+            </div>
+            <span class="proxy-source-badge">SENTINEL-2</span>
+          </div>
+          <p id="surface-area-error" class="proxy-error" role="alert" hidden></p>
+          <div class="proxy-metrics">
+            <div class="proxy-metric">
+              <span>Latest estimated water area</span>
+              <strong id="surface-area-value">—</strong>
+              <small id="surface-area-date">No scene loaded</small>
+            </div>
+            <div class="proxy-metric">
+              <span>Change from previous clear scene</span>
+              <strong id="surface-area-change">—</strong>
+              <small id="surface-area-coverage">Clear-pixel coverage unavailable</small>
+            </div>
+          </div>
+          <p class="watch-footnote">Method: Sentinel-2 MNDWI water mask inside an OpenStreetMap water polygon; cloudy, shadowed, snow and unclassified pixels are excluded. This estimates visible surface extent—not depth, storage, or percent full. It is sensitive to cloud masking, shoreline pixels and the mapped boundary.</p>
+        </article>
+
+        <article class="watch-card proxy-card" aria-labelledby="climate-balance-title">
+          <div class="watch-card-header">
+            <div>
+              <span class="section-label">30-day ensemble context · catchment scale</span>
+              <h2 id="climate-balance-title">Projected rainfall and water-balance indicator</h2>
+              <p id="climate-balance-status" class="proxy-status" aria-live="polite">Loading 30-day model ensemble…</p>
+            </div>
+            <span class="proxy-source-badge">ECMWF EC46</span>
+          </div>
+          <p id="climate-balance-error" class="proxy-error" role="alert" hidden></p>
+          <div class="proxy-metrics proxy-metrics-three">
+            <div class="proxy-metric">
+              <span>Rainfall total · P10 / median / P90</span>
+              <strong id="proxy-rainfall">—</strong>
+              <small>30-day ensemble range (mm)</small>
+            </div>
+            <div class="proxy-metric">
+              <span>Reference ET₀ total · median</span>
+              <strong id="proxy-et0">—</strong>
+              <small>Atmospheric demand indicator (mm)</small>
+            </div>
+            <div class="proxy-metric">
+              <span>Rainfall − ET₀ · P10 / median / P90</span>
+              <strong id="proxy-balance">—</strong>
+              <small>Hydroclimate indicator (mm), not runoff</small>
+            </div>
+          </div>
+          <p id="proxy-rainfall-volume" class="proxy-volume-note">Gross rainfall volume over the catchment: —</p>
+          <p class="watch-footnote">ECMWF seasonal ensemble at a roughly 36 km model grid, not a catchment-average hydrology forecast. Gross rainfall volume is rainfall falling over the mapped 896.9 km² catchment; it is not runoff or reservoir inflow. P − ET₀ is not reservoir storage change.</p>
+        </article>
+      </div>
+
+      <div class="validation-notice" aria-labelledby="storage-validation-title">
+        <strong id="storage-validation-title">Storage validation: unavailable</strong>
+        <span>The EWSC homepage displays Mnjoli at 102%, but provides no measurement timestamp or percentage definition. Archived page captures over 2026 repeat 102%, so this display is not reliable ground truth for validation. No dated storage series or stage–area–volume curve was found; therefore no storage estimate or storage-skill score is produced.</span>
+      </div>
+
+      <p class="water-risk-attribution">Data: <a href="https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED" target="_blank" rel="noopener noreferrer">Copernicus Sentinel-2</a>, <a href="https://open-meteo.com/en/docs/seasonal-forecast-api" target="_blank" rel="noopener noreferrer">Open-Meteo seasonal forecast</a>, and <a href="https://www.openstreetmap.org/relation/1792362" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>.</p>
     </section>
 
     <footer>
@@ -1341,19 +1478,151 @@ async function loadHistory() {
 
 loadHistory();
 
+function formatEnsembleRange(values: EnsembleTotal, unit: string): string {
+  const format = (value: number) => value.toFixed(1)
+  return `${format(values.p10)} / ${format(values.median)} / ${format(values.p90)} ${unit}`
+}
+
+function formatRetrievedAt(value: string, timezone = 'Africa/Mbabane'): string {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleString('en-GB', { timeZone: timezone })
+}
+
+async function loadClimateBalance() {
+  const status = document.querySelector<HTMLElement>('#climate-balance-status')!
+  const errorElement = document.querySelector<HTMLElement>('#climate-balance-error')!
+  status.textContent = 'Loading 30-day model ensemble…'
+  errorElement.hidden = true
+  document.querySelector<HTMLElement>('#proxy-rainfall')!.textContent = '—'
+  document.querySelector<HTMLElement>('#proxy-et0')!.textContent = '—'
+  document.querySelector<HTMLElement>('#proxy-balance')!.textContent = '—'
+  document.querySelector<HTMLElement>('#proxy-rainfall-volume')!.textContent =
+    'Gross rainfall volume over the catchment: —'
+
+  try {
+    const response = await fetch(
+      'https://eswatini-water-stress-api.onrender.com/water-risk/climate-balance',
+      { cache: 'no-store' },
+    )
+    if (!response.ok) {
+      const error = await response.json().catch(() => null) as { detail?: string } | null
+      throw new Error(error?.detail || `Climate-balance API returned ${response.status}`)
+    }
+
+    const result = await response.json() as ClimateBalanceResponse
+    if (
+      result.status !== 'success' ||
+      result.forecast_period?.days !== 30 ||
+      !Number.isFinite(result.net_climate_balance_mm?.median)
+    ) {
+      throw new Error('Climate-balance API returned an invalid 30-day ensemble summary.')
+    }
+
+    const gridPoint = result.resolved_grid_point
+    const gridDescription =
+      typeof gridPoint?.latitude === 'number' && Number.isFinite(gridPoint.latitude) &&
+      typeof gridPoint.longitude === 'number' && Number.isFinite(gridPoint.longitude)
+        ? ` · model grid ${gridPoint.latitude.toFixed(2)}, ${gridPoint.longitude.toFixed(2)}`
+        : ''
+    status.textContent =
+      `${result.forecast_period.start_date} to ${result.forecast_period.end_date} · ` +
+      `${result.ensemble_member_count} ensemble members · retrieved ` +
+      formatRetrievedAt(result.retrieved_at, result.timezone) + gridDescription
+    document.querySelector<HTMLElement>('#proxy-rainfall')!.textContent =
+      formatEnsembleRange(result.precipitation_total_mm, 'mm')
+    document.querySelector<HTMLElement>('#proxy-et0')!.textContent =
+      `${result.reference_et0_total_mm.median.toFixed(1)} mm`
+    document.querySelector<HTMLElement>('#proxy-balance')!.textContent =
+      formatEnsembleRange(result.net_climate_balance_mm, 'mm')
+    document.querySelector<HTMLElement>('#proxy-rainfall-volume')!.textContent =
+      `Gross rainfall volume over the catchment (not runoff): ` +
+      `${result.gross_rainfall_volume_ml.median.toLocaleString('en', { maximumFractionDigits: 0 })} ML at ensemble median`
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown climate-balance error'
+    status.textContent = '30-day climate context unavailable.'
+    errorElement.textContent = message
+    errorElement.hidden = false
+  }
+}
+
+async function loadSurfaceArea() {
+  const status = document.querySelector<HTMLElement>('#surface-area-status')!
+  const errorElement = document.querySelector<HTMLElement>('#surface-area-error')!
+  status.textContent = 'Loading recent satellite scenes…'
+  errorElement.hidden = true
+  document.querySelector<HTMLElement>('#surface-area-value')!.textContent = '—'
+  document.querySelector<HTMLElement>('#surface-area-date')!.textContent = 'No scene loaded'
+  document.querySelector<HTMLElement>('#surface-area-change')!.textContent = '—'
+  document.querySelector<HTMLElement>('#surface-area-coverage')!.textContent =
+    'Clear-pixel coverage unavailable'
+
+  try {
+    const response = await fetch(
+      'https://eswatini-water-stress-api.onrender.com/water-risk/surface-area',
+      { cache: 'no-store' },
+    )
+    if (!response.ok) {
+      const error = await response.json().catch(() => null) as { detail?: string } | null
+      throw new Error(error?.detail || `Satellite surface-area API returned ${response.status}`)
+    }
+
+    const result = await response.json() as SurfaceWaterResponse
+    const observation = result.latest_observation
+    if (
+      result.status !== 'success' ||
+      !observation ||
+      !Number.isFinite(observation.water_area_km2) ||
+      !Number.isFinite(observation.valid_coverage_percent)
+    ) {
+      throw new Error('Satellite API returned an invalid surface-area observation.')
+    }
+
+    status.textContent =
+      `${result.source} · retrieved ${formatRetrievedAt(result.retrieved_at)}`
+    document.querySelector<HTMLElement>('#surface-area-value')!.textContent =
+      `${observation.water_area_km2.toFixed(2)} km²`
+    document.querySelector<HTMLElement>('#surface-area-date')!.textContent =
+      `Satellite acquisition: ${observation.date}`
+
+    const change = result.area_change_percent_vs_previous_scene
+    document.querySelector<HTMLElement>('#surface-area-change')!.textContent =
+      typeof change === 'number' && Number.isFinite(change)
+        ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`
+        : 'No comparison yet'
+    const previous = result.previous_observation
+    document.querySelector<HTMLElement>('#surface-area-coverage')!.textContent =
+      previous
+        ? `Valid pixels ${observation.valid_coverage_percent.toFixed(0)}% · previous clear scene ${previous.date}`
+        : `Valid pixels ${observation.valid_coverage_percent.toFixed(0)}% · second clear scene needed for trend`
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown satellite observation error'
+    status.textContent = 'Recent reservoir surface-area estimate unavailable.'
+    errorElement.textContent = message
+    errorElement.hidden = false
+  }
+}
+
 // Route between the research dashboard and the service layer without
 // changing the existing forecast application architecture.
 const dashboardView = document.querySelector<HTMLElement>('#dashboard-view')!
 const servicesView = document.querySelector<HTMLElement>('#services-view')!
+const waterRiskView = document.querySelector<HTMLElement>('#water-risk-view')!
 
 function renderRoute() {
   const isServices = window.location.pathname === '/services'
+  const isWaterRisk = window.location.pathname === '/water-risk'
 
-  dashboardView.hidden = isServices
+  dashboardView.hidden = isServices || isWaterRisk
   servicesView.hidden = !isServices
+  waterRiskView.hidden = !isWaterRisk
 
   if (isServices) {
     document.title = 'Services & Alerts | Eswatini Water Stress Forecast'
+  } else if (isWaterRisk) {
+    document.title = 'Mnjoli Water-Risk Watch | Eswatini Water Stress Forecast'
+    void Promise.all([loadSurfaceArea(), loadClimateBalance()])
   } else {
     document.title = 'Eswatini Water Stress Forecast'
 
@@ -1372,7 +1641,9 @@ function renderRoute() {
 
 document.addEventListener('click', event => {
   const target = event.target as HTMLElement
-  const link = target.closest<HTMLAnchorElement>('a[href="/services"], a[href="/"]')
+  const link = target.closest<HTMLAnchorElement>(
+    'a[href="/services"], a[href="/water-risk"], a[href="/"]',
+  )
 
   if (!link) return
 

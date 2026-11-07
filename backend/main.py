@@ -21,6 +21,11 @@ from backend.live_history import (
     clear_live_history_cache,
     TRAINING_CLIMATOLOGY,
 )
+from backend.water_availability import (
+    WaterRiskDataError,
+    fetch_surface_water_area,
+    fetch_weather_balance,
+)
 
 
 # ---------------------------------------------------------
@@ -126,6 +131,32 @@ def health():
         "model_loaded": model is not None,
         "model_path": str(MODEL_PATH),
     }
+
+
+@app.get("/water-risk/climate-balance")
+def water_risk_climate_balance():
+    """Return a 30-day ensemble hydroclimate context, not a storage forecast."""
+    try:
+        return fetch_weather_balance()
+    except WaterRiskDataError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc),
+        ) from exc
+
+
+@app.get("/water-risk/surface-area")
+def water_risk_surface_area():
+    """Return a recent Sentinel-2 reservoir surface-area proxy."""
+    try:
+        return fetch_surface_water_area()
+    except WaterRiskDataError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc),
+        ) from exc
+
+
 @app.get("/diagnostics/data-dates")
 def diagnose_data_dates():
     """Report latest source dates and the selected complete month."""

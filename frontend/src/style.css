@@ -1129,6 +1129,222 @@ footer {
   letter-spacing: -.04em;
 }
 
+.water-risk-page {
+  display: grid;
+  gap: 20px;
+}
+
+.water-risk-page[hidden] {
+  display: none;
+}
+
+.water-risk-page .services-page-header,
+.water-risk-notice {
+  margin-bottom: 0;
+}
+
+.watch-card {
+  min-width: 0;
+  padding: 26px 28px;
+  border: 1px solid #dfe9ef;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(37, 72, 94, .05);
+}
+
+.watch-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.watch-card-header h2 {
+  margin: 8px 0;
+  color: #17324d;
+  font-size: 1.25rem;
+}
+
+.watch-card-header p,
+.watch-footnote {
+  color: #627783;
+  line-height: 1.55;
+}
+
+.watch-card-header p {
+  margin: 0;
+}
+
+.watch-button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 15px;
+  color: #fff;
+  background: #247f85;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.watch-button:hover:not(:disabled) {
+  background: #1d686d;
+}
+
+.watch-button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.watch-footnote {
+  margin: 14px 0 0;
+  font-size: .78rem;
+}
+
+.water-proxy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 20px;
+}
+
+.proxy-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.proxy-source-badge {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid #d5e7e8;
+  border-radius: 999px;
+  color: #246a70;
+  background: #f0f8f8;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.proxy-status {
+  margin: 0;
+  color: #718592;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.proxy-error {
+  margin: 0 0 14px;
+  color: #9c3d32;
+  font-size: .85rem;
+  line-height: 1.5;
+}
+
+.proxy-error[hidden] {
+  display: none;
+}
+
+.proxy-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.proxy-metrics-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.proxy-metric {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 15px 13px;
+  border: 1px solid #e4ecef;
+  border-radius: 12px;
+  background: #f9fbfc;
+}
+
+.proxy-metric span {
+  color: #718592;
+  font-size: .72rem;
+  line-height: 1.4;
+}
+
+.proxy-metric strong {
+  color: #17324d;
+  font-size: 1rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.proxy-metric small {
+  color: #718592;
+  font-size: .75rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.proxy-volume-note {
+  margin: 12px 0 0;
+  color: #246a70;
+  font-size: .8rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.validation-notice {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid #eddcaa;
+  border-radius: 14px;
+  color: #665722;
+  background: #fff9df;
+  font-size: .82rem;
+  line-height: 1.55;
+}
+
+.validation-notice strong {
+  color: #614f18;
+  font-size: .9rem;
+}
+
+.water-risk-attribution {
+  margin: -4px 0 0;
+  color: #718592;
+  font-size: .75rem;
+  line-height: 1.5;
+}
+
+.water-risk-attribution a {
+  color: #246a70;
+  font-weight: 750;
+}
+
+@media (max-width: 850px) {
+  .water-proxy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .proxy-metrics-three {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .watch-card {
+    padding: 21px 18px;
+  }
+
+  .watch-card-header {
+    flex-direction: column;
+  }
+}
+
 #monetization-hub .service-card-heading-copy {
   min-width: 0;
 }
