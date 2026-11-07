@@ -1,8 +1,11 @@
 import unittest
 from datetime import datetime
+from types import ModuleType
+from unittest.mock import patch
 
 from backend.water_availability import (
     WaterRiskDataError,
+    fetch_surface_water_area,
     summarize_surface_water_observations,
     summarize_weather_ensemble,
 )
@@ -106,6 +109,37 @@ class SummarizeSurfaceWaterObservationsTests(unittest.TestCase):
                 "water_area_m2": float("inf"),
                 "valid_coverage_fraction": 0.9,
             }])
+
+
+class FetchSurfaceWaterAreaTests(unittest.TestCase):
+    def test_initializes_earth_engine_before_creating_geometry(self):
+        initialized = False
+
+        class GeometryReached(Exception):
+            pass
+
+        def initialize_earth_engine():
+            nonlocal initialized
+            initialized = True
+
+        def create_geometry(_geometry):
+            self.assertTrue(initialized)
+            raise GeometryReached
+
+        ee_module = ModuleType("ee")
+        ee_module.Geometry = create_geometry
+        ingestion_module = ModuleType("backend.data_ingestion")
+        ingestion_module.initialize_earth_engine = initialize_earth_engine
+
+        with patch.dict(
+            "sys.modules",
+            {
+                "ee": ee_module,
+                "backend.data_ingestion": ingestion_module,
+            },
+        ):
+            with self.assertRaises(GeometryReached):
+                fetch_surface_water_area()
 
 
 if __name__ == "__main__":
