@@ -292,9 +292,9 @@ def fetch_surface_water_area() -> dict:
         encoding="utf-8-sig",
     ) as boundary_file:
         boundary = json.load(boundary_file)
-    geometry = ee.Geometry(boundary["geometry"])
 
     initialize_earth_engine()
+    geometry = ee.Geometry(boundary["geometry"])
     now = datetime.now(timezone.utc)
     start_date = (now - timedelta(days=SENTINEL_LOOKBACK_DAYS)).strftime(
         "%Y-%m-%d"
