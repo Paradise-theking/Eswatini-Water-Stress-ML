@@ -1,7 +1,7 @@
 # Mnjoli Water-Risk Watch: Data and Decision Plan
 
-**Status:** Relative satellite/weather proxy prototype implemented; no storage validation or operational thresholds approved  
-**Prepared:** 2026-11-07  
+**Status:** Relative satellite/weather proxy prototype implemented; no storage validation or operational thresholds approved
+**Prepared:** 2026-11-07
 **Scope:** Mnjoli W60E catchment and water-supply risk monitoring
 
 ## Recommendation
