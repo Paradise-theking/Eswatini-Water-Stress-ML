@@ -1,0 +1,8 @@
+# Install with Python 3.12 or newer; Icechunk v2 requires Python >= 3.12.
+numpy>=2.0
+pandas>=2.2
+xarray>=2025.1.2
+zarr>=3.2,<4
+icechunk>=2,<3
+shapely>=2.0
+pyproj>=3.7
