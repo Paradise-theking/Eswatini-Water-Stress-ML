@@ -1,0 +1,36 @@
+{
+  "refresh_run_utc": "2026-11-06T11:21:06.786881+00:00",
+  "earth_engine_project": "eswatiniwaterstress",
+  "sources": {
+    "precipitation": "UCSB-CHG/CHIRPS/DAILY",
+    "meteorological_and_land": "ECMWF/ERA5_LAND/DAILY_AGGR",
+    "catchment": "WWF/HydroSHEDS/v1/Basins/hybas_12"
+  },
+  "source_latest_dates_at_refresh": {
+    "CHIRPS": "2026-09-30",
+    "ERA5-Land": "2026-10-26"
+  },
+  "common_complete_data_through": "2026-09-30",
+  "extraction_start": "2026-01-01",
+  "extracted_days_per_source": 273,
+  "extracted_images": {
+    "CHIRPS": 273,
+    "ERA5-Land": 273
+  },
+  "historical_monthly_input": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\data\\processed\\expanded\\mnjoli_water_stress_monthly_1981_2025.csv",
+  "historical_monthly_input_sha256": "f891fe057ac7048710abe175aa3af26c73bf34141d5e8500130e260e5995ab66",
+  "historical_months_preserved": 540,
+  "historical_values_preserved_within_1e-8": true,
+  "updated_monthly_rows": 549,
+  "updated_start_month": "1981-01",
+  "updated_end_month": "2026-09",
+  "outputs": {
+    "chirps_daily": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09\\chirps_daily_refresh.csv",
+    "era5_land_daily": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09\\era5_land_daily_refresh_raw.csv",
+    "monthly": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09\\mnjoli_water_stress_monthly_updated.csv",
+    "monthly_swba": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09\\mnjoli_water_stress_monthly_updated_swba.csv",
+    "audit_dir": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09\\data_audit"
+  },
+  "audit_passed": true,
+  "audit_input_sha256": "683667b56d2d162582417add3dfe1f1686685e901f591c8dd68749679b1a4e04"
+}

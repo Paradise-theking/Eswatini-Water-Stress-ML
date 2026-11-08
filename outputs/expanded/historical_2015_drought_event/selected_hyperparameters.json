@@ -1,0 +1,15 @@
+{
+    "XGBoost": {
+        "max_depth": 2,
+        "learning_rate": 0.05,
+        "n_estimators": 400,
+        "reg_lambda": 1
+    },
+    "Ridge": {
+        "alpha": 10.0
+    },
+    "ElasticNet": {
+        "alpha": 0.01,
+        "l1_ratio": 0.3
+    }
+}

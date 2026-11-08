@@ -1,0 +1,68 @@
+{
+  "input_file": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\data\\processed\\expanded\\mnjoli_water_stress_monthly_1981_2025_swba.csv",
+  "input_sha256": "1abd8208657022a3a9b0cda93cb3b5c586fddda68676e650d3a1df74480b2bd0",
+  "audit_report": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\drought_onset_model_preparation\\data_audit\\audit_report.json",
+  "audit_input_sha256": "1abd8208657022a3a9b0cda93cb3b5c586fddda68676e650d3a1df74480b2bd0",
+  "all_data_audit_checks_passed": true,
+  "lead_months": 1,
+  "drought_threshold": -1.0,
+  "outer_folds": [
+    "2006-2010",
+    "2011-2015",
+    "2016-2020",
+    "2021-2025"
+  ],
+  "feature_sets": {
+    "current_state": [
+      "origin_swba"
+    ],
+    "hydro_core": [
+      "precipitation_mm",
+      "pet_mm",
+      "volumetric_soil_water_layer_1",
+      "water_balance_3month"
+    ],
+    "state_plus_hydro": [
+      "origin_swba",
+      "precipitation_mm",
+      "pet_mm",
+      "volumetric_soil_water_layer_1",
+      "water_balance_3month"
+    ],
+    "state_plus_season": [
+      "origin_swba",
+      "origin_month_sin",
+      "origin_month_cos"
+    ],
+    "hydro_memory": [
+      "precipitation_mm",
+      "pet_mm",
+      "water_balance_3month",
+      "water_balance_6month",
+      "volumetric_soil_water_layer_1",
+      "volumetric_soil_water_layer_2"
+    ],
+    "atmospheric_demand": [
+      "pet_mm",
+      "temperature_max_c",
+      "surface_solar_radiation_downwards_sum"
+    ],
+    "antecedent_stress": [
+      "origin_swba",
+      "water_balance_6month",
+      "volumetric_soil_water_layer_2",
+      "pet_mm",
+      "temperature_max_c"
+    ]
+  },
+  "missing_value_imputation": "Median imputation is fitted inside each model-training fold before scaling; it supports sparse missing values in added predictors.",
+  "inner_selection": "Mean Brier score across expanding, five-year forward-chaining validation blocks; tie-break by average precision, predictor count, unweighted model, then C.",
+  "threshold_selection": "Maximize recall on the separate outer validation block subject to predeclared caps of 0.5 false-warning episodes and 3 false-warning months per year; tie-break by precision, fewer warnings, then higher threshold.",
+  "maximum_false_warning_episodes_per_year": 0.5,
+  "maximum_false_warning_months_per_year": 3.0,
+  "outer_test_policy": "The model is fit on outer training only. Validation labels select the threshold only. No validation or test labels are used to refit model parameters.",
+  "calibration": "No probability calibration fitted; event counts in validation folds are too small for reliable calibration.",
+  "calendar_month_baseline_prior_strength": 12.0,
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 42
+}

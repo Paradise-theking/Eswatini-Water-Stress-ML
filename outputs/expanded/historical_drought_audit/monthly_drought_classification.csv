@@ -1,0 +1,541 @@
+month_date,swba_3month,year,month,drought,severe_drought,exceptional_dryness,drought_severity_class
+1981-01-01,,1981,1,False,False,False,Not Classified as Drought
+1981-02-01,,1981,2,False,False,False,Not Classified as Drought
+1981-03-01,0.4786413295800515,1981,3,False,False,False,Not Classified as Drought
+1981-04-01,0.4222811090092981,1981,4,False,False,False,Not Classified as Drought
+1981-05-01,0.4607937691075051,1981,5,False,False,False,Not Classified as Drought
+1981-06-01,-0.1377902020585011,1981,6,False,False,False,Not Classified as Drought
+1981-07-01,0.5502737584516779,1981,7,False,False,False,Not Classified as Drought
+1981-08-01,0.6987359784286564,1981,8,False,False,False,Not Classified as Drought
+1981-09-01,1.59587598113359,1981,9,False,False,False,Not Classified as Drought
+1981-10-01,1.508794214895446,1981,10,False,False,False,Not Classified as Drought
+1981-11-01,1.0749399450682156,1981,11,False,False,False,Not Classified as Drought
+1981-12-01,0.6314145165067854,1981,12,False,False,False,Not Classified as Drought
+1982-01-01,0.0840361537705337,1982,1,False,False,False,Not Classified as Drought
+1982-02-01,-0.2481040569659934,1982,2,False,False,False,Not Classified as Drought
+1982-03-01,-0.7961007951464144,1982,3,False,False,False,Not Classified as Drought
+1982-04-01,-0.4524061789274704,1982,4,False,False,False,Not Classified as Drought
+1982-05-01,-0.2571787068184936,1982,5,False,False,False,Not Classified as Drought
+1982-06-01,1.0308199744709556,1982,6,False,False,False,Not Classified as Drought
+1982-07-01,0.179568383350786,1982,7,False,False,False,Not Classified as Drought
+1982-08-01,0.1757842411928582,1982,8,False,False,False,Not Classified as Drought
+1982-09-01,0.1197258654824907,1982,9,False,False,False,Not Classified as Drought
+1982-10-01,-0.2258683322584231,1982,10,False,False,False,Not Classified as Drought
+1982-11-01,-0.613678892009591,1982,11,False,False,False,Not Classified as Drought
+1982-12-01,-1.410154972389362,1982,12,True,False,False,Drought
+1983-01-01,-1.135977441203605,1983,1,True,False,False,Drought
+1983-02-01,-1.1964929096700685,1983,2,True,False,False,Drought
+1983-03-01,-0.5583735820845264,1983,3,False,False,False,Not Classified as Drought
+1983-04-01,-0.8262133125136224,1983,4,False,False,False,Not Classified as Drought
+1983-05-01,-0.4399617197818166,1983,5,False,False,False,Not Classified as Drought
+1983-06-01,-0.6067621100283661,1983,6,False,False,False,Not Classified as Drought
+1983-07-01,0.1835587300410825,1983,7,False,False,False,Not Classified as Drought
+1983-08-01,0.5214058732392688,1983,8,False,False,False,Not Classified as Drought
+1983-09-01,-0.0869631693308843,1983,9,False,False,False,Not Classified as Drought
+1983-10-01,-0.2316565821945854,1983,10,False,False,False,Not Classified as Drought
+1983-11-01,0.934517232022466,1983,11,False,False,False,Not Classified as Drought
+1983-12-01,0.9557842075082024,1983,12,False,False,False,Not Classified as Drought
+1984-01-01,3.0480077554076885,1984,1,False,False,False,Not Classified as Drought
+1984-02-01,1.4843498698041868,1984,2,False,False,False,Not Classified as Drought
+1984-03-01,1.4783463419022749,1984,3,False,False,False,Not Classified as Drought
+1984-04-01,-0.2386196971316212,1984,4,False,False,False,Not Classified as Drought
+1984-05-01,-0.036560637301732,1984,5,False,False,False,Not Classified as Drought
+1984-06-01,-0.0504378217225873,1984,6,False,False,False,Not Classified as Drought
+1984-07-01,1.529060544951046,1984,7,False,False,False,Not Classified as Drought
+1984-08-01,3.116119515836924,1984,8,False,False,False,Not Classified as Drought
+1984-09-01,2.716267630160304,1984,9,False,False,False,Not Classified as Drought
+1984-10-01,1.923853269278344,1984,10,False,False,False,Not Classified as Drought
+1984-11-01,1.3363844760791823,1984,11,False,False,False,Not Classified as Drought
+1984-12-01,0.2460707061498241,1984,12,False,False,False,Not Classified as Drought
+1985-01-01,-0.5799330803856285,1985,1,False,False,False,Not Classified as Drought
+1985-02-01,0.5104596884421777,1985,2,False,False,False,Not Classified as Drought
+1985-03-01,0.7661915813408706,1985,3,False,False,False,Not Classified as Drought
+1985-04-01,1.1294322009436015,1985,4,False,False,False,Not Classified as Drought
+1985-05-01,0.3796732455729208,1985,5,False,False,False,Not Classified as Drought
+1985-06-01,0.4991423807376111,1985,6,False,False,False,Not Classified as Drought
+1985-07-01,0.5886402004633329,1985,7,False,False,False,Not Classified as Drought
+1985-08-01,-0.6095860658522949,1985,8,False,False,False,Not Classified as Drought
+1985-09-01,-0.3325674577996352,1985,9,False,False,False,Not Classified as Drought
+1985-10-01,-0.1767781815403133,1985,10,False,False,False,Not Classified as Drought
+1985-11-01,-0.2919977079336326,1985,11,False,False,False,Not Classified as Drought
+1985-12-01,-0.3572916721324992,1985,12,False,False,False,Not Classified as Drought
+1986-01-01,0.0621525822307698,1986,1,False,False,False,Not Classified as Drought
+1986-02-01,0.0653323306300311,1986,2,False,False,False,Not Classified as Drought
+1986-03-01,-0.2076084993623529,1986,3,False,False,False,Not Classified as Drought
+1986-04-01,-0.1509866084344193,1986,4,False,False,False,Not Classified as Drought
+1986-05-01,-0.141379118807956,1986,5,False,False,False,Not Classified as Drought
+1986-06-01,0.5587224789642147,1986,6,False,False,False,Not Classified as Drought
+1986-07-01,-0.7933020610526921,1986,7,False,False,False,Not Classified as Drought
+1986-08-01,-1.1017550381543877,1986,8,True,False,False,Drought
+1986-09-01,-0.6941877577970113,1986,9,False,False,False,Not Classified as Drought
+1986-10-01,-0.8836583064525161,1986,10,False,False,False,Not Classified as Drought
+1986-11-01,-1.0996275837321507,1986,11,True,False,False,Drought
+1986-12-01,-1.1554118906523865,1986,12,True,False,False,Drought
+1987-01-01,-0.9291137021787208,1987,1,False,False,False,Not Classified as Drought
+1987-02-01,-1.35549010062354,1987,2,True,False,False,Drought
+1987-03-01,-0.7750242622720881,1987,3,False,False,False,Not Classified as Drought
+1987-04-01,-0.751756246393609,1987,4,False,False,False,Not Classified as Drought
+1987-05-01,0.090493314012436,1987,5,False,False,False,Not Classified as Drought
+1987-06-01,-1.4717259959623896,1987,6,True,False,False,Drought
+1987-07-01,-2.1418452754846484,1987,7,True,True,True,Exceptional Dryness
+1987-08-01,-0.9222423397835232,1987,8,False,False,False,Not Classified as Drought
+1987-09-01,1.882278594895415,1987,9,False,False,False,Not Classified as Drought
+1987-10-01,2.285068422635512,1987,10,False,False,False,Not Classified as Drought
+1987-11-01,1.8631651162259169,1987,11,False,False,False,Not Classified as Drought
+1987-12-01,0.5500810508019744,1987,12,False,False,False,Not Classified as Drought
+1988-01-01,-0.5591377013501028,1988,1,False,False,False,Not Classified as Drought
+1988-02-01,-1.0153001411026614,1988,2,True,False,False,Drought
+1988-03-01,-0.7420359785996105,1988,3,False,False,False,Not Classified as Drought
+1988-04-01,-0.190462548729411,1988,4,False,False,False,Not Classified as Drought
+1988-05-01,0.3172788905902206,1988,5,False,False,False,Not Classified as Drought
+1988-06-01,0.1723060464439203,1988,6,False,False,False,Not Classified as Drought
+1988-07-01,-0.0601068517616705,1988,7,False,False,False,Not Classified as Drought
+1988-08-01,0.212675685453139,1988,8,False,False,False,Not Classified as Drought
+1988-09-01,0.2248899089206254,1988,9,False,False,False,Not Classified as Drought
+1988-10-01,1.2087370846414274,1988,10,False,False,False,Not Classified as Drought
+1988-11-01,0.234094082301753,1988,11,False,False,False,Not Classified as Drought
+1988-12-01,0.3550846114759569,1988,12,False,False,False,Not Classified as Drought
+1989-01-01,-0.8760422273923655,1989,1,False,False,False,Not Classified as Drought
+1989-02-01,0.1637384031487055,1989,2,False,False,False,Not Classified as Drought
+1989-03-01,-0.2863757406552625,1989,3,False,False,False,Not Classified as Drought
+1989-04-01,-0.1007418921908347,1989,4,False,False,False,Not Classified as Drought
+1989-05-01,-0.935545489836803,1989,5,False,False,False,Not Classified as Drought
+1989-06-01,-0.0157029970289113,1989,6,False,False,False,Not Classified as Drought
+1989-07-01,0.2566232047391571,1989,7,False,False,False,Not Classified as Drought
+1989-08-01,-0.3739042415273686,1989,8,False,False,False,Not Classified as Drought
+1989-09-01,-1.1172735152626494,1989,9,True,False,False,Drought
+1989-10-01,-0.7060211310325571,1989,10,False,False,False,Not Classified as Drought
+1989-11-01,-0.0554337120729713,1989,11,False,False,False,Not Classified as Drought
+1989-12-01,0.6622676201891137,1989,12,False,False,False,Not Classified as Drought
+1990-01-01,0.4843925206221336,1990,1,False,False,False,Not Classified as Drought
+1990-02-01,0.2995136897928254,1990,2,False,False,False,Not Classified as Drought
+1990-03-01,-0.0129131870842464,1990,3,False,False,False,Not Classified as Drought
+1990-04-01,0.2417406505770724,1990,4,False,False,False,Not Classified as Drought
+1990-05-01,0.3884932947256962,1990,5,False,False,False,Not Classified as Drought
+1990-06-01,-0.06181573887652,1990,6,False,False,False,Not Classified as Drought
+1990-07-01,-0.3899489077709069,1990,7,False,False,False,Not Classified as Drought
+1990-08-01,-0.4825816366617065,1990,8,False,False,False,Not Classified as Drought
+1990-09-01,-0.3324648260845949,1990,9,False,False,False,Not Classified as Drought
+1990-10-01,-0.5042583904448921,1990,10,False,False,False,Not Classified as Drought
+1990-11-01,-1.268309297955885,1990,11,True,False,False,Drought
+1990-12-01,-0.7963540791084996,1990,12,False,False,False,Not Classified as Drought
+1991-01-01,0.2521365465068821,1991,1,False,False,False,Not Classified as Drought
+1991-02-01,0.7762372109487952,1991,2,False,False,False,Not Classified as Drought
+1991-03-01,0.6222753464444957,1991,3,False,False,False,Not Classified as Drought
+1991-04-01,-0.2316999863537585,1991,4,False,False,False,Not Classified as Drought
+1991-05-01,-0.2274535985134479,1991,5,False,False,False,Not Classified as Drought
+1991-06-01,-0.0698507089016912,1991,6,False,False,False,Not Classified as Drought
+1991-07-01,0.7474991174008276,1991,7,False,False,False,Not Classified as Drought
+1991-08-01,0.4926030767485657,1991,8,False,False,False,Not Classified as Drought
+1991-09-01,-0.1610602989475531,1991,9,False,False,False,Not Classified as Drought
+1991-10-01,-0.3742753831473511,1991,10,False,False,False,Not Classified as Drought
+1991-11-01,-0.6558339716480359,1991,11,False,False,False,Not Classified as Drought
+1991-12-01,-0.8000762952634081,1991,12,False,False,False,Not Classified as Drought
+1992-01-01,-1.1490442352650068,1992,1,True,False,False,Drought
+1992-02-01,-1.433838147355815,1992,2,True,False,False,Drought
+1992-03-01,-1.769542905837387,1992,3,True,True,False,Severe Drought
+1992-04-01,-1.8267215544085744,1992,4,True,True,False,Severe Drought
+1992-05-01,-2.377903904889301,1992,5,True,True,True,Exceptional Dryness
+1992-06-01,-2.3801582069717924,1992,6,True,True,True,Exceptional Dryness
+1992-07-01,-2.162202992582055,1992,7,True,True,True,Exceptional Dryness
+1992-08-01,-1.640548640610669,1992,8,True,True,False,Severe Drought
+1992-09-01,-1.0972921971039615,1992,9,True,False,False,Drought
+1992-10-01,-1.5235290507520864,1992,10,True,True,False,Severe Drought
+1992-11-01,-1.6570337993567898,1992,11,True,True,False,Severe Drought
+1992-12-01,-0.955809213569453,1992,12,False,False,False,Not Classified as Drought
+1993-01-01,-0.3845561257114241,1993,1,False,False,False,Not Classified as Drought
+1993-02-01,0.5266927728311984,1993,2,False,False,False,Not Classified as Drought
+1993-03-01,0.2513202739527404,1993,3,False,False,False,Not Classified as Drought
+1993-04-01,0.3809469381691182,1993,4,False,False,False,Not Classified as Drought
+1993-05-01,-0.1996560618372978,1993,5,False,False,False,Not Classified as Drought
+1993-06-01,-0.6205610256215784,1993,6,False,False,False,Not Classified as Drought
+1993-07-01,0.3236328895699358,1993,7,False,False,False,Not Classified as Drought
+1993-08-01,0.8667376865503228,1993,8,False,False,False,Not Classified as Drought
+1993-09-01,0.530947344543654,1993,9,False,False,False,Not Classified as Drought
+1993-10-01,0.5841469761096029,1993,10,False,False,False,Not Classified as Drought
+1993-11-01,-0.4319579011506224,1993,11,False,False,False,Not Classified as Drought
+1993-12-01,-0.7386678881600311,1993,12,False,False,False,Not Classified as Drought
+1994-01-01,-1.40371158297259,1994,1,True,False,False,Drought
+1994-02-01,-1.279383233056424,1994,2,True,False,False,Drought
+1994-03-01,-1.1261880633305728,1994,3,True,False,False,Drought
+1994-04-01,-1.1471134215406615,1994,4,True,False,False,Drought
+1994-05-01,-1.0129248350300455,1994,5,True,False,False,Drought
+1994-06-01,-1.5087448152724208,1994,6,True,True,False,Severe Drought
+1994-07-01,-1.1840146572448331,1994,7,True,False,False,Drought
+1994-08-01,-1.0992724423143605,1994,8,True,False,False,Drought
+1994-09-01,-0.668129926911004,1994,9,False,False,False,Not Classified as Drought
+1994-10-01,-0.0553569872165417,1994,10,False,False,False,Not Classified as Drought
+1994-11-01,-0.5176627349238367,1994,11,False,False,False,Not Classified as Drought
+1994-12-01,-0.511324857425876,1994,12,False,False,False,Not Classified as Drought
+1995-01-01,-0.7281318546830395,1995,1,False,False,False,Not Classified as Drought
+1995-02-01,-0.7341402261319213,1995,2,False,False,False,Not Classified as Drought
+1995-03-01,-0.6020934565182414,1995,3,False,False,False,Not Classified as Drought
+1995-04-01,-0.6603356046963735,1995,4,False,False,False,Not Classified as Drought
+1995-05-01,0.0355521915078815,1995,5,False,False,False,Not Classified as Drought
+1995-06-01,0.34441476310543,1995,6,False,False,False,Not Classified as Drought
+1995-07-01,0.4674385637541166,1995,7,False,False,False,Not Classified as Drought
+1995-08-01,0.1925169157795093,1995,8,False,False,False,Not Classified as Drought
+1995-09-01,0.1024629379192367,1995,9,False,False,False,Not Classified as Drought
+1995-10-01,-0.0038368138978841,1995,10,False,False,False,Not Classified as Drought
+1995-11-01,0.0777933442732942,1995,11,False,False,False,Not Classified as Drought
+1995-12-01,0.6992718404891874,1995,12,False,False,False,Not Classified as Drought
+1996-01-01,0.9310978557369656,1996,1,False,False,False,Not Classified as Drought
+1996-02-01,1.1797205866574367,1996,2,False,False,False,Not Classified as Drought
+1996-03-01,0.5936863952085316,1996,3,False,False,False,Not Classified as Drought
+1996-04-01,0.5836815505375422,1996,4,False,False,False,Not Classified as Drought
+1996-05-01,0.4934708856586534,1996,5,False,False,False,Not Classified as Drought
+1996-06-01,1.0160245516972646,1996,6,False,False,False,Not Classified as Drought
+1996-07-01,1.597188329534342,1996,7,False,False,False,Not Classified as Drought
+1996-08-01,1.1416469007183865,1996,8,False,False,False,Not Classified as Drought
+1996-09-01,0.0607213801785727,1996,9,False,False,False,Not Classified as Drought
+1996-10-01,-0.1519087422744844,1996,10,False,False,False,Not Classified as Drought
+1996-11-01,-0.5330274049997806,1996,11,False,False,False,Not Classified as Drought
+1996-12-01,-0.7932529719771162,1996,12,False,False,False,Not Classified as Drought
+1997-01-01,-1.0393536336489826,1997,1,True,False,False,Drought
+1997-02-01,-0.8654285526604942,1997,2,False,False,False,Not Classified as Drought
+1997-03-01,0.1768005745199165,1997,3,False,False,False,Not Classified as Drought
+1997-04-01,0.5016962340850701,1997,4,False,False,False,Not Classified as Drought
+1997-05-01,1.5290478200379976,1997,5,False,False,False,Not Classified as Drought
+1997-06-01,0.8571723362844353,1997,6,False,False,False,Not Classified as Drought
+1997-07-01,1.2947620163104443,1997,7,False,False,False,Not Classified as Drought
+1997-08-01,1.337025570915341,1997,8,False,False,False,Not Classified as Drought
+1997-09-01,1.867783339586796,1997,9,False,False,False,Not Classified as Drought
+1997-10-01,1.4250851475810558,1997,10,False,False,False,Not Classified as Drought
+1997-11-01,1.0470486686322764,1997,11,False,False,False,Not Classified as Drought
+1997-12-01,0.4161078634229351,1997,12,False,False,False,Not Classified as Drought
+1998-01-01,0.2792626605973277,1998,1,False,False,False,Not Classified as Drought
+1998-02-01,-0.2187337818605867,1998,2,False,False,False,Not Classified as Drought
+1998-03-01,-0.4317786062098604,1998,3,False,False,False,Not Classified as Drought
+1998-04-01,-0.8846630156897523,1998,4,False,False,False,Not Classified as Drought
+1998-05-01,-1.0232183116100966,1998,5,True,False,False,Drought
+1998-06-01,-1.4066175312010776,1998,6,True,False,False,Drought
+1998-07-01,-0.759497987378643,1998,7,False,False,False,Not Classified as Drought
+1998-08-01,-0.7365819334052276,1998,8,False,False,False,Not Classified as Drought
+1998-09-01,-0.0486895686881263,1998,9,False,False,False,Not Classified as Drought
+1998-10-01,1.1449128853046155,1998,10,False,False,False,Not Classified as Drought
+1998-11-01,1.5486937202748137,1998,11,False,False,False,Not Classified as Drought
+1998-12-01,2.0526039954912365,1998,12,False,False,False,Not Classified as Drought
+1999-01-01,1.109955863343193,1999,1,False,False,False,Not Classified as Drought
+1999-02-01,0.9212418445391756,1999,2,False,False,False,Not Classified as Drought
+1999-03-01,0.627761279064631,1999,3,False,False,False,Not Classified as Drought
+1999-04-01,0.6382213483461409,1999,4,False,False,False,Not Classified as Drought
+1999-05-01,0.7087894435592134,1999,5,False,False,False,Not Classified as Drought
+1999-06-01,-0.0732717945272932,1999,6,False,False,False,Not Classified as Drought
+1999-07-01,-0.0430333180183901,1999,7,False,False,False,Not Classified as Drought
+1999-08-01,0.0786133425659129,1999,8,False,False,False,Not Classified as Drought
+1999-09-01,0.5233420132683411,1999,9,False,False,False,Not Classified as Drought
+1999-10-01,0.2042141223673051,1999,10,False,False,False,Not Classified as Drought
+1999-11-01,0.3116339137135868,1999,11,False,False,False,Not Classified as Drought
+1999-12-01,0.6910386351903317,1999,12,False,False,False,Not Classified as Drought
+2000-01-01,1.382981362211544,2000,1,False,False,False,Not Classified as Drought
+2000-02-01,3.1227417539623654,2000,2,False,False,False,Not Classified as Drought
+2000-03-01,3.157416648247143,2000,3,False,False,False,Not Classified as Drought
+2000-04-01,3.553967219508294,2000,4,False,False,False,Not Classified as Drought
+2000-05-01,2.6630711156769484,2000,5,False,False,False,Not Classified as Drought
+2000-06-01,2.17529566817996,2000,6,False,False,False,Not Classified as Drought
+2000-07-01,1.9099523369276563,2000,7,False,False,False,Not Classified as Drought
+2000-08-01,1.3860580513526854,2000,8,False,False,False,Not Classified as Drought
+2000-09-01,0.7404323245998377,2000,9,False,False,False,Not Classified as Drought
+2000-10-01,0.7598388552744123,2000,10,False,False,False,Not Classified as Drought
+2000-11-01,1.732056594120099,2000,11,False,False,False,Not Classified as Drought
+2000-12-01,1.5751899407927297,2000,12,False,False,False,Not Classified as Drought
+2001-01-01,0.4491562807931376,2001,1,False,False,False,Not Classified as Drought
+2001-02-01,0.2082599203481061,2001,2,False,False,False,Not Classified as Drought
+2001-03-01,0.0583689529116768,2001,3,False,False,False,Not Classified as Drought
+2001-04-01,0.923286400977488,2001,4,False,False,False,Not Classified as Drought
+2001-05-01,0.6746780712635241,2001,5,False,False,False,Not Classified as Drought
+2001-06-01,1.6731853690469007,2001,6,False,False,False,Not Classified as Drought
+2001-07-01,1.3074816560741238,2001,7,False,False,False,Not Classified as Drought
+2001-08-01,0.6254090479575404,2001,8,False,False,False,Not Classified as Drought
+2001-09-01,-0.1454903801632218,2001,9,False,False,False,Not Classified as Drought
+2001-10-01,-0.0505831473498527,2001,10,False,False,False,Not Classified as Drought
+2001-11-01,1.204998229484901,2001,11,False,False,False,Not Classified as Drought
+2001-12-01,1.6201225240416852,2001,12,False,False,False,Not Classified as Drought
+2002-01-01,1.0736821008358552,2002,1,False,False,False,Not Classified as Drought
+2002-02-01,-0.0827935253236606,2002,2,False,False,False,Not Classified as Drought
+2002-03-01,-0.7766761381603946,2002,3,False,False,False,Not Classified as Drought
+2002-04-01,-0.7384559201741073,2002,4,False,False,False,Not Classified as Drought
+2002-05-01,-1.245869223745297,2002,5,True,False,False,Drought
+2002-06-01,-0.6217598882261682,2002,6,False,False,False,Not Classified as Drought
+2002-07-01,-0.803154538506846,2002,7,False,False,False,Not Classified as Drought
+2002-08-01,0.4136332928702729,2002,8,False,False,False,Not Classified as Drought
+2002-09-01,0.3900929590141013,2002,9,False,False,False,Not Classified as Drought
+2002-10-01,-0.0176682745391902,2002,10,False,False,False,Not Classified as Drought
+2002-11-01,-1.1581736216641676,2002,11,True,False,False,Drought
+2002-12-01,-1.0427170828748211,2002,12,True,False,False,Drought
+2003-01-01,-1.1903997923820642,2003,1,True,False,False,Drought
+2003-02-01,-0.6820454599002242,2003,2,False,False,False,Not Classified as Drought
+2003-03-01,-1.139772443627607,2003,3,True,False,False,Drought
+2003-04-01,-1.1258132664074356,2003,4,True,False,False,Drought
+2003-05-01,-1.4692799352727277,2003,5,True,False,False,Drought
+2003-06-01,-0.4288073818520252,2003,6,False,False,False,Not Classified as Drought
+2003-07-01,0.011466688189906,2003,7,False,False,False,Not Classified as Drought
+2003-08-01,-0.982260228627733,2003,8,False,False,False,Not Classified as Drought
+2003-09-01,-0.9900876669839412,2003,9,False,False,False,Not Classified as Drought
+2003-10-01,-1.4684025071010165,2003,10,True,False,False,Drought
+2003-11-01,-1.3067061871606496,2003,11,True,False,False,Drought
+2003-12-01,-2.310433113094379,2003,12,True,True,True,Exceptional Dryness
+2004-01-01,-1.0674711188139197,2004,1,True,False,False,Drought
+2004-02-01,-0.2189197029481791,2004,2,False,False,False,Not Classified as Drought
+2004-03-01,0.8206114963880223,2004,3,False,False,False,Not Classified as Drought
+2004-04-01,0.7973555410584152,2004,4,False,False,False,Not Classified as Drought
+2004-05-01,0.7897275239187113,2004,5,False,False,False,Not Classified as Drought
+2004-06-01,0.278388099598279,2004,6,False,False,False,Not Classified as Drought
+2004-07-01,0.4028018840104846,2004,7,False,False,False,Not Classified as Drought
+2004-08-01,0.4585311578426855,2004,8,False,False,False,Not Classified as Drought
+2004-09-01,-0.1818532756983687,2004,9,False,False,False,Not Classified as Drought
+2004-10-01,-0.8083197295844803,2004,10,False,False,False,Not Classified as Drought
+2004-11-01,-0.6634517530267754,2004,11,False,False,False,Not Classified as Drought
+2004-12-01,-0.823271844978626,2004,12,False,False,False,Not Classified as Drought
+2005-01-01,0.0622242849299115,2005,1,False,False,False,Not Classified as Drought
+2005-02-01,-0.1776090069272198,2005,2,False,False,False,Not Classified as Drought
+2005-03-01,0.3672772945349711,2005,3,False,False,False,Not Classified as Drought
+2005-04-01,0.1936017191520566,2005,4,False,False,False,Not Classified as Drought
+2005-05-01,0.4703737800503073,2005,5,False,False,False,Not Classified as Drought
+2005-06-01,-0.4341371773259996,2005,6,False,False,False,Not Classified as Drought
+2005-07-01,-0.9092307816630806,2005,7,False,False,False,Not Classified as Drought
+2005-08-01,-0.9027756073688756,2005,8,False,False,False,Not Classified as Drought
+2005-09-01,-0.9872529697477794,2005,9,False,False,False,Not Classified as Drought
+2005-10-01,-1.1474525482002178,2005,10,True,False,False,Drought
+2005-11-01,-0.8612034275057652,2005,11,False,False,False,Not Classified as Drought
+2005-12-01,-0.6846202190908194,2005,12,False,False,False,Not Classified as Drought
+2006-01-01,0.4692426382003097,2006,1,False,False,False,Not Classified as Drought
+2006-02-01,0.9452740072750988,2006,2,False,False,False,Not Classified as Drought
+2006-03-01,1.6167879067184854,2006,3,False,False,False,Not Classified as Drought
+2006-04-01,1.468331740120857,2006,4,False,False,False,Not Classified as Drought
+2006-05-01,1.5084473374390286,2006,5,False,False,False,Not Classified as Drought
+2006-06-01,0.1748463109425413,2006,6,False,False,False,Not Classified as Drought
+2006-07-01,-0.4688823045708966,2006,7,False,False,False,Not Classified as Drought
+2006-08-01,-0.1052848145095151,2006,8,False,False,False,Not Classified as Drought
+2006-09-01,0.2044322004578244,2006,9,False,False,False,Not Classified as Drought
+2006-10-01,0.1743405183579729,2006,10,False,False,False,Not Classified as Drought
+2006-11-01,-0.0638887179905356,2006,11,False,False,False,Not Classified as Drought
+2006-12-01,0.1640376343851733,2006,12,False,False,False,Not Classified as Drought
+2007-01-01,-0.4906747223287529,2007,1,False,False,False,Not Classified as Drought
+2007-02-01,-0.6875270216718041,2007,2,False,False,False,Not Classified as Drought
+2007-03-01,-1.2585469244832344,2007,3,True,False,False,Drought
+2007-04-01,-0.6021348801925022,2007,4,False,False,False,Not Classified as Drought
+2007-05-01,-0.963831642893196,2007,5,False,False,False,Not Classified as Drought
+2007-06-01,0.0816476459580212,2007,6,False,False,False,Not Classified as Drought
+2007-07-01,-1.1111201688541037,2007,7,True,False,False,Drought
+2007-08-01,-1.2285056040849596,2007,8,True,False,False,Drought
+2007-09-01,-1.232735905424136,2007,9,True,False,False,Drought
+2007-10-01,-0.5729497969162879,2007,10,False,False,False,Not Classified as Drought
+2007-11-01,-0.0754624943968456,2007,11,False,False,False,Not Classified as Drought
+2007-12-01,0.1111634200727211,2007,12,False,False,False,Not Classified as Drought
+2008-01-01,0.2722375398027252,2008,1,False,False,False,Not Classified as Drought
+2008-02-01,-0.3998837282816951,2008,2,False,False,False,Not Classified as Drought
+2008-03-01,-0.4147784308253527,2008,3,False,False,False,Not Classified as Drought
+2008-04-01,-0.5053102683194811,2008,4,False,False,False,Not Classified as Drought
+2008-05-01,0.4365554683359422,2008,5,False,False,False,Not Classified as Drought
+2008-06-01,1.08033899995955,2008,6,False,False,False,Not Classified as Drought
+2008-07-01,0.117268054618859,2008,7,False,False,False,Not Classified as Drought
+2008-08-01,-0.6984727975514264,2008,8,False,False,False,Not Classified as Drought
+2008-09-01,-1.376250503739174,2008,9,True,False,False,Drought
+2008-10-01,-1.4475338106095506,2008,10,True,False,False,Drought
+2008-11-01,-0.7623044911009202,2008,11,False,False,False,Not Classified as Drought
+2008-12-01,-0.0938891053932517,2008,12,False,False,False,Not Classified as Drought
+2009-01-01,0.7381958323613541,2009,1,False,False,False,Not Classified as Drought
+2009-02-01,0.8873388771470618,2009,2,False,False,False,Not Classified as Drought
+2009-03-01,0.460442326260689,2009,3,False,False,False,Not Classified as Drought
+2009-04-01,-0.1124095358202837,2009,4,False,False,False,Not Classified as Drought
+2009-05-01,-0.871651095223339,2009,5,False,False,False,Not Classified as Drought
+2009-06-01,-1.2542491912390272,2009,6,True,False,False,Drought
+2009-07-01,-0.518111591491959,2009,7,False,False,False,Not Classified as Drought
+2009-08-01,-0.0667122520749793,2009,8,False,False,False,Not Classified as Drought
+2009-09-01,-0.2685018337032376,2009,9,False,False,False,Not Classified as Drought
+2009-10-01,0.2438448983641306,2009,10,False,False,False,Not Classified as Drought
+2009-11-01,1.1554901268941666,2009,11,False,False,False,Not Classified as Drought
+2009-12-01,1.0797436917316392,2009,12,False,False,False,Not Classified as Drought
+2010-01-01,0.8347852409658673,2010,1,False,False,False,Not Classified as Drought
+2010-02-01,-0.4952113610468732,2010,2,False,False,False,Not Classified as Drought
+2010-03-01,-0.5781187328773507,2010,3,False,False,False,Not Classified as Drought
+2010-04-01,-0.2886987145610388,2010,4,False,False,False,Not Classified as Drought
+2010-05-01,0.2559681301045606,2010,5,False,False,False,Not Classified as Drought
+2010-06-01,1.2000879614272582,2010,6,False,False,False,Not Classified as Drought
+2010-07-01,-0.1227649220070435,2010,7,False,False,False,Not Classified as Drought
+2010-08-01,-0.7670126949250545,2010,8,False,False,False,Not Classified as Drought
+2010-09-01,-1.2384512267755063,2010,9,True,False,False,Drought
+2010-10-01,-1.1127786792975884,2010,10,True,False,False,Drought
+2010-11-01,-0.5050617504617282,2010,11,False,False,False,Not Classified as Drought
+2010-12-01,0.6632929478610327,2010,12,False,False,False,Not Classified as Drought
+2011-01-01,0.9016024833202838,2011,1,False,False,False,Not Classified as Drought
+2011-02-01,0.1581843361185989,2011,2,False,False,False,Not Classified as Drought
+2011-03-01,-0.548485231838132,2011,3,False,False,False,Not Classified as Drought
+2011-04-01,-0.8182489425749969,2011,4,False,False,False,Not Classified as Drought
+2011-05-01,-0.627782336825073,2011,5,False,False,False,Not Classified as Drought
+2011-06-01,-0.7765626458040811,2011,6,False,False,False,Not Classified as Drought
+2011-07-01,-1.1250167909630595,2011,7,True,False,False,Drought
+2011-08-01,-0.4326652214229608,2011,8,False,False,False,Not Classified as Drought
+2011-09-01,-0.3006947336078888,2011,9,False,False,False,Not Classified as Drought
+2011-10-01,-0.6205934014002823,2011,10,False,False,False,Not Classified as Drought
+2011-11-01,-1.3905584366422343,2011,11,True,False,False,Drought
+2011-12-01,-1.3800729552646602,2011,12,True,False,False,Drought
+2012-01-01,-0.9053737001278956,2012,1,False,False,False,Not Classified as Drought
+2012-02-01,-0.7609651426927929,2012,2,False,False,False,Not Classified as Drought
+2012-03-01,-0.8316025900873368,2012,3,False,False,False,Not Classified as Drought
+2012-04-01,-1.3279615121776878,2012,4,True,False,False,Drought
+2012-05-01,-1.650015715935272,2012,5,True,True,False,Severe Drought
+2012-06-01,-2.3467266349992437,2012,6,True,True,True,Exceptional Dryness
+2012-07-01,-2.085219917005986,2012,7,True,True,True,Exceptional Dryness
+2012-08-01,-3.053673424887134,2012,8,True,True,True,Exceptional Dryness
+2012-09-01,-0.2237998616258445,2012,9,False,False,False,Not Classified as Drought
+2012-10-01,0.8453649414113592,2012,10,False,False,False,Not Classified as Drought
+2012-11-01,1.1750583678359583,2012,11,False,False,False,Not Classified as Drought
+2012-12-01,0.4624448596760078,2012,12,False,False,False,Not Classified as Drought
+2013-01-01,0.2893620519827857,2013,1,False,False,False,Not Classified as Drought
+2013-02-01,0.0161394149263849,2013,2,False,False,False,Not Classified as Drought
+2013-03-01,-0.1421642631131738,2013,3,False,False,False,Not Classified as Drought
+2013-04-01,-0.4026469082971302,2013,4,False,False,False,Not Classified as Drought
+2013-05-01,-0.2577583558262087,2013,5,False,False,False,Not Classified as Drought
+2013-06-01,-0.3573995498606958,2013,6,False,False,False,Not Classified as Drought
+2013-07-01,-0.4751566150645545,2013,7,False,False,False,Not Classified as Drought
+2013-08-01,-0.9418066994446505,2013,8,False,False,False,Not Classified as Drought
+2013-09-01,-0.83262277253523,2013,9,False,False,False,Not Classified as Drought
+2013-10-01,-0.2515613911932825,2013,10,False,False,False,Not Classified as Drought
+2013-11-01,-0.3905080621800763,2013,11,False,False,False,Not Classified as Drought
+2013-12-01,0.2643517562355506,2013,12,False,False,False,Not Classified as Drought
+2014-01-01,-0.4040239379673053,2014,1,False,False,False,Not Classified as Drought
+2014-02-01,-0.4792320071401166,2014,2,False,False,False,Not Classified as Drought
+2014-03-01,-0.532014748922589,2014,3,False,False,False,Not Classified as Drought
+2014-04-01,-0.5216086690403621,2014,4,False,False,False,Not Classified as Drought
+2014-05-01,-0.3814577928117269,2014,5,False,False,False,Not Classified as Drought
+2014-06-01,-1.602280563751104,2014,6,True,True,False,Severe Drought
+2014-07-01,-1.5376107266083765,2014,7,True,True,False,Severe Drought
+2014-08-01,-1.504415245948677,2014,8,True,True,False,Severe Drought
+2014-09-01,-1.2470272091946,2014,9,True,False,False,Drought
+2014-10-01,-0.9069858264158884,2014,10,False,False,False,Not Classified as Drought
+2014-11-01,-0.6914080674190541,2014,11,False,False,False,Not Classified as Drought
+2014-12-01,0.0445988086551869,2014,12,False,False,False,Not Classified as Drought
+2015-01-01,0.090475591214344,2015,1,False,False,False,Not Classified as Drought
+2015-02-01,0.3684993242932838,2015,2,False,False,False,Not Classified as Drought
+2015-03-01,-0.2038776788709714,2015,3,False,False,False,Not Classified as Drought
+2015-04-01,-0.1726696254991321,2015,4,False,False,False,Not Classified as Drought
+2015-05-01,-0.8721650629693295,2015,5,False,False,False,Not Classified as Drought
+2015-06-01,-0.8098757948916306,2015,6,False,False,False,Not Classified as Drought
+2015-07-01,-0.9014924680362064,2015,7,False,False,False,Not Classified as Drought
+2015-08-01,-0.7929536424271244,2015,8,False,False,False,Not Classified as Drought
+2015-09-01,0.1379993354699704,2015,9,False,False,False,Not Classified as Drought
+2015-10-01,-0.7072077883904088,2015,10,False,False,False,Not Classified as Drought
+2015-11-01,-1.724438272451419,2015,11,True,True,False,Severe Drought
+2015-12-01,-2.469858395053368,2015,12,True,True,True,Exceptional Dryness
+2016-01-01,-2.1583203863897,2016,1,True,True,True,Exceptional Dryness
+2016-02-01,-1.3516498537094244,2016,2,True,False,False,Drought
+2016-03-01,-0.8485006669789694,2016,3,False,False,False,Not Classified as Drought
+2016-04-01,-0.8300724020322877,2016,4,False,False,False,Not Classified as Drought
+2016-05-01,0.1574165571912957,2016,5,False,False,False,Not Classified as Drought
+2016-06-01,0.179223740977735,2016,6,False,False,False,Not Classified as Drought
+2016-07-01,1.5055099224404809,2016,7,False,False,False,Not Classified as Drought
+2016-08-01,-0.9260695828718332,2016,8,False,False,False,Not Classified as Drought
+2016-09-01,-0.530859918495973,2016,9,False,False,False,Not Classified as Drought
+2016-10-01,-0.4765415586754606,2016,10,False,False,False,Not Classified as Drought
+2016-11-01,1.1441366168345508,2016,11,False,False,False,Not Classified as Drought
+2016-12-01,1.1916504039954223,2016,12,False,False,False,Not Classified as Drought
+2017-01-01,1.3031621185622912,2017,1,False,False,False,Not Classified as Drought
+2017-02-01,0.314591887820998,2017,2,False,False,False,Not Classified as Drought
+2017-03-01,0.1102258866547065,2017,3,False,False,False,Not Classified as Drought
+2017-04-01,0.0212553167111024,2017,4,False,False,False,Not Classified as Drought
+2017-05-01,-0.1559338217104359,2017,5,False,False,False,Not Classified as Drought
+2017-06-01,-0.1223051287874383,2017,6,False,False,False,Not Classified as Drought
+2017-07-01,-0.6030927872273703,2017,7,False,False,False,Not Classified as Drought
+2017-08-01,-0.7895554735357064,2017,8,False,False,False,Not Classified as Drought
+2017-09-01,-0.231099123608875,2017,9,False,False,False,Not Classified as Drought
+2017-10-01,-0.2911534838643717,2017,10,False,False,False,Not Classified as Drought
+2017-11-01,-0.24916585522579,2017,11,False,False,False,Not Classified as Drought
+2017-12-01,-0.2434313653848858,2017,12,False,False,False,Not Classified as Drought
+2018-01-01,-0.7601063414728825,2018,1,False,False,False,Not Classified as Drought
+2018-02-01,-0.286202436464936,2018,2,False,False,False,Not Classified as Drought
+2018-03-01,-0.2974059775079734,2018,3,False,False,False,Not Classified as Drought
+2018-04-01,0.4957753594374196,2018,4,False,False,False,Not Classified as Drought
+2018-05-01,0.6138445928906517,2018,5,False,False,False,Not Classified as Drought
+2018-06-01,0.8700528260994845,2018,6,False,False,False,Not Classified as Drought
+2018-07-01,0.5692281369162643,2018,7,False,False,False,Not Classified as Drought
+2018-08-01,0.0869243437685052,2018,8,False,False,False,Not Classified as Drought
+2018-09-01,-0.2733270473015575,2018,9,False,False,False,Not Classified as Drought
+2018-10-01,-0.7130644368722023,2018,10,False,False,False,Not Classified as Drought
+2018-11-01,-1.3791753377781646,2018,11,True,False,False,Drought
+2018-12-01,-1.4414059075976895,2018,12,True,False,False,Drought
+2019-01-01,-1.0238919417267704,2019,1,True,False,False,Drought
+2019-02-01,-0.0177631932808727,2019,2,False,False,False,Not Classified as Drought
+2019-03-01,0.3375554596445566,2019,3,False,False,False,Not Classified as Drought
+2019-04-01,0.9039037863692536,2019,4,False,False,False,Not Classified as Drought
+2019-05-01,0.6504349098621386,2019,5,False,False,False,Not Classified as Drought
+2019-06-01,0.5650519574886993,2019,6,False,False,False,Not Classified as Drought
+2019-07-01,-1.298289561408508,2019,7,True,False,False,Drought
+2019-08-01,-1.450221913777482,2019,8,True,False,False,Drought
+2019-09-01,-0.8746312757750598,2019,9,False,False,False,Not Classified as Drought
+2019-10-01,-0.5365062285780707,2019,10,False,False,False,Not Classified as Drought
+2019-11-01,-0.4019137341895238,2019,11,False,False,False,Not Classified as Drought
+2019-12-01,-0.5070469976595198,2019,12,False,False,False,Not Classified as Drought
+2020-01-01,-0.2942796069225022,2020,1,False,False,False,Not Classified as Drought
+2020-02-01,0.0111603918570175,2020,2,False,False,False,Not Classified as Drought
+2020-03-01,0.0789761008710943,2020,3,False,False,False,Not Classified as Drought
+2020-04-01,0.4162737413416344,2020,4,False,False,False,Not Classified as Drought
+2020-05-01,0.2193241940900454,2020,5,False,False,False,Not Classified as Drought
+2020-06-01,0.772913865571709,2020,6,False,False,False,Not Classified as Drought
+2020-07-01,0.2796387198212706,2020,7,False,False,False,Not Classified as Drought
+2020-08-01,0.1778825530266351,2020,8,False,False,False,Not Classified as Drought
+2020-09-01,0.2063823781309938,2020,9,False,False,False,Not Classified as Drought
+2020-10-01,0.2981800133208225,2020,10,False,False,False,Not Classified as Drought
+2020-11-01,-0.2033973908755173,2020,11,False,False,False,Not Classified as Drought
+2020-12-01,-0.8025116832717809,2020,12,False,False,False,Not Classified as Drought
+2021-01-01,0.0303865871047972,2021,1,False,False,False,Not Classified as Drought
+2021-02-01,1.8217551858954344,2021,2,False,False,False,Not Classified as Drought
+2021-03-01,1.9627896603606072,2021,3,False,False,False,Not Classified as Drought
+2021-04-01,1.4905359408307828,2021,4,False,False,False,Not Classified as Drought
+2021-05-01,-0.1946139241504583,2021,5,False,False,False,Not Classified as Drought
+2021-06-01,-0.4040654814949212,2021,6,False,False,False,Not Classified as Drought
+2021-07-01,-0.0894976931082601,2021,7,False,False,False,Not Classified as Drought
+2021-08-01,-0.1095711926897067,2021,8,False,False,False,Not Classified as Drought
+2021-09-01,-0.3833207226415557,2021,9,False,False,False,Not Classified as Drought
+2021-10-01,-0.0528404126856925,2021,10,False,False,False,Not Classified as Drought
+2021-11-01,-0.092809013468908,2021,11,False,False,False,Not Classified as Drought
+2021-12-01,0.7622651577446631,2021,12,False,False,False,Not Classified as Drought
+2022-01-01,0.6800624302767099,2022,1,False,False,False,Not Classified as Drought
+2022-02-01,0.1904597581984637,2022,2,False,False,False,Not Classified as Drought
+2022-03-01,-0.4565931379041646,2022,3,False,False,False,Not Classified as Drought
+2022-04-01,-0.3974863209672627,2022,4,False,False,False,Not Classified as Drought
+2022-05-01,1.0526170659860232,2022,5,False,False,False,Not Classified as Drought
+2022-06-01,2.9746777772636293,2022,6,False,False,False,Not Classified as Drought
+2022-07-01,2.7098577316473764,2022,7,False,False,False,Not Classified as Drought
+2022-08-01,1.1338468281262346,2022,8,False,False,False,Not Classified as Drought
+2022-09-01,-0.324054405739306,2022,9,False,False,False,Not Classified as Drought
+2022-10-01,-0.6861083982837851,2022,10,False,False,False,Not Classified as Drought
+2022-11-01,-0.6014962488531034,2022,11,False,False,False,Not Classified as Drought
+2022-12-01,0.1471926133387,2022,12,False,False,False,Not Classified as Drought
+2023-01-01,-0.3934950332545087,2023,1,False,False,False,Not Classified as Drought
+2023-02-01,2.5520528403600378,2023,2,False,False,False,Not Classified as Drought
+2023-03-01,1.8206342715753427,2023,3,False,False,False,Not Classified as Drought
+2023-04-01,2.6210826019126774,2023,4,False,False,False,Not Classified as Drought
+2023-05-01,-0.4462878453865187,2023,5,False,False,False,Not Classified as Drought
+2023-06-01,-0.8324039672195384,2023,6,False,False,False,Not Classified as Drought
+2023-07-01,0.6895094370554414,2023,7,False,False,False,Not Classified as Drought
+2023-08-01,0.1277122282125051,2023,8,False,False,False,Not Classified as Drought
+2023-09-01,0.4445281869420747,2023,9,False,False,False,Not Classified as Drought
+2023-10-01,0.55044967752658,2023,10,False,False,False,Not Classified as Drought
+2023-11-01,-0.0010833123635982,2023,11,False,False,False,Not Classified as Drought
+2023-12-01,0.9209998975908348,2023,12,False,False,False,Not Classified as Drought
+2024-01-01,0.2776658495790858,2024,1,False,False,False,Not Classified as Drought
+2024-02-01,0.2828770478096041,2024,2,False,False,False,Not Classified as Drought
+2024-03-01,1.0383972119222211,2024,3,False,False,False,Not Classified as Drought
+2024-04-01,1.898226376784108,2024,4,False,False,False,Not Classified as Drought
+2024-05-01,3.787730974910981,2024,5,False,False,False,Not Classified as Drought
+2024-06-01,1.009606691535987,2024,6,False,False,False,Not Classified as Drought
+2024-07-01,-0.72389574939097,2024,7,False,False,False,Not Classified as Drought
+2024-08-01,-1.1756086942819215,2024,8,True,False,False,Drought
+2024-09-01,-0.5584417187464137,2024,9,False,False,False,Not Classified as Drought
+2024-10-01,-0.1790705991388788,2024,10,False,False,False,Not Classified as Drought
+2024-11-01,-0.4435564595793614,2024,11,False,False,False,Not Classified as Drought
+2024-12-01,-0.6884984766387033,2024,12,False,False,False,Not Classified as Drought
+2025-01-01,-0.3154664240396588,2025,1,False,False,False,Not Classified as Drought
+2025-02-01,0.7170120953440036,2025,2,False,False,False,Not Classified as Drought
+2025-03-01,0.7159680275352936,2025,3,False,False,False,Not Classified as Drought
+2025-04-01,1.184237893779231,2025,4,False,False,False,Not Classified as Drought
+2025-05-01,0.6637536598537708,2025,5,False,False,False,Not Classified as Drought
+2025-06-01,0.8235510120472539,2025,6,False,False,False,Not Classified as Drought
+2025-07-01,-0.7509984375783071,2025,7,False,False,False,Not Classified as Drought
+2025-08-01,-0.9530214726948716,2025,8,False,False,False,Not Classified as Drought
+2025-09-01,0.1338630950530416,2025,9,False,False,False,Not Classified as Drought
+2025-10-01,-0.0480261176420314,2025,10,False,False,False,Not Classified as Drought
+2025-11-01,1.4472272742330243,2025,11,False,False,False,Not Classified as Drought
+2025-12-01,1.73433983614912,2025,12,False,False,False,Not Classified as Drought

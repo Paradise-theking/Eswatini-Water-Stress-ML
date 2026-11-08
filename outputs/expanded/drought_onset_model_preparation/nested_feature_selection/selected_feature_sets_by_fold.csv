@@ -1,0 +1,5 @@
+outer_test_period,validation_period,feature_set,predictors,validation_pr_auc
+2006-2010,2001-2005,water_balance,water_balance_3month,0.56417004048583
+2011-2015,2006-2010,water_balance,water_balance_3month,0.5298771121351766
+2016-2020,2011-2015,rainfall_PET_balance,"precipitation_mm, pet_mm, water_balance_3month",0.662156862745098
+2021-2025,2016-2020,soil_moisture,volumetric_soil_water_layer_1,0.16666666666666669

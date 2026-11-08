@@ -1,0 +1,2 @@
+model,eligible_test_months,observed_onset_events,detected_onset_events,missed_onset_events,event_recall,total_warning_months,true_warning_months,false_warning_months,warning_month_precision,total_warning_episodes,hit_only_episodes,mixed_episodes,false_only_episodes,episodes_with_at_least_one_onset,episode_hit_proportion,mean_episode_duration_months,median_episode_duration_months,maximum_episode_duration_months
+fixed_full_four,209,13,11,2,0.8461538461538461,66,11,55,0.16666666666666666,40,3,8,29,11,0.275,1.65,1.0,4

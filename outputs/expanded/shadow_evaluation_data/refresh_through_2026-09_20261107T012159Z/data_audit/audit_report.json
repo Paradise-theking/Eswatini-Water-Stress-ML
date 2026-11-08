@@ -1,0 +1,343 @@
+{
+  "input_file": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09_20261107T012159Z\\mnjoli_water_stress_monthly_updated_swba.csv",
+  "input_sha256": "683667b56d2d162582417add3dfe1f1686685e901f591c8dd68749679b1a4e04",
+  "audit_script": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\scripts\\audit_drought_onset_data.py",
+  "definition": {
+    "index": "Three-month precipitation-minus-PET water-balance anomaly.",
+    "climatology_period": "1981-2010",
+    "climatology_standard_deviation": "Sample standard deviation (ddof=1).",
+    "drought_threshold": -1.0,
+    "onset_label": "SWBA <= -1.0 in the target month, with the immediately preceding calendar month SWBA > -1.0.",
+    "forecast_origin": "Only samples with non-drought SWBA at the lead-specific forecast origin are eligible."
+  },
+  "dataset": {
+    "rows": 549,
+    "start_month": "1981-01",
+    "end_month": "2026-09",
+    "missing_values": {
+      "swba_3month": 2,
+      "precipitation_mm": 0,
+      "pet_mm": 0,
+      "volumetric_soil_water_layer_1": 0,
+      "water_balance_3month": 2
+    }
+  },
+  "reconstruction_comparisons": {
+    "monthly_water_balance_matches_precipitation_minus_pet": {
+      "compared_rows": 549,
+      "both_missing_rows": 0,
+      "mismatched_missing_rows": 0,
+      "maximum_absolute_difference": 8.970602038971265e-14,
+      "mean_absolute_difference": 1.0793936074841538e-14,
+      "within_tolerance": true
+    },
+    "three_month_water_balance_matches_rolling_sum": {
+      "compared_rows": 547,
+      "both_missing_rows": 2,
+      "mismatched_missing_rows": 0,
+      "maximum_absolute_difference": 3.979039320256561e-13,
+      "mean_absolute_difference": 1.374484519700468e-13,
+      "within_tolerance": true
+    },
+    "stored_climatology_mean_matches_1981_2010": {
+      "compared_rows": 549,
+      "both_missing_rows": 0,
+      "mismatched_missing_rows": 0,
+      "maximum_absolute_difference": 2.2737367544323206e-13,
+      "mean_absolute_difference": 1.5644882677355357e-13,
+      "within_tolerance": true
+    },
+    "stored_climatology_std_matches_1981_2010_sample_std": {
+      "compared_rows": 549,
+      "both_missing_rows": 0,
+      "mismatched_missing_rows": 0,
+      "maximum_absolute_difference": 8.526512829121202e-14,
+      "mean_absolute_difference": 1.8326566736544662e-14,
+      "within_tolerance": true
+    },
+    "stored_swba_matches_reconstructed_swba": {
+      "compared_rows": 547,
+      "both_missing_rows": 2,
+      "mismatched_missing_rows": 0,
+      "maximum_absolute_difference": 5.773159728050814e-15,
+      "mean_absolute_difference": 1.0556870607227156e-15,
+      "within_tolerance": true
+    }
+  },
+  "onsets": {
+    "valid_adjacent_month_transitions": 546,
+    "drought_months": 77,
+    "onset_events": 30,
+    "onsets_by_year": {
+      "1982": 1,
+      "1986": 2,
+      "1987": 2,
+      "1988": 1,
+      "1989": 1,
+      "1990": 1,
+      "1992": 1,
+      "1994": 1,
+      "1997": 1,
+      "1998": 1,
+      "2002": 2,
+      "2003": 2,
+      "2005": 1,
+      "2007": 2,
+      "2008": 1,
+      "2009": 1,
+      "2010": 1,
+      "2011": 2,
+      "2012": 1,
+      "2014": 1,
+      "2015": 1,
+      "2018": 1,
+      "2019": 1,
+      "2024": 1
+    }
+  },
+  "eligible_forecast_samples": {
+    "rows_by_lead": {
+      "1": 469,
+      "2": 468,
+      "3": 467
+    },
+    "incomplete_predictor_rows": 0
+  },
+  "folds": [
+    {
+      "lead_months": 1,
+      "test_period": "2006-2010",
+      "validation_period": "2001-2005",
+      "validation_training_cutoff": "2000-12",
+      "test_training_cutoff": "2005-12",
+      "validation_training_samples": 203,
+      "validation_training_onsets": 12,
+      "validation_samples": 48,
+      "validation_onsets": 5,
+      "final_training_samples": 251,
+      "final_training_onsets": 17,
+      "test_samples": 51,
+      "test_onsets": 5,
+      "test_non_onsets": 46
+    },
+    {
+      "lead_months": 1,
+      "test_period": "2011-2015",
+      "validation_period": "2006-2010",
+      "validation_training_cutoff": "2005-12",
+      "test_training_cutoff": "2010-12",
+      "validation_training_samples": 251,
+      "validation_training_onsets": 17,
+      "validation_samples": 51,
+      "validation_onsets": 5,
+      "final_training_samples": 302,
+      "final_training_onsets": 22,
+      "test_samples": 47,
+      "test_onsets": 5,
+      "test_non_onsets": 42
+    },
+    {
+      "lead_months": 1,
+      "test_period": "2016-2020",
+      "validation_period": "2011-2015",
+      "validation_training_cutoff": "2010-12",
+      "test_training_cutoff": "2015-12",
+      "validation_training_samples": 302,
+      "validation_training_onsets": 22,
+      "validation_samples": 47,
+      "validation_onsets": 5,
+      "final_training_samples": 349,
+      "final_training_onsets": 27,
+      "test_samples": 52,
+      "test_onsets": 2,
+      "test_non_onsets": 50
+    },
+    {
+      "lead_months": 1,
+      "test_period": "2021-2025",
+      "validation_period": "2016-2020",
+      "validation_training_cutoff": "2015-12",
+      "test_training_cutoff": "2020-12",
+      "validation_training_samples": 349,
+      "validation_training_onsets": 27,
+      "validation_samples": 52,
+      "validation_onsets": 2,
+      "final_training_samples": 401,
+      "final_training_onsets": 29,
+      "test_samples": 59,
+      "test_onsets": 1,
+      "test_non_onsets": 58
+    },
+    {
+      "lead_months": 2,
+      "test_period": "2006-2010",
+      "validation_period": "2001-2005",
+      "validation_training_cutoff": "2000-11",
+      "test_training_cutoff": "2005-11",
+      "validation_training_samples": 201,
+      "validation_training_onsets": 11,
+      "validation_samples": 48,
+      "validation_onsets": 4,
+      "final_training_samples": 250,
+      "final_training_onsets": 15,
+      "test_samples": 51,
+      "test_onsets": 5,
+      "test_non_onsets": 46
+    },
+    {
+      "lead_months": 2,
+      "test_period": "2011-2015",
+      "validation_period": "2006-2010",
+      "validation_training_cutoff": "2005-11",
+      "test_training_cutoff": "2010-11",
+      "validation_training_samples": 250,
+      "validation_training_onsets": 15,
+      "validation_samples": 51,
+      "validation_onsets": 5,
+      "final_training_samples": 301,
+      "final_training_onsets": 20,
+      "test_samples": 48,
+      "test_onsets": 5,
+      "test_non_onsets": 43
+    },
+    {
+      "lead_months": 2,
+      "test_period": "2016-2020",
+      "validation_period": "2011-2015",
+      "validation_training_cutoff": "2010-11",
+      "test_training_cutoff": "2015-11",
+      "validation_training_samples": 301,
+      "validation_training_onsets": 20,
+      "validation_samples": 48,
+      "validation_onsets": 5,
+      "final_training_samples": 348,
+      "final_training_onsets": 25,
+      "test_samples": 51,
+      "test_onsets": 2,
+      "test_non_onsets": 49
+    },
+    {
+      "lead_months": 2,
+      "test_period": "2021-2025",
+      "validation_period": "2016-2020",
+      "validation_training_cutoff": "2015-11",
+      "test_training_cutoff": "2020-11",
+      "validation_training_samples": 348,
+      "validation_training_onsets": 25,
+      "validation_samples": 51,
+      "validation_onsets": 2,
+      "final_training_samples": 399,
+      "final_training_onsets": 27,
+      "test_samples": 59,
+      "test_onsets": 1,
+      "test_non_onsets": 58
+    },
+    {
+      "lead_months": 3,
+      "test_period": "2006-2010",
+      "validation_period": "2001-2005",
+      "validation_training_cutoff": "2000-10",
+      "test_training_cutoff": "2005-10",
+      "validation_training_samples": 199,
+      "validation_training_onsets": 10,
+      "validation_samples": 49,
+      "validation_onsets": 4,
+      "final_training_samples": 248,
+      "final_training_onsets": 14,
+      "test_samples": 51,
+      "test_onsets": 5,
+      "test_non_onsets": 46
+    },
+    {
+      "lead_months": 3,
+      "test_period": "2011-2015",
+      "validation_period": "2006-2010",
+      "validation_training_cutoff": "2005-10",
+      "test_training_cutoff": "2010-10",
+      "validation_training_samples": 248,
+      "validation_training_onsets": 14,
+      "validation_samples": 51,
+      "validation_onsets": 5,
+      "final_training_samples": 300,
+      "final_training_onsets": 19,
+      "test_samples": 47,
+      "test_onsets": 5,
+      "test_non_onsets": 42
+    },
+    {
+      "lead_months": 3,
+      "test_period": "2016-2020",
+      "validation_period": "2011-2015",
+      "validation_training_cutoff": "2010-10",
+      "test_training_cutoff": "2015-10",
+      "validation_training_samples": 300,
+      "validation_training_onsets": 19,
+      "validation_samples": 47,
+      "validation_onsets": 5,
+      "final_training_samples": 346,
+      "final_training_onsets": 23,
+      "test_samples": 51,
+      "test_onsets": 2,
+      "test_non_onsets": 49
+    },
+    {
+      "lead_months": 3,
+      "test_period": "2021-2025",
+      "validation_period": "2016-2020",
+      "validation_training_cutoff": "2015-10",
+      "test_training_cutoff": "2020-10",
+      "validation_training_samples": 346,
+      "validation_training_onsets": 23,
+      "validation_samples": 51,
+      "validation_onsets": 2,
+      "final_training_samples": 397,
+      "final_training_onsets": 26,
+      "test_samples": 59,
+      "test_onsets": 1,
+      "test_non_onsets": 58
+    }
+  ],
+  "checks": [
+    {
+      "name": "date_components_match",
+      "passed": true,
+      "detail": "Stored year and month columns match month_date."
+    },
+    {
+      "name": "monthly_water_balance_matches_precipitation_minus_pet",
+      "passed": true,
+      "detail": "Compared 549 finite rows; maximum absolute difference=8.970602038971265e-14; tolerance=1e-08."
+    },
+    {
+      "name": "three_month_water_balance_matches_rolling_sum",
+      "passed": true,
+      "detail": "Compared 547 finite rows; maximum absolute difference=3.979039320256561e-13; tolerance=1e-08."
+    },
+    {
+      "name": "stored_climatology_mean_matches_1981_2010",
+      "passed": true,
+      "detail": "Compared 549 finite rows; maximum absolute difference=2.2737367544323206e-13; tolerance=1e-08."
+    },
+    {
+      "name": "stored_climatology_std_matches_1981_2010_sample_std",
+      "passed": true,
+      "detail": "Compared 549 finite rows; maximum absolute difference=8.526512829121202e-14; tolerance=1e-08."
+    },
+    {
+      "name": "stored_swba_matches_reconstructed_swba",
+      "passed": true,
+      "detail": "Compared 547 finite rows; maximum absolute difference=5.773159728050814e-15; tolerance=1e-08."
+    },
+    {
+      "name": "monthly_periods_are_contiguous",
+      "passed": true,
+      "detail": "549 unique, contiguous months from 1981-01 to 2026-09."
+    },
+    {
+      "name": "eligible_forecast_samples_have_complete_predictors",
+      "passed": true,
+      "detail": "0 of 1404 eligible lead-specific samples have missing candidate predictors. Initial rolling-window warm-up rows are reported separately: {'swba_3month': 2, 'precipitation_mm': 0, 'pet_mm': 0, 'volumetric_soil_water_layer_1': 0, 'water_balance_3month': 2}."
+    }
+  ],
+  "all_checks_passed": true
+}

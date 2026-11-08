@@ -1,0 +1,5 @@
+test_period,test_samples,observed_onsets,validation_selected_threshold,locked_test_hits,locked_test_misses,locked_test_false_warning_months,locked_test_false_warning_months_per_year,locked_test_false_warning_episodes,locked_test_false_warning_episodes_per_year,posthoc_max_hits_within_both_caps,posthoc_max_recall_within_both_caps,posthoc_threshold,posthoc_false_warning_months,posthoc_false_warning_episodes,posthoc_warnings,posthoc_note
+2006-2010,51,5,0.8147161504076526,0,5,1,0.2,1,0.2,2,0.4,0.5942708182878735,1,1,3,Optimistic diagnostic using test labels to find the best feasible threshold; not valid as model performance.
+2011-2015,47,5,0.2052333799610868,3,2,11,2.2,4,0.8,0,0.0,1.000001,0,0,0,Optimistic diagnostic using test labels to find the best feasible threshold; not valid as model performance.
+2016-2020,52,2,1.000001,0,2,0,0.0,0,0.0,0,0.0,1.000001,0,0,0,Optimistic diagnostic using test labels to find the best feasible threshold; not valid as model performance.
+2021-2025,59,1,1.000001,0,1,0,0.0,0,0.0,1,1.0,0.3863832828065995,0,0,1,Optimistic diagnostic using test labels to find the best feasible threshold; not valid as model performance.

@@ -1,0 +1,2 @@
+model,lead_months,observations,observed_onsets,observed_prevalence,model_brier_score,training_prevalence_baseline_brier,brier_skill_score
+fixed_full_four,1,209,13,0.06220095693779904,0.1846425242280857,0.058580425009053215,-2.151949208281613

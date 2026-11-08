@@ -1,0 +1,27 @@
+{
+    "experiment": "Historical 2015-2016 drought event",
+    "training_observations": 354,
+    "validation_observations": 46,
+    "pre_event_fitting_observations": 400,
+    "event_observations": 4,
+    "number_of_predictors": 92,
+    "event_start": "2015-11-01",
+    "event_end": "2016-02-01",
+    "drought_thresholds": [
+        -1.0,
+        -1.5,
+        -2.0
+    ],
+    "model_selection_metric": "Validation RMSE",
+    "models": [
+        "Ridge",
+        "ElasticNet",
+        "XGBoost"
+    ],
+    "baseline_models": [
+        "Persistence",
+        "Seasonal Climatology",
+        "Training-Mean Baseline"
+    ],
+    "retraining_during_event": false
+}

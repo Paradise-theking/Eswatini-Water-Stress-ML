@@ -1,0 +1,42 @@
+{
+  "created_at_utc": "2026-11-06T19:30:44.802108+00:00",
+  "input_file": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\data\\processed\\expanded\\mnjoli_water_stress_monthly_1981_2025_swba.csv",
+  "input_sha256": "1abd8208657022a3a9b0cda93cb3b5c586fddda68676e650d3a1df74480b2bd0",
+  "audit_file": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\drought_onset_model_preparation\\data_audit\\audit_report.json",
+  "audit_passed": true,
+  "source_period": {
+    "start_month": "1981-01",
+    "end_month": "2025-12"
+  },
+  "outcome": "At least one SWBA <= -1 onset during the next 1, 2, or 3 months; forecast origins must have SWBA > -1.",
+  "methods": [
+    "training_prevalence",
+    "seasonal_baseline",
+    "current_state",
+    "hydro_core"
+  ],
+  "feature_sets": {
+    "current_state": [
+      "origin_swba"
+    ],
+    "hydro_core": [
+      "precipitation_mm",
+      "pet_mm",
+      "volumetric_soil_water_layer_1",
+      "water_balance_3month"
+    ],
+    "seasonal_baseline": "Origin-calendar-month onset-window prevalence smoothed toward training prevalence with 12 prior months."
+  },
+  "evaluation": "Chronological 2006-2025 folds previously examined during development; this is a retrospective feasibility screen, not independent validation. Training outcome windows end before each test block. Test origins are restricted so their complete outcome windows end within each block.",
+  "limitations": [
+    "No warning threshold or false-warning episode rate is evaluated.",
+    "Adjacent forecast windows overlap and are statistically dependent.",
+    "Historical predictor values are not proof of issue-time availability.",
+    "The final test fold excludes origins whose outcome window extends beyond 2025."
+  ],
+  "output_files": [
+    "fold_metrics.csv",
+    "outer_predictions.csv",
+    "pooled_summary.csv"
+  ]
+}

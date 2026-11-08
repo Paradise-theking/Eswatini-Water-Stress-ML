@@ -1,0 +1,90 @@
+{
+  "created_at_utc": "2026-11-06T18:35:24.483381+00:00",
+  "project": "eswatiniwaterstress",
+  "source_collection": "UCSB-CHG/CHIRPS/DAILY",
+  "comparison_period": {
+    "start_date": "1981-01-01",
+    "end_date": "2025-12-31"
+  },
+  "native_grid": {
+    "crs": "EPSG:4326",
+    "transform": [
+      0.05,
+      0,
+      -180,
+      0,
+      -0.05,
+      50
+    ],
+    "cell_size_degrees": 0.05,
+    "sampling": "Sample native precipitation values at each intersecting native-grid cell center using the image's native projection."
+  },
+  "catchment": {
+    "file": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\data\\external\\mnjoli_w60e_catchment.geojson",
+    "sha256": "6caa2f7349b93a775fd371e91b7000189c32a040bc5c06fd027cc822d4abc2dc",
+    "area_m2_epsg_32736": 122357593.52831748,
+    "grid_overlap_area_coverage_fraction": 0.999999999992,
+    "area_weight_projection": "EPSG:32736",
+    "aggregation": "Fractional intersection area of each native grid cell with the saved catchment polygon."
+  },
+  "existing_series": {
+    "file": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\data\\external\\expanded\\mnjoli_chirps_daily_1981_2025.csv",
+    "sha256": "fc214ce4bf5ae5b9fc0d0e5021c20075b9dc731669d69e4ee4daafc2a3fdcedf",
+    "reducer": "Earth Engine ee.Reducer.mean(), scale=5566, bestEffort=True."
+  },
+  "reference_product": {
+    "transition_manifest": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\chirps_v3_transition\\run_through_2025_20261106T181031Z\\transition_manifest.json",
+    "transition_run_snapshot_id": "T5RTYW439H0E8VF37CQG",
+    "comparison_method": "Same CHIRPS v2 source pixels and saved catchment as the v3 comparison; only the reducer is changed to fractional native-grid cell-area weighting."
+  },
+  "results": {
+    "start_date": "1981-01-01",
+    "end_date": "2025-12-31",
+    "days_compared": 16436,
+    "native_grid_cells_sampled": 11,
+    "pixel_day_samples": 180796,
+    "v2_native_area_weighted_total_mm": 31802.344077510308,
+    "v2_earth_engine_mean_total_mm": 31836.118720798695,
+    "total_difference_mm": -33.77464328838687,
+    "total_difference_percent": -0.10608907318316874,
+    "daily_mean_difference_mm": -0.0020549186717199745,
+    "daily_mean_absolute_difference_mm": 0.008601437410320992,
+    "daily_rmse_mm": 0.02923000018364766,
+    "daily_max_absolute_difference_mm": 0.7567179355892719,
+    "daily_correlation": 0.9999889536376453,
+    "monthly_mean_absolute_total_difference_mm": 0.10723889334493535,
+    "monthly_max_absolute_total_difference_mm": 0.8676758127425468,
+    "annual_years_with_native_weighted_total_higher": 0,
+    "annual_years_with_native_weighted_total_lower": 45,
+    "annual_max_absolute_difference_percent": 0.2178423594203321,
+    "annual_difference_percent_quantiles": {
+      "0.0": -0.2178423594203321,
+      "0.25": -0.12246940122412667,
+      "0.5": -0.10108907287318084,
+      "0.75": -0.0866264839031757,
+      "1.0": -0.03720538681255645
+    }
+  },
+  "outputs": {
+    "weights": {
+      "path": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\chirps_v3_transition\\run_through_2025_20261106T181031Z\\v2_spatial_reducer_audit\\catchment_grid_weights.csv",
+      "sha256": "55027be911b9cd0d041dd562efe819970531d801ce8fe990fed623609c8b3b13"
+    },
+    "cell_samples": {
+      "path": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\chirps_v3_transition\\run_through_2025_20261106T181031Z\\v2_spatial_reducer_audit\\v2_native_grid_cell_samples.csv",
+      "sha256": "59db611517c15e1d177f9076cfb0a2f2c63e79d8f855701ff3af3e826a7ea33b"
+    },
+    "daily": {
+      "path": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\chirps_v3_transition\\run_through_2025_20261106T181031Z\\v2_spatial_reducer_audit\\v2_spatial_reducer_daily_comparison.csv",
+      "sha256": "30002dc7dd31ac1618db2764fddd5b76299a4ae9f130b45901a9cbbccaa5d850"
+    },
+    "monthly": {
+      "path": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\chirps_v3_transition\\run_through_2025_20261106T181031Z\\v2_spatial_reducer_audit\\v2_spatial_reducer_monthly_comparison.csv",
+      "sha256": "4244111eea4df61ffe8b011ef28c659d95b8b5ce15bca7d3d42a410ce96ff6c0"
+    },
+    "annual": {
+      "path": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\chirps_v3_transition\\run_through_2025_20261106T181031Z\\v2_spatial_reducer_audit\\v2_spatial_reducer_annual_comparison.csv",
+      "sha256": "78b3e0666533d7170b98362e505e76d16240d9ef5d3b37977f164d5b3fce94c0"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "evaluation": "Unseen 2026 chronological holdout",
+  "input_sha256": "683667b56d2d162582417add3dfe1f1686685e901f591c8dd68749679b1a4e04",
+  "audit_sha256": "683667b56d2d162582417add3dfe1f1686685e901f591c8dd68749679b1a4e04",
+  "audit_passed": true,
+  "data_available_through": "2026-09",
+  "test_period": "2026-01 through 2026-09",
+  "test_months": 9,
+  "observed_onsets": 0,
+  "model_training_target_period": "start through 2020-12",
+  "validation_period": "2021-2025",
+  "selected_feature_set": "hydro_only",
+  "selected_features": [
+    "precipitation_mm",
+    "pet_mm",
+    "volumetric_soil_water_layer_1",
+    "water_balance_3month"
+  ],
+  "C": 1.0,
+  "class_weight": "none",
+  "validation_selected_threshold": 0.314628690350222,
+  "validation_recall": 1.0,
+  "validation_predicted_warnings": 1,
+  "validation_false_warning_episodes": 0,
+  "validation_false_warning_episodes_per_year": 0.0,
+  "validation_false_warning_months": 0,
+  "validation_false_warning_months_per_year": 0.0,
+  "warnings_in_unseen_period": 0,
+  "hits_in_unseen_period": 0,
+  "misses_in_unseen_period": 0,
+  "false_warning_months_in_unseen_period": 0,
+  "false_warning_episodes_in_unseen_period": 0,
+  "false_warning_episode_rate_per_year": null,
+  "probability_metrics": {
+    "average_precision": null,
+    "brier_score": 0.0005424798988083054,
+    "baseline_brier_score": 0.0052300669771954186,
+    "brier_skill_score": 0.8962766822731578
+  },
+  "interpretation": "The 2026 labels were excluded from feature/model selection and threshold selection. No onset has occurred in the observed holdout, so recall and detection skill cannot be estimated. False-warning counts are descriptive for these partial-year months and do not establish the annual warning-budget rate.",
+  "threshold_policy": {
+    "priority": "maximize recall",
+    "max_false_warning_episodes_per_year": 0.5,
+    "max_false_warning_months_per_year": 3.0
+  },
+  "candidate_grid_size": 24,
+  "outputs": {
+    "historical_feasibility": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09\\unseen_2026_evaluation\\historical_warning_budget_feasibility.csv",
+    "2026_predictions": "C:\\Users\\Para\\Desktop\\Eswatini_Water_Stress_ML\\outputs\\expanded\\shadow_evaluation_data\\refresh_through_2026-09\\unseen_2026_evaluation\\unseen_2026_predictions.csv"
+  }
+}

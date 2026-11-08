@@ -1,0 +1,7 @@
+metric,bootstrap_unit,replicates,valid_replicates,percentile_2_5,percentile_97_5,interpretation_note
+recall,calendar year,2000,2000,0.13333333333333333,0.6666666666666666,Descriptive uncertainty only; few onset events and historical development folds limit inference.
+precision,calendar year,2000,2000,0.11764705882352941,0.4666666666666667,Descriptive uncertainty only; few onset events and historical development folds limit inference.
+f1,calendar year,2000,2000,0.12903225806451613,0.4878048780487805,Descriptive uncertainty only; few onset events and historical development folds limit inference.
+average_precision,calendar year,2000,2000,0.11696525027034048,0.6069303562480739,Descriptive uncertainty only; few onset events and historical development folds limit inference.
+brier_score,calendar year,2000,2000,0.030717290526403377,0.08702822392996372,Descriptive uncertainty only; few onset events and historical development folds limit inference.
+brier_skill_score,calendar year,2000,2000,-0.20126727402824648,0.3086858371609506,Descriptive uncertainty only; few onset events and historical development folds limit inference.
