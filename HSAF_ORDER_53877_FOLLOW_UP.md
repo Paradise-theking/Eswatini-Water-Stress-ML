@@ -1,9 +1,9 @@
 ﻿# H SAF Order 53877 — Clarification Follow-up
 
-**Catchment:** Mnjoli W60E, Eswatini  
-**Order reference:** 53877  
-**Products:** H64, H90, H122 and H14  
-**Clarification email sent:** 12 November 2026  
+- **Catchment:** Mnjoli W60E, Eswatini
+- **Order reference:** 53877
+- **Products:** H64, H90, H122 and H14
+- **Clarification email sent:** 12 November 2026
 **Status:** Awaiting H SAF response
 
 ## Purpose
