@@ -34,6 +34,9 @@ backend/era5_test*
 *.grib
 *.grib2
 
+# H SAF order 53877: retain raw archives and extracted data locally
+data/external/hsaf_order_53877/
+
 # Firebase local cache
 .firebase/
 
