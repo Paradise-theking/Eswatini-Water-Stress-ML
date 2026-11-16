@@ -79,9 +79,11 @@ The existing test prediction CSV contains `target_month` and predictions but not
 
 ## 3B. New true-lead experiment
 
-The new `scripts/evaluate_true_lead_horizons.py` builds separate 1-, 2- and 3-month target leads from the expanded monthly SWBA source. For each origin month `t`, it uses predictors available at `t` and predicts the three-month rolling SWBA at `t+lead`. It applies the existing final-evaluation Lasso, Ridge and tuned XGBoost configurations where available, plus persistence, seasonal-climatology and training-mean baselines. It writes row-level predictions with origin month, target month, lead and input cutoff, plus horizon-specific metrics.
+The new `scripts/evaluate_true_lead_horizons.py` builds separate 1-, 2- and 3-month target leads from the expanded monthly SWBA source. For each origin month `t`, it uses predictors available through `t` and predicts the three-month rolling SWBA at `t+lead`. It applies the existing final-evaluation Lasso, Ridge and tuned XGBoost configurations where available, plus persistence, seasonal-climatology and training-mean baselines. It writes row-level predictions with origin month, target month, lead and input cutoff, plus horizon-specific metrics.
 
-This is a candidate-screening experiment, not a replacement model or prospective validation. Hyperparameters are held fixed from the existing final evaluation; no per-horizon tuning is performed. The output must be run against the locally prepared monthly SWBA source and reviewed before choosing a lead. The 2- and 3-month horizons are only useful operationally if their inputs are actually available at issue time and the accuracy remains acceptable.
+To avoid training-label look-ahead, each horizon's model is frozen at the earliest test forecast origin. Training rows are limited to those whose target month has fully completed by that first issue origin. Thus the 1-, 2- and 3-month tests use progressively earlier training-label cutoffs. The model is then held fixed across the 2020-2025 test period. This is a conservative frozen-model comparison, not monthly retraining.
+
+This is a candidate-screening experiment, not a replacement model or prospective validation. Hyperparameters are held fixed from the existing final evaluation; no per-horizon tuning is performed. The output must be run and reviewed before choosing a lead. Source publication timestamps remain unavailable, so a structurally valid origin/target gap is not proof that the inputs were accessible at the claimed issue time. The 2- and 3-month horizons are only useful operationally if their inputs are actually available at issue time and accuracy remains acceptable.
 
 ## 4. Model promotion gates
 
