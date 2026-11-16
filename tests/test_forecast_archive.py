@@ -121,6 +121,14 @@ class ForecastArchiveTests(unittest.TestCase):
         with self.assertRaises(forecast_archive.ForecastArchiveError):
             forecast_archive.archive_forecast(record)
 
+    def test_latest_forecast_is_restored_from_firebase(self):
+        record = self.sample_forecast()
+        archive_id = forecast_archive.archive_forecast(record)
+        latest = forecast_archive.get_latest_forecast()
+        self.assertEqual(latest["archive_id"], archive_id)
+        self.assertEqual(latest["forecast_month"], "2026-10")
+        self.assertIn("data_quality", latest)
+
     def test_archive_list_limit_is_bounded(self):
         self.assertEqual(forecast_archive.list_forecast_issues(10000), [])
         self.assertEqual(self.client.collection_name, forecast_archive.COLLECTION_NAME)
