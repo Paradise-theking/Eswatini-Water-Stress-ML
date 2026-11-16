@@ -6,8 +6,16 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from backend.live_forecast import (
+    ForecastReadinessError,
     generate_live_forecast,
     clear_live_forecast_cache,
+    build_source_readiness_summary,
+)
+from backend.forecast_archive import (
+    ForecastArchiveError,
+    archive_forecast,
+    get_latest_forecast,
+    list_forecast_issues,
 )
 from backend.data_ingestion import (
     initialize_earth_engine,
@@ -159,28 +167,30 @@ def water_risk_surface_area():
 
 @app.get("/diagnostics/data-dates")
 def diagnose_data_dates():
-    """Report latest source dates and the selected complete month."""
-    from backend.data_ingestion import (
-        latest_available_dates,
-        latest_common_complete_month,
-    )
+    """Report source freshness and whether the one-month target is still ahead."""
+    from backend.data_ingestion import latest_available_dates
 
     try:
         initialize_earth_engine()
+        # Capture once: source dates and selected common month must use the
+        # same Earth Engine snapshot, not two independent collection reads.
         dates = latest_available_dates()
-        selected_month = latest_common_complete_month()
-
+        summary = build_source_readiness_summary(dates)
         return {
             "status": "success",
-            "source_dates": dates,
-            "latest_common_complete_month": selected_month.strftime("%Y-%m-%d"),
+            **summary,
         }
 
+    except ForecastReadinessError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Source readiness diagnostic unavailable: {str(exc)}",
+        ) from exc
     except Exception as exc:
         raise HTTPException(
-            status_code=500,
+            status_code=502,
             detail=f"Data-date diagnostic failed: {str(exc)}",
-        )
+        ) from exc
 
 
 @app.get("/history")
@@ -584,6 +594,59 @@ def validate_dec2025():
             detail=str(exc),
         )
 
+@app.get("/forecast/archive")
+def get_forecast_archive(limit: int = 50):
+    """Read recent forecast issues for prototype audit and shadow evaluation."""
+    try:
+        records = list_forecast_issues(limit)
+        return {
+            "status": "success",
+            "count": len(records),
+            "storage": "firebase_cloud_firestore",
+            "data": records,
+        }
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Forecast archive is unavailable: {exc}",
+        ) from exc
+
+
+@app.get("/forecast/archive/latest")
+def get_latest_archived_forecast():
+    """Return the latest complete archived forecast for explicitly stale display."""
+    try:
+        record = get_latest_forecast()
+        if record is None:
+            return {"status": "empty", "data": None}
+
+        # Public dashboard fallback needs only display fields. Keep the full
+        # model feature vector and provenance in the server-side Firestore log.
+        display_record = {
+            "issue_timestamp": record.get("issue_timestamp"),
+            "retrieved_at": record.get("retrieved_at"),
+            "observation_month": record.get("observation_month"),
+            "input_cutoff": record.get("input_cutoff"),
+            "forecast_month": record.get("forecast_month"),
+            "water_stress_index": record.get("water_stress_index"),
+            "category": record.get("category"),
+            "description": record.get("description"),
+            "data_quality": record.get("data_quality"),
+            "latest_indicators": record.get("latest_indicators"),
+            "model_features": {
+                "precipitation_3month": (
+                    record.get("model_features") or {}
+                ).get("precipitation_3month")
+            },
+        }
+        return {"status": "success", "data": display_record}
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Firebase forecast archive is unavailable: {exc}",
+        ) from exc
+
+
 @app.get("/forecast/latest")
 def forecast_latest():
     try:
@@ -632,18 +695,39 @@ def refresh_live_forecast():
         initialize_earth_engine()
 
         result = generate_live_forecast()
+        archive_id = archive_forecast(result)
 
         return {
             "status": "success",
             "refreshed": True,
+            "archive_id": archive_id,
+            "archive_storage": "firebase_cloud_firestore",
             **result,
         }
 
+    except ForecastReadinessError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "No current forecast is being issued because the input readiness checks did not pass.",
+            },
+        ) from exc
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "The forecast could not be recorded in the audit archive.",
+            },
+        ) from exc
     except Exception as exc:
         raise HTTPException(
-            status_code=500,
+            status_code=502,
             detail=f"Live forecast refresh failed: {str(exc)}",
-        )
+        ) from exc
     
 @app.get("/forecast/live")
 def live_water_stress_forecast():
@@ -655,17 +739,38 @@ def live_water_stress_forecast():
         initialize_earth_engine()
 
         result = generate_live_forecast()
+        archive_id = archive_forecast(result)
 
         return {
             "status": "success",
+            "archive_id": archive_id,
+            "archive_durability": "persistent_only_when_archive_path_is_on_persistent_storage",
             **result,
         }
 
+    except ForecastReadinessError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "No current forecast is being issued because the input readiness checks did not pass.",
+            },
+        ) from exc
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "The forecast could not be recorded in the audit archive.",
+            },
+        ) from exc
     except Exception as exc:
         raise HTTPException(
-            status_code=500,
+            status_code=502,
             detail=f"Live forecast failed: {str(exc)}",
-        )
+        ) from exc
     
 @app.post("/predict")
 def predict_water_stress(data: WaterStressInput):

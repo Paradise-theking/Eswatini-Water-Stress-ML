@@ -172,13 +172,18 @@ def latest_available_dates() -> Dict[str, str]:
     }
 
 
-def latest_common_complete_month() -> pd.Timestamp:
+def latest_common_complete_month(
+    dates: Dict[str, str] | None = None,
+) -> pd.Timestamp:
     """
     Determine the latest fully completed calendar month
     available in both ERA5-Land and CHIRPS.
+
+    An optional captured date snapshot keeps a single forecast
+    decision internally consistent if provider collections update.
     """
 
-    dates = latest_available_dates()
+    dates = dates or latest_available_dates()
 
     era5_date = pd.Timestamp(dates["era5_land"])
     chirps_date = pd.Timestamp(dates["chirps"])
@@ -533,15 +538,51 @@ def aggregate_monthly(
     return monthly
 
 
-def fetch_latest_monthly_data() -> pd.DataFrame:
+def validate_daily_source_coverage(
+    frame: pd.DataFrame,
+    source_name: str,
+    expected_dates: pd.DatetimeIndex,
+    required_columns: list[str],
+) -> None:
+    """Raise rather than aggregate if a daily source has gaps or invalid values."""
+    if "date" not in frame.columns:
+        raise RuntimeError(f"{source_name} response has no date column.")
+
+    dates = pd.to_datetime(frame["date"]).dt.normalize()
+    if dates.duplicated().any():
+        raise RuntimeError(f"{source_name} returned duplicate daily dates.")
+
+    actual_dates = pd.DatetimeIndex(dates.sort_values())
+    if list(actual_dates) != list(expected_dates):
+        missing = expected_dates.difference(actual_dates)
+        unexpected = actual_dates.difference(expected_dates)
+        raise RuntimeError(
+            f"{source_name} daily coverage is incomplete. "
+            f"Missing dates: {[d.strftime('%Y-%m-%d') for d in missing[:10]]}; "
+            f"unexpected dates: {[d.strftime('%Y-%m-%d') for d in unexpected[:10]]}."
+        )
+
+    absent = [column for column in required_columns if column not in frame.columns]
+    if absent:
+        raise RuntimeError(f"{source_name} is missing required fields: {absent}")
+
+    values = frame[required_columns].apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float)
+    if not np.isfinite(values).all():
+        raise RuntimeError(f"{source_name} contains missing or non-finite required daily values.")
+
+
+def fetch_latest_monthly_data(
+    latest_month: pd.Timestamp | None = None,
+) -> pd.DataFrame:
     """
     Fetch enough recent data to calculate lagged
     and rolling features for the latest forecast.
+
+    Pass the month selected from the same source-date snapshot
+    used by the caller to avoid a moving-origin race.
     """
 
-    latest_month = (
-        latest_common_complete_month()
-    )
+    latest_month = latest_month or latest_common_complete_month()
 
     # We need at least:
     # current month
@@ -578,14 +619,34 @@ def fetch_latest_monthly_data() -> pd.DataFrame:
         ),
     )
 
-    daily = transform_daily_data(
-        era5,
-        chirps,
+    # Fail closed if either source has missing or duplicate daily
+    # observations inside the requested four-month feature window.
+    expected_dates = pd.date_range(
+        start_month,
+        end_date - pd.Timedelta(days=1),
+        freq="D",
     )
 
-    monthly = aggregate_monthly(
-        daily
+    validate_daily_source_coverage(
+        era5, "ERA5-Land", expected_dates, ERA5_BANDS
     )
+    validate_daily_source_coverage(
+        chirps, "CHIRPS", expected_dates, ["precipitation_mm"]
+    )
+
+    daily = transform_daily_data(era5, chirps)
+
+    if len(daily) != len(expected_dates):
+        raise RuntimeError(
+            "Daily source join did not preserve the complete expected date range."
+        )
+
+    monthly = aggregate_monthly(daily)
+    expected_month_count = 4
+    if len(monthly) != expected_month_count:
+        raise RuntimeError(
+            f"Expected {expected_month_count} complete monthly aggregates; received {len(monthly)}."
+        )
 
     return monthly
 
