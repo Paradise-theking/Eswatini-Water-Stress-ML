@@ -167,6 +167,11 @@ def generate_live_forecast() -> dict:
                 "chirps": "UCSB-CHG/CHIRPS/DAILY",
                 "era5_land": "ECMWF/ERA5_LAND/DAILY_AGGR",
             },
+            "source_vintage_note": (
+                "Current Earth Engine collection snapshot. Reported image dates are not "
+                "provider publication timestamps; source revision history is not archived "
+                "by this adapter."
+            ),
             "model": "Ridge Regression",
             "model_artifact": MODEL_PATH.name,
             "model_sha256": model_sha256,
