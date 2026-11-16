@@ -40,6 +40,8 @@ All durable WaterWatch application storage must use the existing Firebase projec
 - Collection: `waterwatch_forecast_issues`.
 - `/forecast/live` and `/forecast/live/refresh` append an issue after readiness checks pass and before a successful response is returned.
 - `/forecast/archive?limit=50` reads recent issue metadata from Firestore.
+- `/forecast/archive/latest` returns the complete last archived forecast for the dashboard's explicitly stale fallback.
+- The frontend no longer persists forecast payloads in browser `localStorage`; it restores the last issue from Firestore through the backend.
 - Document IDs are deterministic SHA-256 hashes of issue timestamp, model hash and input fingerprint.
 - Firestore `create()` prevents overwriting an existing issue; duplicate retries are idempotent.
 - Full response/provenance JSON is stored in each document; list responses omit large feature payloads.
