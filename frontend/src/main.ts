@@ -1724,34 +1724,44 @@ function markForecastStale(reason: string) {
   setApiStatus(false)
 }
 
-function restoreSavedForecast() {
+async function restoreSavedForecast() {
   try {
-    const saved = localStorage.getItem('eswatini-water-stress-latest-forecast')
-    if (!saved) return
-    const data = JSON.parse(saved) as PredictionResponse
+    const response = await fetch(
+      'https://eswatini-water-stress-api.onrender.com/forecast/archive/latest',
+      { cache: 'no-store' }
+    )
+    if (!response.ok) {
+      throw new Error(`Firebase archive returned ${response.status}`)
+    }
+    const archived = await response.json()
+    const data = archived?.data as PredictionResponse | null
     if (
-      data?.status !== 'success' ||
+      archived?.status !== 'success' ||
+      !data ||
       typeof data.water_stress_index !== 'number' ||
       typeof data.observation_month !== 'string' ||
       typeof data.forecast_month !== 'string' ||
       !data.latest_indicators ||
       !data.model_features
     ) return
-    displayForecast(data)
-    markForecastStale('A fresh issue-time and data-quality check has not yet succeeded in this session.')
+
+    displayForecast({ ...data, status: 'success' })
+    markForecastStale(
+      'Restored from the Firebase forecast archive. This is the last recorded issue, not a current forecast.'
+    )
   } catch (error) {
-    console.warn('Could not restore saved forecast:', error)
+    console.warn('Could not restore the latest Firebase forecast:', error)
   }
 }
 
-restoreSavedForecast()
+void restoreSavedForecast()
 
 /*
  * --------------------------------------------------------------------------
  * Automatically load the latest live forecast
  * --------------------------------------------------------------------------
  *
- * The saved forecast is only a fast fallback for slow/cold-start API calls.
+ * The last recorded forecast is restored from the Firebase archive for stale context only.
  * On every page load we still ask the live API for the current forecast.
  * The backend checks the latest completed observation month and refreshes
  * the cached model result when that month changes.
@@ -1790,17 +1800,6 @@ async function loadLatestForecast() {
     setApiStatus(true)
     displayForecast(data)
 
-    try {
-      localStorage.setItem(
-        'eswatini-water-stress-latest-forecast',
-        JSON.stringify(data)
-      )
-    } catch (storageError) {
-      console.warn(
-        'Could not save latest live forecast:',
-        storageError
-      )
-    }
   } catch (error) {
     console.warn(
       'Could not load the latest live forecast:',
@@ -1808,9 +1807,8 @@ async function loadLatestForecast() {
     )
 
     /*
-     * Keep the saved forecast visible when available.
-     * This prevents a temporary API/cold-start failure from
-     * replacing a useful last-known forecast with an error.
+     * A last-known forecast may have been restored from Firebase.
+     * Keep it visible only with the explicit stale warning.
      */
     if (latestForecast !== null) {
       markForecastStale('The latest forecast request failed or the backend rejected the inputs.')
@@ -1858,14 +1856,6 @@ predictButton.addEventListener(
         setApiStatus(true)
 
       displayForecast(data)
-      try {
-        localStorage.setItem(
-          'eswatini-water-stress-latest-forecast',
-          JSON.stringify(data)
-        )
-      } catch (storageError) {
-        console.warn('Could not save latest forecast:', storageError)
-      }
 
     } catch (error) {
 
