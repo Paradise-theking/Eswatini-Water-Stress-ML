@@ -83,8 +83,8 @@ def generate_live_forecast() -> dict:
 
     issue_time = _utc_timestamp()
     source_dates = latest_available_dates()
-    observation_month = latest_common_complete_month()
-    monthly = fetch_latest_monthly_data().sort_values("month_date").reset_index(drop=True)
+    observation_month = latest_common_complete_month(source_dates)
+    monthly = fetch_latest_monthly_data(observation_month).sort_values("month_date").reset_index(drop=True)
 
     expected_months = pd.date_range(end=observation_month, periods=4, freq="MS")
     actual_months = pd.to_datetime(monthly["month_date"]).dt.to_period("M").dt.to_timestamp()
