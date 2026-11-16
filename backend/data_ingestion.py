@@ -172,13 +172,18 @@ def latest_available_dates() -> Dict[str, str]:
     }
 
 
-def latest_common_complete_month() -> pd.Timestamp:
+def latest_common_complete_month(
+    dates: Dict[str, str] | None = None,
+) -> pd.Timestamp:
     """
     Determine the latest fully completed calendar month
     available in both ERA5-Land and CHIRPS.
+
+    An optional captured date snapshot keeps a single forecast
+    decision internally consistent if provider collections update.
     """
 
-    dates = latest_available_dates()
+    dates = dates or latest_available_dates()
 
     era5_date = pd.Timestamp(dates["era5_land"])
     chirps_date = pd.Timestamp(dates["chirps"])
@@ -566,15 +571,18 @@ def validate_daily_source_coverage(
         raise RuntimeError(f"{source_name} contains missing or non-finite required daily values.")
 
 
-def fetch_latest_monthly_data() -> pd.DataFrame:
+def fetch_latest_monthly_data(
+    latest_month: pd.Timestamp | None = None,
+) -> pd.DataFrame:
     """
     Fetch enough recent data to calculate lagged
     and rolling features for the latest forecast.
+
+    Pass the month selected from the same source-date snapshot
+    used by the caller to avoid a moving-origin race.
     """
 
-    latest_month = (
-        latest_common_complete_month()
-    )
+    latest_month = latest_month or latest_common_complete_month()
 
     # We need at least:
     # current month
