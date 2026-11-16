@@ -4,8 +4,9 @@ import hashlib
 import json
 import os
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parents[1] / "data" / "runtime" / "waterwatch_forecast_archive.sqlite3"
 DB_PATH = Path(os.getenv("WATERWATCH_ARCHIVE_DB_PATH", str(DEFAULT_DB_PATH))).expanduser()
@@ -27,10 +28,23 @@ def _connect() -> sqlite3.Connection:
         raise ForecastArchiveError(f"Could not open forecast archive at {DB_PATH}: {exc}") from exc
 
 
+@contextmanager
+def _database() -> Iterator[sqlite3.Connection]:
+    connection = _connect()
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
 def initialize_archive() -> None:
     """Create an append-only SQLite archive. Mount DB_PATH on persistent storage in deployment."""
     try:
-        with _connect() as connection:
+        with _database() as connection:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS forecast_issues (
