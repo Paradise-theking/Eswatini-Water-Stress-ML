@@ -1,6 +1,7 @@
 name: WaterWatch prototype readiness checks
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - feature/prototype-readiness-data-gates
