@@ -533,6 +533,39 @@ def aggregate_monthly(
     return monthly
 
 
+def validate_daily_source_coverage(
+    frame: pd.DataFrame,
+    source_name: str,
+    expected_dates: pd.DatetimeIndex,
+    required_columns: list[str],
+) -> None:
+    """Raise rather than aggregate if a daily source has gaps or invalid values."""
+    if "date" not in frame.columns:
+        raise RuntimeError(f"{source_name} response has no date column.")
+
+    dates = pd.to_datetime(frame["date"]).dt.normalize()
+    if dates.duplicated().any():
+        raise RuntimeError(f"{source_name} returned duplicate daily dates.")
+
+    actual_dates = pd.DatetimeIndex(dates.sort_values())
+    if list(actual_dates) != list(expected_dates):
+        missing = expected_dates.difference(actual_dates)
+        unexpected = actual_dates.difference(expected_dates)
+        raise RuntimeError(
+            f"{source_name} daily coverage is incomplete. "
+            f"Missing dates: {[d.strftime('%Y-%m-%d') for d in missing[:10]]}; "
+            f"unexpected dates: {[d.strftime('%Y-%m-%d') for d in unexpected[:10]]}."
+        )
+
+    absent = [column for column in required_columns if column not in frame.columns]
+    if absent:
+        raise RuntimeError(f"{source_name} is missing required fields: {absent}")
+
+    values = frame[required_columns].apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float)
+    if not np.isfinite(values).all():
+        raise RuntimeError(f"{source_name} contains missing or non-finite required daily values.")
+
+
 def fetch_latest_monthly_data() -> pd.DataFrame:
     """
     Fetch enough recent data to calculate lagged
@@ -586,20 +619,12 @@ def fetch_latest_monthly_data() -> pd.DataFrame:
         freq="D",
     )
 
-    for source_name, frame in (("ERA5-Land", era5), ("CHIRPS", chirps)):
-        if "date" not in frame.columns:
-            raise RuntimeError(f"{source_name} response has no date column.")
-        dates = pd.to_datetime(frame["date"]).dt.normalize()
-        if dates.duplicated().any():
-            raise RuntimeError(f"{source_name} returned duplicate daily dates.")
-        if list(dates.sort_values()) != list(expected_dates):
-            missing = expected_dates.difference(pd.DatetimeIndex(dates))
-            unexpected = pd.DatetimeIndex(dates).difference(expected_dates)
-            raise RuntimeError(
-                f"{source_name} daily coverage is incomplete. "
-                f"Missing dates: {[d.strftime('%Y-%m-%d') for d in missing[:10]]}; "
-                f"unexpected dates: {[d.strftime('%Y-%m-%d') for d in unexpected[:10]]}."
-            )
+    validate_daily_source_coverage(
+        era5, "ERA5-Land", expected_dates, ERA5_BANDS
+    )
+    validate_daily_source_coverage(
+        chirps, "CHIRPS", expected_dates, ["precipitation_mm"]
+    )
 
     daily = transform_daily_data(era5, chirps)
 
