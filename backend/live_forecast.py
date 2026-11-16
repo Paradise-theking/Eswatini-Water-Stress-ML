@@ -96,14 +96,19 @@ def build_source_readiness_summary(
         freshness_passed = age_days <= MAX_INPUT_AGE_DAYS
         target_started = target_start <= observed_at
 
-        source_ages = {
-            source: round(
-                (observed_at - _utc_timestamp(pd.Timestamp(date).to_pydatetime().replace(tzinfo=timezone.utc))).total_seconds()
-                / 86400,
-                2,
-            )
-            for source, date in source_dates.items()
-        }
+        source_ages = {}
+        for source, date in source_dates.items():
+            source_age = (
+                observed_at
+                - _utc_timestamp(
+                    pd.Timestamp(date).to_pydatetime().replace(tzinfo=timezone.utc)
+                )
+            ).total_seconds() / 86400
+            if source_age < 0:
+                raise ForecastReadinessError(
+                    f"{source} reports an observation date later than diagnostic retrieval time."
+                )
+            source_ages[source] = round(source_age, 2)
         return {
             "retrieved_at": observed_at.isoformat(),
             "source_dates": source_dates,
