@@ -42,3 +42,6 @@ equations/
 
 # Local equation image assets
 equations/
+
+# Local runtime forecast archive (configure persistent storage in deployment)
+data/runtime/
