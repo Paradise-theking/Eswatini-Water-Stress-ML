@@ -71,6 +71,61 @@ def _input_fingerprint(monthly: pd.DataFrame, model_sha256: str) -> str:
     return hashlib.sha256(values + model_sha256.encode("ascii")).hexdigest()
 
 
+def build_source_readiness_summary(
+    source_dates: dict[str, str],
+    retrieved_at: datetime | None = None,
+) -> dict:
+    """Summarise freshness and target timing from one captured source-date snapshot."""
+    observed_at = _utc_timestamp(retrieved_at)
+    try:
+        observation_month = latest_common_complete_month(source_dates)
+        cutoff = observation_month + pd.offsets.MonthEnd(1)
+        cutoff_utc = _utc_timestamp(
+            cutoff.to_pydatetime().replace(tzinfo=timezone.utc)
+        )
+        age_days = (observed_at - cutoff_utc).total_seconds() / 86400
+        if age_days < 0:
+            raise ForecastReadinessError(
+                "Common observation cutoff is later than the diagnostic retrieval time."
+            )
+
+        target_month = forecast_month_from_observation(observation_month)
+        target_start = _utc_timestamp(
+            target_month.to_pydatetime().replace(tzinfo=timezone.utc)
+        )
+        freshness_passed = age_days <= MAX_INPUT_AGE_DAYS
+        target_started = target_start <= observed_at
+
+        source_ages = {
+            source: round(
+                (observed_at - _utc_timestamp(pd.Timestamp(date).to_pydatetime().replace(tzinfo=timezone.utc))).total_seconds()
+                / 86400,
+                2,
+            )
+            for source, date in source_dates.items()
+        }
+        return {
+            "retrieved_at": observed_at.isoformat(),
+            "source_dates": source_dates,
+            "source_observation_age_days": source_ages,
+            "latest_common_complete_month": observation_month.strftime("%Y-%m"),
+            "input_cutoff": cutoff.strftime("%Y-%m-%d"),
+            "input_age_days": round(age_days, 2),
+            "maximum_input_age_days": MAX_INPUT_AGE_DAYS,
+            "freshness_gate_passed": freshness_passed,
+            "one_month_forecast_target_month": target_month.strftime("%Y-%m"),
+            "one_month_target_already_started": target_started,
+            "one_month_issue_time_gate_passed": freshness_passed and not target_started,
+            "source_publication_time_verified": False,
+        }
+    except ForecastReadinessError:
+        raise
+    except Exception as exc:
+        raise ForecastReadinessError(
+            f"Could not summarise source-date readiness: {exc}"
+        ) from exc
+
+
 def generate_live_forecast() -> dict:
     """
     Generate the existing one-month-ahead Ridge forecast only when the
