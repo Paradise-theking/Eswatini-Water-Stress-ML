@@ -14,6 +14,13 @@ type PredictionResponse = {
 
   category: string
   description: string
+  issue_timestamp?: string
+  input_cutoff?: string
+  data_quality?: {
+    status: string
+    input_age_days?: number
+    maximum_input_age_days?: number
+  }
 
   latest_indicators: {
     precipitation_mm: number
@@ -1673,8 +1680,14 @@ function displayForecast(data: PredictionResponse) {
   forecastDate = forecastMonthDate
   forecastTitle.textContent =
     `${formatMonthYear(forecastMonthDate)} Water Stress Outlook`
+  const cutoffText = data.input_cutoff
+    ? ` · inputs through ${data.input_cutoff}`
+    : ''
+  const issueText = data.issue_timestamp
+    ? ` · issued ${formatRetrievedAt(data.issue_timestamp)}`
+    : ''
   forecastSourceNote.textContent =
-    `Forecast based on latest live observation: ${formatMonthYear(`${data.observation_month}-01`)}`
+    `Research forecast from observation month ${formatMonthYear(`${data.observation_month}-01`)}${cutoffText}${issueText}`
 
   indicatorPrecipitation.textContent =
     `${data.latest_indicators.precipitation_mm.toFixed(1)} mm`
@@ -1702,6 +1715,15 @@ function displayForecast(data: PredictionResponse) {
   forecastResult.classList.remove('hidden')
 }
 
+function markForecastStale(reason: string) {
+  forecastSourceNote.textContent =
+    `LAST KNOWN FORECAST — NOT VERIFIED CURRENT. ${reason}`
+  forecastLoading.textContent =
+    'The displayed result is a previously saved forecast. It must not be used as a current assessment until a fresh API response passes data-readiness checks.'
+  forecastLoading.classList.remove('hidden')
+  setApiStatus(false)
+}
+
 function restoreSavedForecast() {
   try {
     const saved = localStorage.getItem('eswatini-water-stress-latest-forecast')
@@ -1716,9 +1738,7 @@ function restoreSavedForecast() {
       !data.model_features
     ) return
     displayForecast(data)
-    forecastLoading.textContent =
-      'Showing your last saved forecast. Run Forecast to check for an update.'
-    forecastLoading.classList.remove('hidden')
+    markForecastStale('A fresh issue-time and data-quality check has not yet succeeded in this session.')
   } catch (error) {
     console.warn('Could not restore saved forecast:', error)
   }
@@ -1792,10 +1812,13 @@ async function loadLatestForecast() {
      * This prevents a temporary API/cold-start failure from
      * replacing a useful last-known forecast with an error.
      */
-    if (latestForecast === null) {
+    if (latestForecast !== null) {
+      markForecastStale('The latest forecast request failed or the backend rejected the inputs.')
+    } else {
       forecastLoading.textContent =
-        'Latest forecast is temporarily unavailable. Run Forecast to try again.'
+        'Latest forecast unavailable. The backend may be rejecting stale or incomplete inputs. No current forecast is being shown.'
     }
+    setApiStatus(false)
   }
 }
 
@@ -1857,8 +1880,12 @@ predictButton.addEventListener(
       )
       
 
-      forecastLoading.textContent =
-        'Forecast failed. Confirm that the FastAPI server is available and try again.'
+      if (latestForecast !== null) {
+        markForecastStale('The latest request failed or data-readiness checks did not pass.')
+      } else {
+        forecastLoading.textContent =
+          'No current forecast is available. The backend may be rejecting stale or incomplete inputs.'
+      }
 
     } finally {
 
