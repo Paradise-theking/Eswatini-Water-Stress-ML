@@ -62,6 +62,27 @@ A row is eligible for prospective evaluation only if all model inputs were avail
 
 The audit must use date-specific archived source snapshots. A retrospective dataset refreshed after the target period is not proof that the values were available at the historical issue date.
 
+## 3A. Critical clarification: the expanded model is not a three-month-lead forecast
+
+Inspection of `scripts/build_expanded_forecasting_dataset.py` confirms:
+
+- `forecast_origin_month = month_date(t)`
+- `target_month = month_date(t+1)`
+- `target_swba_3month = swba_3month(t+1)`
+- predictors use lag 0 and earlier values, so the intended information origin is month `t`.
+
+Therefore, the expanded Lasso/Ridge/XGBoost experiment predicts the next month's **three-month rolling SWBA**. It is a one-month lead forecast of a three-month accumulation/index, not a forecast three months into the future. The rolling three-month target window ends in the target month; it does not represent three future months beyond the origin.
+
+This changes the proposed path: the expanded Lasso/Ridge results do not solve the one-month source-latency problem by themselves. Both the original and expanded experiments have a next-calendar-month target. The expanded dataset is useful because it has a longer historical record and a different target/reference construction, not because it has a longer lead time.
+
+The existing test prediction CSV contains `target_month` and predictions but not the explicit origin or actual issue timestamp. The origin can be reconstructed as target month minus one month from the dataset construction, but actual historical source publication time is still unknown. Thus the backtest demonstrates a structural one-month forecast design, not proof that the inputs were available before each target month began.
+
+## 3B. New true-lead experiment
+
+The new `scripts/evaluate_true_lead_horizons.py` builds separate 1-, 2- and 3-month target leads from the expanded monthly SWBA source. For each origin month `t`, it uses predictors available at `t) and predicts the three-month rolling SWBA at `t+lead`. It applies the existing final-evaluation Lasso, Ridge and tuned XGBoost configurations where available, plus persistence, seasonal-climatology and training-mean baselines. It writes row-level predictions with origin month, target month, lead and input cutoff, plus horizon-specific metrics.
+
+This is a candidate-screening experiment, not a replacement model or prospective validation. Hyperparameters are held fixed from the existing final evaluation; no per-horizon tuning is performed. The output must be run against the locally prepared monthly SWBA source and reviewed before choosing a lead. The 2- and 3-month horizons are only useful operationally if their inputs are actually available at issue time and the accuracy remains acceptable.
+
 ## 4. Model promotion gates
 
 A candidate may enter a prospective shadow trial only after:
