@@ -24,6 +24,14 @@ jobs:
         run: python -m compileall -q backend scripts
       - name: Run data-quality gate tests
         run: python -m unittest discover -s tests -v
+      - name: Compare true 1-, 2- and 3-month forecast leads
+        run: python scripts/evaluate_true_lead_horizons.py
+      - name: Upload horizon evaluation outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: waterwatch-horizon-evaluation
+          path: outputs/expanded/horizon_comparison/*.csv
+          if-no-files-found: error
 
   frontend-build:
     runs-on: ubuntu-latest
