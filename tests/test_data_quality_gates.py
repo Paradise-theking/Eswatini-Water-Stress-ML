@@ -6,6 +6,7 @@ from backend.data_ingestion import (
     latest_common_complete_month,
     validate_daily_source_coverage,
 )
+from backend.live_forecast import build_source_readiness_summary
 
 
 class DailyCoverageValidationTests(unittest.TestCase):
@@ -71,6 +72,44 @@ class DailyCoverageValidationTests(unittest.TestCase):
             validate_daily_source_coverage(
                 frame, "test-source", self.expected, ["rain_mm"]
             )
+
+
+class SourceReadinessSummaryTests(unittest.TestCase):
+    def setUp(self):
+        self.source_dates = {
+            "era5_land": "2026-10-26",
+            "chirps": "2026-09-30",
+        }
+
+    def test_summary_uses_one_common_source_snapshot(self):
+        summary = build_source_readiness_summary(
+            self.source_dates,
+            pd.Timestamp("2026-11-07T12:00:00Z").to_pydatetime(),
+        )
+        self.assertEqual(summary["latest_common_complete_month"], "2026-09")
+        self.assertEqual(summary["input_cutoff"], "2026-09-30")
+        self.assertEqual(summary["one_month_forecast_target_month"], "2026-10")
+        self.assertTrue(summary["freshness_gate_passed"])
+        self.assertTrue(summary["one_month_target_already_started"])
+        self.assertFalse(summary["one_month_issue_time_gate_passed"])
+        self.assertFalse(summary["source_publication_time_verified"])
+
+    def test_summary_can_pass_before_target_month_starts(self):
+        summary = build_source_readiness_summary(
+            {"era5_land": "2026-09-30", "chirps": "2026-09-30"},
+            pd.Timestamp("2026-09-30T23:59:00Z").to_pydatetime(),
+        )
+        self.assertTrue(summary["freshness_gate_passed"])
+        self.assertFalse(summary["one_month_target_already_started"])
+        self.assertTrue(summary["one_month_issue_time_gate_passed"])
+
+    def test_summary_fails_stale_input_gate(self):
+        summary = build_source_readiness_summary(
+            self.source_dates,
+            pd.Timestamp("2026-11-20T12:00:00Z").to_pydatetime(),
+        )
+        self.assertFalse(summary["freshness_gate_passed"])
+        self.assertFalse(summary["one_month_issue_time_gate_passed"])
 
 
 if __name__ == "__main__":
