@@ -616,7 +616,27 @@ def get_latest_archived_forecast():
         record = get_latest_forecast()
         if record is None:
             return {"status": "empty", "data": None}
-        return {"status": "success", "data": record}
+
+        # Public dashboard fallback needs only display fields. Keep the full
+        # model feature vector and provenance in the server-side Firestore log.
+        display_record = {
+            "issue_timestamp": record.get("issue_timestamp"),
+            "retrieved_at": record.get("retrieved_at"),
+            "observation_month": record.get("observation_month"),
+            "input_cutoff": record.get("input_cutoff"),
+            "forecast_month": record.get("forecast_month"),
+            "water_stress_index": record.get("water_stress_index"),
+            "category": record.get("category"),
+            "description": record.get("description"),
+            "data_quality": record.get("data_quality"),
+            "latest_indicators": record.get("latest_indicators"),
+            "model_features": {
+                "precipitation_3month": (
+                    record.get("model_features") or {}
+                ).get("precipitation_3month")
+            },
+        }
+        return {"status": "success", "data": display_record}
     except ForecastArchiveError as exc:
         raise HTTPException(
             status_code=503,
