@@ -177,7 +177,7 @@ def evaluate_lead(frame: pd.DataFrame, features: list[str], lead_months: int):
     prediction_series["Seasonal Climatology"] = (
         test["target_month"].dt.month.map(seasonal_means).fillna(global_mean).to_numpy()
     )
-    prediction_series["Training-Mean Baseline"] = global_mean
+    prediction_series["Training-Mean Baseline"] = np.full(len(test), global_mean, dtype=float)
 
     metrics = []
     for name, predicted in prediction_series.items():
