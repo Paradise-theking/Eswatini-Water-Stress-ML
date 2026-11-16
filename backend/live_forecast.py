@@ -182,6 +182,11 @@ def generate_live_forecast() -> dict:
                 "runoff_mm", "solar_radiation",
             )
         },
+        # Preserve the existing frontend contract.
+        "model_features": {
+            feature: float(model_input.iloc[0][feature])
+            for feature in MODEL_FEATURES
+        },
     }
     _cached_live_forecast = result
     _cached_input_fingerprint = fingerprint
