@@ -112,6 +112,27 @@ def archive_forecast(result: dict[str, Any]) -> str:
     return archive_id
 
 
+def get_latest_forecast() -> dict[str, Any] | None:
+    """Read the complete latest forecast from Firebase for stale/offline display."""
+    try:
+        query = (
+            _client()
+            .collection(COLLECTION_NAME)
+            .order_by("issue_timestamp", direction=firestore.Query.DESCENDING)
+            .limit(1)
+        )
+        snapshots = list(query.stream())
+        if not snapshots:
+            return None
+        record = snapshots[0].to_dict() or {}
+        archived_at = record.get("archived_at")
+        if hasattr(archived_at, "isoformat"):
+            record["archived_at"] = archived_at.isoformat()
+        return record
+    except Exception as exc:
+        raise ForecastArchiveError(f"Could not read latest forecast from Firebase: {exc}") from exc
+
+
 def list_forecast_issues(limit: int = 50) -> list[dict[str, Any]]:
     """Return recent issue metadata from Firestore, newest first."""
     safe_limit = max(1, min(int(limit), 100))
