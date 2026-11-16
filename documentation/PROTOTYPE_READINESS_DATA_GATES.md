@@ -29,32 +29,37 @@ Readiness failures return HTTP 503 with an explicit unavailable reason. Other up
 - The input cutoff is the last day of the selected complete calendar month; it is not a claim that the data were published on that day.
 - The 45-day freshness limit is a conservative engineering guard for this prototype, not a locally validated operational service-level threshold. It should be configurable and reviewed against actual observed publication latency.
 - Exact daily date coverage and finite-value checks do not establish measurement accuracy, spatial representativeness, or source-vintage immutability.
-- The current process-local cache and API response are not a durable immutable forecast archive. A persistent archive needs an agreed storage backend, retention policy and access controls.
+- The forecast issue archive is stored in Firebase Cloud Firestore through the Firebase Admin SDK. No SQLite or local-file database is used for forecast storage.
 - The existing model is still the original one-month Ridge artifact on `main`; this work does not make the expanded three-month regression models the deployed model.
 - Existing category boundaries remain research communication categories. No official alert is authorised.
 
-## Forecast issue archive
+## Firebase forecast issue archive
 
-A server-side SQLite append-only archive is implemented in `backend/forecast_archive.py`.
+All durable WaterWatch application storage must use the existing Firebase project `eswatiniwaterstress`. The forecast issue archive uses Cloud Firestore through the Python Firebase Admin SDK in `backend/forecast_archive.py`.
 
-- `/forecast/live` and `/forecast/live/refresh` append each issued forecast after successful readiness checks.
-- `/forecast/archive?limit=50` returns recent issue metadata for audit.
-- The archive identity is derived from issue timestamp, model SHA-256 and input fingerprint; identical retries are idempotent.
-- SQLite triggers reject updates and deletes through ordinary SQL operations.
-- The full forecast response, including source snapshot dates and model/input provenance, is retained as JSON in each archive record.
-- Archive write failure prevents the endpoint from returning a successful forecast issue.
+- Collection: `waterwatch_forecast_issues`.
+- `/forecast/live` and `/forecast/live/refresh` append an issue after readiness checks pass and before a successful response is returned.
+- `/forecast/archive?limit=50` reads recent issue metadata from Firestore.
+- Document IDs are deterministic SHA-256 hashes of issue timestamp, model hash and input fingerprint.
+- Firestore `create()` prevents overwriting an existing issue; duplicate retries are idempotent.
+- Full response/provenance JSON is stored in each document; list responses omit large feature payloads.
+- Archive write failure prevents the endpoint from reporting a successful forecast issue.
+- Firebase Admin uses server-side credentials and bypasses client Firestore Security Rules. Never place service-account credentials in frontend code, GitHub, or a public file.
 
-### Deployment persistence requirement
+### Render/backend configuration
 
-The default archive path is `data/runtime/waterwatch_forecast_archive.sqlite3`. This is only durable if that directory is on persistent storage. A normal ephemeral container filesystem can be erased on restart/redeploy.
-
-For Render, attach a persistent disk to the backend service, mount it at a dedicated path such as `/var/data`, and set:
+Configure the backend service with:
 
 ```text
-WATERWATCH_ARCHIVE_DB_PATH=/var/data/waterwatch_forecast_archive.sqlite3
+FIREBASE_PROJECT_ID=eswatiniwaterstress
+FIREBASE_SERVICE_ACCOUNT_JSON=<service-account JSON stored as a protected secret>
 ```
 
-Do not claim a durable archive until the disk is attached and a restart test confirms the records remain available. Backups and retention still need an explicit policy. The archive is an audit log, not a high-availability database; SQLite is suitable for this single-service prototype but should be reconsidered for concurrent multi-instance deployment.
+Alternatively, use `GOOGLE_APPLICATION_CREDENTIALS` with a securely mounted service-account file or an appropriate workload identity. Grant the service identity the minimum Firestore IAM permissions needed to create and read documents in the project.
+
+After configuration, verify a write, read, duplicate retry, and persistence after a backend restart/redeploy. The archive is not verified until these integration checks pass. Configure backups/retention in Firebase/GCP; the application currently does not delete archive documents.
+
+The existing browser-side `momo_subscriptions` collection is separate from the server-only WaterWatch forecast archive. Do not change its security rules as part of this PR without reviewing its existing demo behaviour and phone-number privacy requirements.
 
 ## Verification
 
@@ -71,7 +76,7 @@ An authenticated integration check still needs to be run in the project environm
 ## Next steps
 
 1. Run unit tests and Python compilation in CI.
-2. Attach persistent backend storage and set `WATERWATCH_ARCHIVE_DB_PATH`; verify records survive a service restart.
+2. Configure protected Firebase Admin credentials on the backend; verify Firestore archive writes survive backend restarts.
 3. Inspect a live diagnostic response and record actual source image dates and retrieval time.
 4. Confirm whether the default 45-day age limit permits timely monthly issuance; do not loosen it merely to make the endpoint return a number.
 5. Add source-vintage snapshots and revision-difference monitoring.
