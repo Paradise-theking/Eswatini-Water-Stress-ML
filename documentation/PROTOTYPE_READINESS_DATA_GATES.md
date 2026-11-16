@@ -33,6 +33,29 @@ Readiness failures return HTTP 503 with an explicit unavailable reason. Other up
 - The existing model is still the original one-month Ridge artifact on `main`; this work does not make the expanded three-month regression models the deployed model.
 - Existing category boundaries remain research communication categories. No official alert is authorised.
 
+## Forecast issue archive
+
+A server-side SQLite append-only archive is implemented in `backend/forecast_archive.py`.
+
+- `/forecast/live` and `/forecast/live/refresh` append each issued forecast after successful readiness checks.
+- `/forecast/archive?limit=50` returns recent issue metadata for audit.
+- The archive identity is derived from issue timestamp, model SHA-256 and input fingerprint; identical retries are idempotent.
+- SQLite triggers reject updates and deletes through ordinary SQL operations.
+- The full forecast response, including source snapshot dates and model/input provenance, is retained as JSON in each archive record.
+- Archive write failure prevents the endpoint from returning a successful forecast issue.
+
+### Deployment persistence requirement
+
+The default archive path is `data/runtime/waterwatch_forecast_archive.sqlite3`. This is only durable if that directory is on persistent storage. A normal ephemeral container filesystem can be erased on restart/redeploy.
+
+For Render, attach a persistent disk to the backend service, mount it at a dedicated path such as `/var/data`, and set:
+
+```text
+WATERWATCH_ARCHIVE_DB_PATH=/var/data/waterwatch_forecast_archive.sqlite3
+```
+
+Do not claim a durable archive until the disk is attached and a restart test confirms the records remain available. Backups and retention still need an explicit policy. The archive is an audit log, not a high-availability database; SQLite is suitable for this single-service prototype but should be reconsidered for concurrent multi-instance deployment.
+
 ## Verification
 
 Unit tests in `tests/test_data_quality_gates.py` cover complete coverage, missing dates, duplicate dates, missing values and missing required fields.
@@ -48,8 +71,8 @@ An authenticated integration check still needs to be run in the project environm
 ## Next steps
 
 1. Run unit tests and Python compilation in CI.
-2. Inspect a live diagnostic response and record actual source image dates and retrieval time.
-3. Confirm whether the default 45-day age limit permits timely monthly issuance; do not loosen it merely to make the endpoint return a number.
-4. Add a durable append-only forecast archive before claiming prospective shadow evaluation.
-5. Add UI handling for HTTP 503 so cached prior values are visibly marked stale and cannot appear as current.
-6. Add source-vintage snapshots and revision-difference monitoring.
+2. Attach persistent backend storage and set `WATERWATCH_ARCHIVE_DB_PATH`; verify records survive a service restart.
+3. Inspect a live diagnostic response and record actual source image dates and retrieval time.
+4. Confirm whether the default 45-day age limit permits timely monthly issuance; do not loosen it merely to make the endpoint return a number.
+5. Add source-vintage snapshots and revision-difference monitoring.
+6. Align the forecast horizon with actual source availability and archive genuine issue-time forecasts before prospective shadow scoring.
