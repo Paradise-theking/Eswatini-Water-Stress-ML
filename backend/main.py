@@ -13,6 +13,7 @@ from backend.live_forecast import (
 from backend.forecast_archive import (
     ForecastArchiveError,
     archive_forecast,
+    get_latest_forecast,
     list_forecast_issues,
 )
 from backend.data_ingestion import (
@@ -598,14 +599,28 @@ def get_forecast_archive(limit: int = 50):
         return {
             "status": "success",
             "count": len(records),
-            "archive_path": "configured server-side archive",
-            "durability": "persistent_only_when_archive_path_is_on_persistent_storage",
+            "storage": "firebase_cloud_firestore",
             "data": records,
         }
     except ForecastArchiveError as exc:
         raise HTTPException(
             status_code=503,
             detail=f"Forecast archive is unavailable: {exc}",
+        ) from exc
+
+
+@app.get("/forecast/archive/latest")
+def get_latest_archived_forecast():
+    """Return the latest complete archived forecast for explicitly stale display."""
+    try:
+        record = get_latest_forecast()
+        if record is None:
+            return {"status": "empty", "data": None}
+        return {"status": "success", "data": record}
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Firebase forecast archive is unavailable: {exc}",
         ) from exc
 
 
@@ -663,7 +678,7 @@ def refresh_live_forecast():
             "status": "success",
             "refreshed": True,
             "archive_id": archive_id,
-            "archive_durability": "persistent_only_when_archive_path_is_on_persistent_storage",
+            "archive_storage": "firebase_cloud_firestore",
             **result,
         }
 
