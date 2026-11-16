@@ -9,6 +9,7 @@ from backend.live_forecast import (
     ForecastReadinessError,
     generate_live_forecast,
     clear_live_forecast_cache,
+    build_source_readiness_summary,
 )
 from backend.forecast_archive import (
     ForecastArchiveError,
@@ -166,28 +167,30 @@ def water_risk_surface_area():
 
 @app.get("/diagnostics/data-dates")
 def diagnose_data_dates():
-    """Report latest source dates and the selected complete month."""
-    from backend.data_ingestion import (
-        latest_available_dates,
-        latest_common_complete_month,
-    )
+    """Report source freshness and whether the one-month target is still ahead."""
+    from backend.data_ingestion import latest_available_dates
 
     try:
         initialize_earth_engine()
+        # Capture once: source dates and selected common month must use the
+        # same Earth Engine snapshot, not two independent collection reads.
         dates = latest_available_dates()
-        selected_month = latest_common_complete_month()
-
+        summary = build_source_readiness_summary(dates)
         return {
             "status": "success",
-            "source_dates": dates,
-            "latest_common_complete_month": selected_month.strftime("%Y-%m-%d"),
+            **summary,
         }
 
+    except ForecastReadinessError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Source readiness diagnostic unavailable: {str(exc)}",
+        ) from exc
     except Exception as exc:
         raise HTTPException(
-            status_code=500,
+            status_code=502,
             detail=f"Data-date diagnostic failed: {str(exc)}",
-        )
+        ) from exc
 
 
 @app.get("/history")
