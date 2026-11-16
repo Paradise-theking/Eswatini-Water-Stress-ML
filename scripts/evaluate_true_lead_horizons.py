@@ -124,13 +124,25 @@ def build_models():
 
 
 def evaluate_lead(frame: pd.DataFrame, features: list[str], lead_months: int):
-    development = frame[frame["target_month"] < TEST_START].copy()
     test = frame[
         frame["target_month"].between(TEST_START, TEST_END)
     ].copy()
 
-    if development.empty or test.empty:
-        raise ValueError(f"Lead {lead_months}: development or test split is empty.")
+    if test.empty:
+        raise ValueError(f"Lead {lead_months}: test split is empty.")
+
+    # Freeze the candidate at the earliest test forecast origin. Every
+    # training target must already have completed by that issue origin.
+    first_issue_origin = test["forecast_origin_month"].min()
+    development = frame[
+        frame["target_month"] <= first_issue_origin
+    ].copy()
+
+    if development.empty:
+        raise ValueError(f"Lead {lead_months}: no training labels were available at first test issue origin.")
+
+    if development["target_month"].max() > first_issue_origin:
+        raise AssertionError("Training labels extend beyond the first test issue origin.")
 
     x_dev = development[features]
     y_dev = development["target_swba_3month"].astype(float)
@@ -141,6 +153,12 @@ def evaluate_lead(frame: pd.DataFrame, features: list[str], lead_months: int):
         ["forecast_origin_month", "input_cutoff_month", "target_month",
          "lead_months", "target_swba_3month"]
     ].rename(columns={"target_swba_3month": "observed_swba"}).copy()
+    predictions["training_target_cutoff"] = development["target_month"].max().strftime("%Y-%m")
+    predictions["first_test_issue_origin"] = first_issue_origin.strftime("%Y-%m")
+    predictions["structural_lead_valid"] = (
+        predictions["target_month"] > predictions["forecast_origin_month"]
+    )
+    predictions["source_publication_time_verified"] = False
 
     prediction_series = {}
     for name, model in build_models().items():
@@ -168,7 +186,10 @@ def evaluate_lead(frame: pd.DataFrame, features: list[str], lead_months: int):
             "lead_months": lead_months,
             "model": name,
             "development_n": len(development),
+            "training_target_cutoff": development["target_month"].max().strftime("%Y-%m"),
+            "first_test_issue_origin": first_issue_origin.strftime("%Y-%m"),
             "test_n": len(test),
+            "source_publication_time_verified": False,
             "test_start": test["target_month"].min().strftime("%Y-%m"),
             "test_end": test["target_month"].max().strftime("%Y-%m"),
             "MAE": mean_absolute_error(y_test, predicted),
