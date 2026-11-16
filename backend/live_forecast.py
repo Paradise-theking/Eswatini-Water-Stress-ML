@@ -81,10 +81,10 @@ def generate_live_forecast() -> dict:
     """
     global _cached_live_forecast, _cached_input_fingerprint
 
-    issue_time = _utc_timestamp()
     source_dates = latest_available_dates()
     observation_month = latest_common_complete_month(source_dates)
     monthly = fetch_latest_monthly_data(observation_month).sort_values("month_date").reset_index(drop=True)
+    retrieved_at = _utc_timestamp()
 
     expected_months = pd.date_range(end=observation_month, periods=4, freq="MS")
     actual_months = pd.to_datetime(monthly["month_date"]).dt.to_period("M").dt.to_timestamp()
@@ -102,9 +102,9 @@ def generate_live_forecast() -> dict:
 
     cutoff = observation_month + pd.offsets.MonthEnd(1)
     cutoff_utc = _utc_timestamp(cutoff.to_pydatetime().replace(tzinfo=timezone.utc))
-    age_days = (issue_time - cutoff_utc).total_seconds() / 86400
+    age_days = (retrieved_at - cutoff_utc).total_seconds() / 86400
     if age_days < 0:
-        raise ForecastReadinessError("Observation cutoff is later than the issue timestamp.")
+        raise ForecastReadinessError("Observation cutoff is later than the retrieval timestamp.")
     if age_days > MAX_INPUT_AGE_DAYS:
         raise ForecastReadinessError(
             f"Latest complete observation month is {age_days:.1f} days old; "
@@ -117,8 +117,9 @@ def generate_live_forecast() -> dict:
     fingerprint = _input_fingerprint(monthly, model_sha256)
 
     if _cached_live_forecast is not None and fingerprint == _cached_input_fingerprint:
+        served_at = _utc_timestamp()
         cached = dict(_cached_live_forecast)
-        cached["served_at"] = issue_time.isoformat()
+        cached["served_at"] = served_at.isoformat()
         cached["cache_status"] = "reused_identical_inputs"
         return cached
 
@@ -128,21 +129,25 @@ def generate_live_forecast() -> dict:
         raise ForecastReadinessError("Model feature origin does not match the verified observation cutoff.")
 
     forecast_month = forecast_month_from_observation(model_observation_month)
+    prediction = float(model.predict(model_input[MODEL_FEATURES])[0])
+    if not np.isfinite(prediction):
+        raise ForecastReadinessError("Model returned a non-finite prediction.")
+
+    # Timestamp the issue after data retrieval and inference, then verify
+    # that the target period is still wholly in the future.
+    issue_time = _utc_timestamp()
     target_start = _utc_timestamp(forecast_month.to_pydatetime().replace(tzinfo=timezone.utc))
     if target_start <= issue_time:
         raise ForecastReadinessError(
             "The target month has already started; this result would not be a genuine advance forecast."
         )
 
-    prediction = float(model.predict(model_input[MODEL_FEATURES])[0])
-    if not np.isfinite(prediction):
-        raise ForecastReadinessError("Model returned a non-finite prediction.")
-
     category, description = classify_water_stress(prediction)
     latest = monthly.iloc[-1]
     result = {
         "forecast_type": "one_month_ahead_hydroclimatic_swba_regression",
         "issue_timestamp": issue_time.isoformat(),
+        "retrieved_at": retrieved_at.isoformat(),
         "served_at": issue_time.isoformat(),
         "observation_month": model_observation_month.strftime("%Y-%m"),
         "input_cutoff": cutoff.strftime("%Y-%m-%d"),
