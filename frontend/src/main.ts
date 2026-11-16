@@ -33,21 +33,7 @@ type PredictionResponse = {
   }
 
   model_features: {
-    soil_moisture_layer1_lag1: number
-    precipitation_mm_lag1: number
-    pet_mm: number
-    soil_moisture_layer2_lag1: number
-    precipitation_mm: number
-    soil_moisture_layer2: number
     precipitation_3month: number
-    soil_moisture_layer1: number
-    pet_mm_lag1: number
-    temperature_max_c: number
-    surface_runoff_mm_lag1: number
-    runoff_mm_lag1: number
-    pet_3month: number
-    solar_radiation: number
-    solar_radiation_lag1: number
   }
 }
 
