@@ -23,6 +23,18 @@ Before the existing live Ridge model is evaluated, the service now:
 
 Readiness failures return HTTP 503 with an explicit unavailable reason. Other upstream inference failures return HTTP 502. The API does not fall back to a stale forecast.
 
+## Source-readiness diagnostics
+
+`GET /diagnostics/data-dates` now captures Earth Engine source dates once and reports:
+
+- latest image date and observation age for each source;
+- latest common complete month and input cutoff;
+- age of the common input cutoff and the configured 45-day freshness gate;
+- the next one-month target month and whether it has already started;
+- whether the one-month issue-time gate is structurally passed.
+
+The diagnostic explicitly reports `source_publication_time_verified: false`. Earth Engine image dates are not first-publication timestamps. The endpoint is observational; it does not issue a forecast or change the model.
+
 ## Important limitations
 
 - Earth Engine's latest image date is not a provider publication timestamp. The current adapter does not establish when a given image first became accessible or whether it was subsequently revised.
