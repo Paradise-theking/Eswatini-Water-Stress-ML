@@ -1754,7 +1754,9 @@ async function restoreSavedForecast() {
   }
 }
 
-void restoreSavedForecast()
+void restoreSavedForecast().finally(() => {
+  void loadLatestForecast()
+})
 
 /*
  * --------------------------------------------------------------------------
@@ -1819,8 +1821,6 @@ async function loadLatestForecast() {
     setApiStatus(false)
   }
 }
-
-loadLatestForecast()
 
 predictButton.addEventListener(
   'click',
