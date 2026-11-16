@@ -3,98 +3,64 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import sqlite3
-from contextlib import contextmanager
-from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
-DEFAULT_DB_PATH = Path(__file__).resolve().parents[1] / "data" / "runtime" / "waterwatch_forecast_archive.sqlite3"
-DB_PATH = Path(os.getenv("WATERWATCH_ARCHIVE_DB_PATH", str(DEFAULT_DB_PATH))).expanduser()
+import firebase_admin
+from firebase_admin import credentials, firestore
+from google.api_core.exceptions import AlreadyExists, GoogleAPICallError
+
+
+COLLECTION_NAME = "waterwatch_forecast_issues"
 
 
 class ForecastArchiveError(RuntimeError):
-    """Raised when a forecast cannot be safely recorded in the archive."""
+    """Raised when the Firebase forecast archive is unavailable or rejects a write."""
 
 
-def _connect() -> sqlite3.Connection:
+def _firebase_app():
+    """Initialise the Admin SDK from deployment credentials; never embed secrets."""
     try:
-        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        connection = sqlite3.connect(DB_PATH, timeout=15)
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA journal_mode=WAL")
-        connection.execute("PRAGMA foreign_keys=ON")
-        return connection
+        try:
+            return firebase_admin.get_app()
+        except ValueError:
+            raw_service_account = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+            if raw_service_account:
+                service_account = json.loads(raw_service_account)
+                credential = credentials.Certificate(service_account)
+            else:
+                # Render or another trusted runtime should provide ADC via
+                # GOOGLE_APPLICATION_CREDENTIALS / workload identity.
+                credential = credentials.ApplicationDefault()
+
+            project_id = (
+                os.getenv("FIREBASE_PROJECT_ID")
+                or os.getenv("GOOGLE_CLOUD_PROJECT")
+                or "eswatiniwaterstress"
+            )
+            return firebase_admin.initialize_app(
+                credential,
+                {"projectId": project_id},
+            )
     except Exception as exc:
-        raise ForecastArchiveError(f"Could not open forecast archive at {DB_PATH}: {exc}") from exc
+        raise ForecastArchiveError(
+            "Firebase Admin initialisation failed. Configure FIREBASE_SERVICE_ACCOUNT_JSON "
+            "or GOOGLE_APPLICATION_CREDENTIALS and grant Firestore access."
+        ) from exc
 
 
-@contextmanager
-def _database() -> Iterator[sqlite3.Connection]:
-    connection = _connect()
+def _client():
     try:
-        yield connection
-        connection.commit()
-    except Exception:
-        connection.rollback()
-        raise
-    finally:
-        connection.close()
+        return firestore.client(app=_firebase_app())
+    except Exception as exc:
+        raise ForecastArchiveError(f"Could not connect to Cloud Firestore: {exc}") from exc
 
 
 def initialize_archive() -> None:
-    """Create an append-only SQLite archive. Mount DB_PATH on persistent storage in deployment."""
-    try:
-        with _database() as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS forecast_issues (
-                    archive_id TEXT PRIMARY KEY,
-                    issue_timestamp TEXT NOT NULL,
-                    retrieved_at TEXT NOT NULL,
-                    observation_month TEXT NOT NULL,
-                    forecast_month TEXT NOT NULL,
-                    forecast_type TEXT NOT NULL,
-                    water_stress_index REAL NOT NULL,
-                    category TEXT NOT NULL,
-                    model_sha256 TEXT NOT NULL,
-                    input_fingerprint TEXT NOT NULL,
-                    response_json TEXT NOT NULL,
-                    archived_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-                )
-                """
-            )
-            connection.execute(
-                """
-                CREATE INDEX IF NOT EXISTS idx_forecast_issues_target
-                ON forecast_issues(forecast_month, issue_timestamp)
-                """
-            )
-            connection.execute(
-                """
-                CREATE TRIGGER IF NOT EXISTS forecast_issues_no_update
-                BEFORE UPDATE ON forecast_issues
-                BEGIN
-                    SELECT RAISE(ABORT, 'forecast archive is append-only');
-                END
-                """
-            )
-            connection.execute(
-                """
-                CREATE TRIGGER IF NOT EXISTS forecast_issues_no_delete
-                BEFORE DELETE ON forecast_issues
-                BEGIN
-                    SELECT RAISE(ABORT, 'forecast archive is append-only');
-                END
-                """
-            )
-    except ForecastArchiveError:
-        raise
-    except Exception as exc:
-        raise ForecastArchiveError(f"Could not initialize forecast archive: {exc}") from exc
+    """Validate that the Firebase Admin client can be initialised."""
+    _client()
 
 
-def archive_forecast(result: dict[str, Any]) -> str:
-    """Append a forecast issue once; identical retries are idempotent."""
+def _record_identity(result: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     required = (
         "issue_timestamp", "retrieved_at", "observation_month",
         "forecast_month", "forecast_type", "water_stress_index",
@@ -112,61 +78,60 @@ def archive_forecast(result: dict[str, Any]) -> str:
 
     identity = f"{result['issue_timestamp']}|{model_sha256}|{input_fingerprint}"
     archive_id = hashlib.sha256(identity.encode("utf-8")).hexdigest()
-    payload = json.dumps(result, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    try:
+        payload = json.loads(
+            json.dumps(result, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        )
+    except (TypeError, ValueError) as exc:
+        raise ForecastArchiveError(f"Forecast payload is not valid JSON: {exc}") from exc
+
+    payload.update({
+        "archive_id": archive_id,
+        "model_sha256": model_sha256,
+        "input_fingerprint": input_fingerprint,
+    })
+    return archive_id, payload
+
+
+def archive_forecast(result: dict[str, Any]) -> str:
+    """Create one immutable Firestore issue document; identical retries are idempotent."""
+    archive_id, payload = _record_identity(result)
+    payload["archived_at"] = firestore.SERVER_TIMESTAMP
+    document = _client().collection(COLLECTION_NAME).document(archive_id)
 
     try:
-        initialize_archive()
-        with _connect() as connection:
-            connection.execute(
-                """
-                INSERT OR IGNORE INTO forecast_issues (
-                    archive_id, issue_timestamp, retrieved_at,
-                    observation_month, forecast_month, forecast_type,
-                    water_stress_index, category, model_sha256,
-                    input_fingerprint, response_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    archive_id,
-                    result["issue_timestamp"],
-                    result["retrieved_at"],
-                    result["observation_month"],
-                    result["forecast_month"],
-                    result["forecast_type"],
-                    float(result["water_stress_index"]),
-                    result["category"],
-                    model_sha256,
-                    input_fingerprint,
-                    payload,
-                ),
-            )
-        return archive_id
-    except ForecastArchiveError:
-        raise
+        document.create(payload)
+    except AlreadyExists:
+        # Idempotent retry: an existing issue with the same deterministic ID is retained.
+        pass
+    except GoogleAPICallError as exc:
+        raise ForecastArchiveError(f"Firestore rejected the forecast archive write: {exc}") from exc
     except Exception as exc:
-        raise ForecastArchiveError(f"Could not append forecast issue: {exc}") from exc
+        raise ForecastArchiveError(f"Could not archive forecast in Firebase: {exc}") from exc
+
+    return archive_id
 
 
 def list_forecast_issues(limit: int = 50) -> list[dict[str, Any]]:
-    """Return recent archived issues, newest first; omit the full feature payload."""
+    """Return recent issue metadata from Firestore, newest first."""
     safe_limit = max(1, min(int(limit), 100))
     try:
-        initialize_archive()
-        with _connect() as connection:
-            rows = connection.execute(
-                """
-                SELECT archive_id, issue_timestamp, retrieved_at,
-                       observation_month, forecast_month, forecast_type,
-                       water_stress_index, category, model_sha256,
-                       input_fingerprint, archived_at
-                FROM forecast_issues
-                ORDER BY issue_timestamp DESC
-                LIMIT ?
-                """,
-                (safe_limit,),
-            ).fetchall()
-        return [dict(row) for row in rows]
-    except ForecastArchiveError:
-        raise
+        query = (
+            _client()
+            .collection(COLLECTION_NAME)
+            .order_by("issue_timestamp", direction=firestore.Query.DESCENDING)
+            .limit(safe_limit)
+        )
+        records = []
+        for snapshot in query.stream():
+            record = snapshot.to_dict() or {}
+            archived_at = record.get("archived_at")
+            if hasattr(archived_at, "isoformat"):
+                record["archived_at"] = archived_at.isoformat()
+            # Keep the public history endpoint compact; full response remains in Firestore.
+            record.pop("latest_indicators", None)
+            record.pop("model_features", None)
+            records.append(record)
+        return records
     except Exception as exc:
-        raise ForecastArchiveError(f"Could not read forecast archive: {exc}") from exc
+        raise ForecastArchiveError(f"Could not read forecast archive from Firebase: {exc}") from exc
