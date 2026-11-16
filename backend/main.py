@@ -10,6 +10,11 @@ from backend.live_forecast import (
     generate_live_forecast,
     clear_live_forecast_cache,
 )
+from backend.forecast_archive import (
+    ForecastArchiveError,
+    archive_forecast,
+    list_forecast_issues,
+)
 from backend.data_ingestion import (
     initialize_earth_engine,
     fetch_era5_daily,
@@ -585,6 +590,25 @@ def validate_dec2025():
             detail=str(exc),
         )
 
+@app.get("/forecast/archive")
+def get_forecast_archive(limit: int = 50):
+    """Read recent forecast issues for prototype audit and shadow evaluation."""
+    try:
+        records = list_forecast_issues(limit)
+        return {
+            "status": "success",
+            "count": len(records),
+            "archive_path": "configured server-side archive",
+            "durability": "persistent_only_when_archive_path_is_on_persistent_storage",
+            "data": records,
+        }
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Forecast archive is unavailable: {exc}",
+        ) from exc
+
+
 @app.get("/forecast/latest")
 def forecast_latest():
     try:
@@ -633,10 +657,13 @@ def refresh_live_forecast():
         initialize_earth_engine()
 
         result = generate_live_forecast()
+        archive_id = archive_forecast(result)
 
         return {
             "status": "success",
             "refreshed": True,
+            "archive_id": archive_id,
+            "archive_durability": "persistent_only_when_archive_path_is_on_persistent_storage",
             **result,
         }
 
@@ -647,6 +674,15 @@ def refresh_live_forecast():
                 "status": "unavailable",
                 "reason": str(exc),
                 "warning": "No current forecast is being issued because the input readiness checks did not pass.",
+            },
+        ) from exc
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "The forecast could not be recorded in the audit archive.",
             },
         ) from exc
     except Exception as exc:
@@ -665,9 +701,12 @@ def live_water_stress_forecast():
         initialize_earth_engine()
 
         result = generate_live_forecast()
+        archive_id = archive_forecast(result)
 
         return {
             "status": "success",
+            "archive_id": archive_id,
+            "archive_durability": "persistent_only_when_archive_path_is_on_persistent_storage",
             **result,
         }
 
@@ -678,6 +717,15 @@ def live_water_stress_forecast():
                 "status": "unavailable",
                 "reason": str(exc),
                 "warning": "No current forecast is being issued because the input readiness checks did not pass.",
+            },
+        ) from exc
+    except ForecastArchiveError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "The forecast could not be recorded in the audit archive.",
             },
         ) from exc
     except Exception as exc:
