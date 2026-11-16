@@ -85,6 +85,37 @@ To avoid training-label look-ahead, each horizon's model is frozen at the earlie
 
 This is a candidate-screening experiment, not a replacement model or prospective validation. Hyperparameters are held fixed from the existing final evaluation; no per-horizon tuning is performed. The output must be run and reviewed before choosing a lead. Source publication timestamps remain unavailable, so a structurally valid origin/target gap is not proof that the inputs were accessible at the claimed issue time. The 2- and 3-month horizons are only useful operationally if their inputs are actually available at issue time and accuracy remains acceptable.
 
+## 3C. Executed true-lead screening results
+
+The new horizon script was executed in GitHub Actions against the committed 1981-2025 monthly SWBA source. Each horizon used 72 test targets (January 2020-December 2025), with the model frozen at the earliest test issue origin and training labels capped at that origin. Results are recorded in `outputs/expanded/horizon_comparison/horizon_test_metrics.csv`.
+
+| Lead | Model | MAE | RMSE | R² |
+|---:|---|---:|---:|---:|
+| 1 month | Lasso | 0.5089 | 0.7001 | 0.5155 |
+| 1 month | Ridge | 0.5077 | 0.7123 | 0.4985 |
+| 1 month | Persistence | 0.6952 | 0.9833 | 0.0443 |
+| 1 month | Seasonal climatology | 0.7970 | 1.1294 | -0.2608 |
+| 2 months | Lasso | 0.6892 | 0.9575 | 0.0937 |
+| 2 months | Ridge | 0.7271 | 0.9828 | 0.0452 |
+| 2 months | Persistence | 1.0255 | 1.4053 | -0.9520 |
+| 2 months | Seasonal climatology | 0.7969 | 1.1294 | -0.2608 |
+| 3 months | Lasso | 0.8512 | 1.1964 | -0.4148 |
+| 3 months | Ridge | 0.8807 | 1.2223 | -0.4767 |
+| 3 months | Persistence | 1.2014 | 1.6528 | -1.7002 |
+| 3 months | Seasonal climatology | 0.7973 | 1.1295 | -0.2609 |
+
+XGBoost was not installed in the CI environment, so it was not included in this true-lead run. The existing one-month XGBoost result remains a one-month-horizon benchmark only; it cannot be assumed to retain its performance at longer leads.
+
+### Interpretation and decision
+
+- **One month:** strongest predictive skill. Lasso and Ridge closely reproduce the previous final-test metrics. But the observed common-source cutoff on 7 November 2026 was 30 September 2026 (38 days old). The existing shadow forecast for October was created after October began. This one-month lead is not currently demonstrated to be timely.
+- **Two months:** Lasso retains some signal (R² 0.0937) and beats the seasonal-climatology baseline on this fixed test, but its error is substantially higher than at one month. With a 30 September origin and a 1 November target, the 7 November snapshot would still be six days late. This horizon does not solve the observed latency by itself.
+- **Three months:** neither linear model beats seasonal climatology. Lasso RMSE (1.1964) and Ridge RMSE (1.2223) are worse than the seasonal baseline (1.1295), and both have negative R². Although a three-month lead offers more time for data ingestion, this current feature/model setup does not provide useful predictive skill at that horizon.
+
+**Decision:** Do not promote the three-month-lead Lasso/Ridge models. Keep the one-month Lasso/Ridge models as the strongest research candidates, but do not call them operationally timely until source publication/availability is measured and a prospective issue-time test succeeds. The two-month Lasso can remain an experimental candidate for further validation, not an alert engine. Do not promote the three-month lead without new predictors, data sources, target reformulation or model development.
+
+These results are screening evidence only. The historical source publication timestamps are not archived, the model is frozen rather than monthly retrained in this comparison, and no operational impact labels or operator-approved alert thresholds are available.
+
 ## 4. Model promotion gates
 
 A candidate may enter a prospective shadow trial only after:
