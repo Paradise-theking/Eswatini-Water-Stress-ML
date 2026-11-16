@@ -79,7 +79,7 @@ The existing test prediction CSV contains `target_month` and predictions but not
 
 ## 3B. New true-lead experiment
 
-The new `scripts/evaluate_true_lead_horizons.py` builds separate 1-, 2- and 3-month target leads from the expanded monthly SWBA source. For each origin month `t`, it uses predictors available at `t) and predicts the three-month rolling SWBA at `t+lead`. It applies the existing final-evaluation Lasso, Ridge and tuned XGBoost configurations where available, plus persistence, seasonal-climatology and training-mean baselines. It writes row-level predictions with origin month, target month, lead and input cutoff, plus horizon-specific metrics.
+The new `scripts/evaluate_true_lead_horizons.py` builds separate 1-, 2- and 3-month target leads from the expanded monthly SWBA source. For each origin month `t`, it uses predictors available at `t` and predicts the three-month rolling SWBA at `t+lead`. It applies the existing final-evaluation Lasso, Ridge and tuned XGBoost configurations where available, plus persistence, seasonal-climatology and training-mean baselines. It writes row-level predictions with origin month, target month, lead and input cutoff, plus horizon-specific metrics.
 
 This is a candidate-screening experiment, not a replacement model or prospective validation. Hyperparameters are held fixed from the existing final evaluation; no per-horizon tuning is performed. The output must be run against the locally prepared monthly SWBA source and reviewed before choosing a lead. The 2- and 3-month horizons are only useful operationally if their inputs are actually available at issue time and the accuracy remains acceptable.
 
