@@ -116,6 +116,18 @@ def generate_live_forecast() -> dict:
     model_sha256 = _sha256_file(MODEL_PATH)
     fingerprint = _input_fingerprint(monthly, model_sha256)
 
+    model_input, model_observation_month = build_latest_model_input(monthly)
+    if model_observation_month.to_period("M") != observation_month.to_period("M"):
+        raise ForecastReadinessError("Model feature origin does not match the verified observation cutoff.")
+
+    forecast_month = forecast_month_from_observation(model_observation_month)
+    target_start = _utc_timestamp(forecast_month.to_pydatetime().replace(tzinfo=timezone.utc))
+    preissue_time = _utc_timestamp()
+    if target_start <= preissue_time:
+        raise ForecastReadinessError(
+            "The target month has already started; this result would not be a genuine advance forecast."
+        )
+
     if _cached_live_forecast is not None and fingerprint == _cached_input_fingerprint:
         served_at = _utc_timestamp()
         cached = dict(_cached_live_forecast)
@@ -124,11 +136,6 @@ def generate_live_forecast() -> dict:
         return cached
 
     model = joblib.load(MODEL_PATH)
-    model_input, model_observation_month = build_latest_model_input(monthly)
-    if model_observation_month.to_period("M") != observation_month.to_period("M"):
-        raise ForecastReadinessError("Model feature origin does not match the verified observation cutoff.")
-
-    forecast_month = forecast_month_from_observation(model_observation_month)
     prediction = float(model.predict(model_input[MODEL_FEATURES])[0])
     if not np.isfinite(prediction):
         raise ForecastReadinessError("Model returned a non-finite prediction.")
