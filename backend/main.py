@@ -6,6 +6,7 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from backend.live_forecast import (
+    ForecastReadinessError,
     generate_live_forecast,
     clear_live_forecast_cache,
 )
@@ -639,11 +640,20 @@ def refresh_live_forecast():
             **result,
         }
 
+    except ForecastReadinessError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "No current forecast is being issued because the input readiness checks did not pass.",
+            },
+        ) from exc
     except Exception as exc:
         raise HTTPException(
-            status_code=500,
+            status_code=502,
             detail=f"Live forecast refresh failed: {str(exc)}",
-        )
+        ) from exc
     
 @app.get("/forecast/live")
 def live_water_stress_forecast():
@@ -661,11 +671,20 @@ def live_water_stress_forecast():
             **result,
         }
 
+    except ForecastReadinessError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unavailable",
+                "reason": str(exc),
+                "warning": "No current forecast is being issued because the input readiness checks did not pass.",
+            },
+        ) from exc
     except Exception as exc:
         raise HTTPException(
-            status_code=500,
+            status_code=502,
             detail=f"Live forecast failed: {str(exc)}",
-        )
+        ) from exc
     
 @app.post("/predict")
 def predict_water_stress(data: WaterStressInput):
