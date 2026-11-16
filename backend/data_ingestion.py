@@ -578,14 +578,42 @@ def fetch_latest_monthly_data() -> pd.DataFrame:
         ),
     )
 
-    daily = transform_daily_data(
-        era5,
-        chirps,
+    # Fail closed if either source has missing or duplicate daily
+    # observations inside the requested four-month feature window.
+    expected_dates = pd.date_range(
+        start_month,
+        end_date - pd.Timedelta(days=1),
+        freq="D",
     )
 
-    monthly = aggregate_monthly(
-        daily
-    )
+    for source_name, frame in (("ERA5-Land", era5), ("CHIRPS", chirps)):
+        if "date" not in frame.columns:
+            raise RuntimeError(f"{source_name} response has no date column.")
+        dates = pd.to_datetime(frame["date"]).dt.normalize()
+        if dates.duplicated().any():
+            raise RuntimeError(f"{source_name} returned duplicate daily dates.")
+        if list(dates.sort_values()) != list(expected_dates):
+            missing = expected_dates.difference(pd.DatetimeIndex(dates))
+            unexpected = pd.DatetimeIndex(dates).difference(expected_dates)
+            raise RuntimeError(
+                f"{source_name} daily coverage is incomplete. "
+                f"Missing dates: {[d.strftime('%Y-%m-%d') for d in missing[:10]]}; "
+                f"unexpected dates: {[d.strftime('%Y-%m-%d') for d in unexpected[:10]]}."
+            )
+
+    daily = transform_daily_data(era5, chirps)
+
+    if len(daily) != len(expected_dates):
+        raise RuntimeError(
+            "Daily source join did not preserve the complete expected date range."
+        )
+
+    monthly = aggregate_monthly(daily)
+    expected_month_count = 4
+    if len(monthly) != expected_month_count:
+        raise RuntimeError(
+            f"Expected {expected_month_count} complete monthly aggregates; received {len(monthly)}."
+        )
 
     return monthly
 
