@@ -239,38 +239,36 @@ These results indicate that the environmental predictors contain useful one-mont
 
 ---
 
-## Extreme Events
+## Extreme Anomalies
 
-Forecast performance deteriorated substantially during unusually extreme Water Stress Index conditions.
+Two observations in the independent test period had an absolute SWBA of at least 2. Both were positive anomalies relative to the historical calendar-month climatology.
 
-Two independent-test observations had an absolute WSI of at least 2.
+| Forecast Month | Observed SWBA | Ridge Forecast | Absolute Error |
+|---|---:|---:|---:|
+| April 2024 | 2.0794 | 1.2341 | 0.8453 |
+| May 2024 | 7.0614 | 1.9365 | 5.1248 |
 
-| Observation Type | MAE | RMSE |
+Across these two observations, the Ridge model recorded:
+
+| Metric | Extreme observations | Non-extreme observations |
 |---|---:|---:|
-| Extreme observations | 2.9851 | 3.6728 |
-| Non-extreme observations | 0.7786 | 0.9399 |
+| MAE | 2.9851 | 0.7786 |
+| RMSE | 3.6728 | 0.9399 |
 
-The largest error occurred in **May 2024**, when:
+The larger errors in this small subgroup indicate that the model had difficulty reproducing the magnitude of these unusually high positive anomalies, particularly in May 2024.
 
-```text
-Observed WSI = 7.0614
-Ridge forecast = 1.9365
-Absolute error = 5.1248
-```
-
-A sensitivity analysis excluding this observation produced:
+May 2024 was retained in the official independent test evaluation. Excluding it as a diagnostic sensitivity check produced:
 
 ```text
 MAE  = 0.7815
 RMSE = 0.9360
 ```
 
-However, the observation was **not removed from the official test evaluation**.
+These reduced errors demonstrate the influence of the May observation on aggregate test performance; they do not replace the official results calculated using all 24 test observations.
 
-The complete 24-month test results remain the primary reported results.
+**Dry-event evaluation limitation:** Only one independent test observation had SWBA <= -1.0, and none had SWBA <= -1.5 or <= -2.0. Consequently, the available test sample is insufficient for a meaningful assessment of dry-event or extreme-drought forecasting performance.
 
-This highlights an important limitation of the model: it provides useful predictive skill under more typical conditions but has difficulty reproducing rare hydroclimatic extremes.
-
+The model's ability to predict rare hydroclimatic extremes, including severe dry conditions, therefore requires further evaluation using a longer record and additional extreme-event observations.
 ---
 
 ## Model Interpretation
