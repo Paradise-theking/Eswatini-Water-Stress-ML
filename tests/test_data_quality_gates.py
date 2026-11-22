@@ -97,11 +97,33 @@ class SourceReadinessSummaryTests(unittest.TestCase):
     def test_summary_can_pass_before_target_month_starts(self):
         summary = build_source_readiness_summary(
             {"era5_land": "2026-09-30", "chirps": "2026-09-30"},
-            pd.Timestamp("2026-09-30T23:59:00Z").to_pydatetime(),
+            pd.Timestamp("2026-09-30T21:59:00Z").to_pydatetime(),
         )
         self.assertTrue(summary["freshness_gate_passed"])
         self.assertFalse(summary["one_month_target_already_started"])
         self.assertTrue(summary["one_month_issue_time_gate_passed"])
+
+
+    def test_local_target_month_boundary_uses_eswatini_time(self):
+        source_dates = {"era5_land": "2026-09-30", "chirps": "2026-09-30"}
+
+        before_local_month = build_source_readiness_summary(
+            source_dates, pd.Timestamp("2026-09-30T21:59:00Z").to_pydatetime()
+        )
+        self.assertFalse(before_local_month["one_month_target_already_started"])
+        self.assertTrue(before_local_month["one_month_issue_time_gate_passed"])
+
+        at_local_month_start = build_source_readiness_summary(
+            source_dates, pd.Timestamp("2026-09-30T22:00:00Z").to_pydatetime()
+        )
+        self.assertTrue(at_local_month_start["one_month_target_already_started"])
+        self.assertFalse(at_local_month_start["one_month_issue_time_gate_passed"])
+
+        after_local_month_start = build_source_readiness_summary(
+            source_dates, pd.Timestamp("2026-09-30T22:30:00Z").to_pydatetime()
+        )
+        self.assertTrue(after_local_month_start["one_month_target_already_started"])
+        self.assertFalse(after_local_month_start["one_month_issue_time_gate_passed"])
 
     def test_summary_fails_stale_input_gate(self):
         summary = build_source_readiness_summary(
