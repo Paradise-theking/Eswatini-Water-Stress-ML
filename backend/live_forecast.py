@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hashlib
 import os
 from pathlib import Path
@@ -24,6 +24,7 @@ from backend.feature_engineering import (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "water_stress_ridge.joblib"
 MAX_INPUT_AGE_DAYS = int(os.getenv("WATERWATCH_MAX_INPUT_AGE_DAYS", "45"))
+ESWATINI_TZ = timezone(timedelta(hours=2))
 
 
 class ForecastReadinessError(RuntimeError):
@@ -58,6 +59,12 @@ def _utc_timestamp(value: datetime | None = None) -> pd.Timestamp:
     return stamp.tz_localize("UTC") if stamp.tzinfo is None else stamp.tz_convert("UTC")
 
 
+def _target_month_start_utc(month: pd.Timestamp) -> pd.Timestamp:
+    """Convert the local Eswatini start of a target month to UTC."""
+    local_start = month.to_pydatetime().replace(tzinfo=ESWATINI_TZ)
+    return _utc_timestamp(local_start)
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -90,9 +97,7 @@ def build_source_readiness_summary(
             )
 
         target_month = forecast_month_from_observation(observation_month)
-        target_start = _utc_timestamp(
-            target_month.to_pydatetime().replace(tzinfo=timezone.utc)
-        )
+        target_start = _target_month_start_utc(target_month)
         freshness_passed = age_days <= MAX_INPUT_AGE_DAYS
         target_started = target_start <= observed_at
 
@@ -181,7 +186,7 @@ def generate_live_forecast() -> dict:
         raise ForecastReadinessError("Model feature origin does not match the verified observation cutoff.")
 
     forecast_month = forecast_month_from_observation(model_observation_month)
-    target_start = _utc_timestamp(forecast_month.to_pydatetime().replace(tzinfo=timezone.utc))
+    target_start = _target_month_start_utc(forecast_month)
     preissue_time = _utc_timestamp()
     if target_start <= preissue_time:
         raise ForecastReadinessError(
@@ -203,7 +208,7 @@ def generate_live_forecast() -> dict:
     # Timestamp the issue after data retrieval and inference, then verify
     # that the target period is still wholly in the future.
     issue_time = _utc_timestamp()
-    target_start = _utc_timestamp(forecast_month.to_pydatetime().replace(tzinfo=timezone.utc))
+    target_start = _target_month_start_utc(forecast_month)
     if target_start <= issue_time:
         raise ForecastReadinessError(
             "The target month has already started; this result would not be a genuine advance forecast."
