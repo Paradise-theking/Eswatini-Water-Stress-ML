@@ -264,11 +264,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
               <span class="section-label">Next-month forecast</span>
 
               <h2 id="forecast-title">
-                September 2026 Water Stress Outlook
+                Waiting for a validated forecast
               </h2>
 
               <p id="forecast-source-note" class="forecast-source-note">
-                Forecast based on the latest available observation.
+                No forecast is displayed until live input-readiness checks pass.
               </p>
               <div class="api-status forecast-api-status" aria-live="polite">
                 <span id="api-status-dot" class="status-dot"></span>
@@ -281,7 +281,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             </button>
           </div>
 
-          <div id="forecast-loading" class="forecast-loading">
+          <div id="forecast-loading" class="forecast-loading" role="status" aria-live="polite">
             Run the model to generate the one-month-ahead forecast.
           </div>
 
@@ -665,8 +665,8 @@ const apiStatusDot =
 
 function setApiStatus(connected: boolean) {
   apiStatusText.textContent = connected
-    ? 'ML API connected'
-    : 'ML API unavailable'
+    ? 'Current forecast available'
+    : 'No current forecast issued'
 
   apiStatusDot.style.background = connected
     ? '#6ce6a6'
@@ -757,6 +757,8 @@ let historicalData: HistoryPoint[] = []
 let researchObservationCount = 0
 
 let latestForecast: number | null = null
+
+let hasStaleForecast = false
 
 let forecastDate: string | null = null
 
@@ -1304,7 +1306,10 @@ async function loadHistory() {
         []
       )
 
-    setApiStatus(true)
+    /*
+     * Research-history availability is separate from forecast readiness.
+     * The forecast status is set only after a live forecast is issued.
+     */
 
     /*
      * Display the research history immediately.
@@ -1661,6 +1666,7 @@ injectMonetizationUI("monetization-hub");
 function displayForecast(data: PredictionResponse) {
   const forecastSwba = data.water_stress_index
   latestForecast = forecastSwba
+  hasStaleForecast = false
 
   const forecastMonthDate = `${data.forecast_month}-01`
   forecastDate = forecastMonthDate
@@ -1702,12 +1708,59 @@ function displayForecast(data: PredictionResponse) {
 }
 
 function markForecastStale(reason: string) {
+  hasStaleForecast = true
+  latestForecast = null
   forecastSourceNote.textContent =
-    `LAST KNOWN FORECAST — NOT VERIFIED CURRENT. ${reason}`
+    `LAST KNOWN FORECAST — STALE. ${reason}`
   forecastLoading.textContent =
-    'The displayed result is a previously saved forecast. It must not be used as a current assessment until a fresh API response passes data-readiness checks.'
+    `A previously archived forecast is shown for historical context only. No current forecast was issued. ${reason}`
   forecastLoading.classList.remove('hidden')
+  chartForecast.textContent = 'Stale — not plotted'
+  drawHistoryChart(historicalData, null)
   setApiStatus(false)
+}
+
+async function getForecastFailureMessage(response: Response): Promise<string> {
+  const payload = await response.json().catch(() => null) as {
+    detail?: string | { reason?: string; warning?: string }
+  } | null
+  const detail = payload?.detail
+  const backendReason =
+    typeof detail === 'string'
+      ? detail
+      : typeof detail?.reason === 'string'
+        ? detail.reason
+        : ''
+
+  let targetWindowNote = ''
+  try {
+    const diagnosticsResponse = await fetch(
+      'https://eswatini-water-stress-api.onrender.com/diagnostics/data-dates',
+      { cache: 'no-store' }
+    )
+    if (diagnosticsResponse.ok) {
+      const diagnostics = await diagnosticsResponse.json() as {
+        one_month_forecast_target_month?: string
+        one_month_target_already_started?: boolean
+        one_month_issue_time_gate_passed?: boolean
+      }
+      if (
+        diagnostics.one_month_issue_time_gate_passed === false &&
+        diagnostics.one_month_target_already_started === true &&
+        diagnostics.one_month_forecast_target_month
+      ) {
+        targetWindowNote =
+          `The ${diagnostics.one_month_forecast_target_month} forecast window has already started, so a new issue is not permitted.`
+      }
+    }
+  } catch (error) {
+    console.warn('Could not retrieve forecast-readiness diagnostics:', error)
+  }
+
+  return [
+    backendReason || `Forecast API returned ${response.status}.`,
+    targetWindowNote,
+  ].filter(Boolean).join(' ')
 }
 
 async function restoreSavedForecast() {
@@ -1765,9 +1818,7 @@ async function loadLatestForecast() {
     )
 
     if (!response.ok) {
-      throw new Error(
-        `API returned ${response.status}`
-      )
+      throw new Error(await getForecastFailureMessage(response))
     }
 
     const data:
@@ -1798,11 +1849,16 @@ async function loadLatestForecast() {
      * A last-known forecast may have been restored from Firebase.
      * Keep it visible only with the explicit stale warning.
      */
-    if (latestForecast !== null) {
-      markForecastStale('The latest forecast request failed or the backend rejected the inputs.')
+    const message = error instanceof Error
+      ? error.message
+      : 'The backend could not issue a current forecast.'
+
+    if (hasStaleForecast || latestForecast !== null) {
+      markForecastStale(message)
     } else {
+      forecastTitle.textContent = 'No current forecast issued'
       forecastLoading.textContent =
-        'Latest forecast unavailable. The backend may be rejecting stale or incomplete inputs. No current forecast is being shown.'
+        `No current forecast is being shown. ${message}`
     }
     setApiStatus(false)
   }
@@ -1829,10 +1885,7 @@ predictButton.addEventListener(
         )
 
       if (!response.ok) {
-
-        throw new Error(
-          `API returned ${response.status}`
-        )
+        throw new Error(await getForecastFailureMessage(response))
       }
 
       const data:
@@ -1856,11 +1909,16 @@ predictButton.addEventListener(
       )
       
 
-      if (latestForecast !== null) {
-        markForecastStale('The latest request failed or data-readiness checks did not pass.')
+      const message = error instanceof Error
+        ? error.message
+        : 'The backend could not issue a current forecast.'
+
+      if (hasStaleForecast || latestForecast !== null) {
+        markForecastStale(message)
       } else {
+        forecastTitle.textContent = 'No current forecast issued'
         forecastLoading.textContent =
-          'No current forecast is available. The backend may be rejecting stale or incomplete inputs.'
+          `No current forecast is available. ${message}`
       }
 
     } finally {
