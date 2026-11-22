@@ -744,7 +744,7 @@ def live_water_stress_forecast():
         return {
             "status": "success",
             "archive_id": archive_id,
-            "archive_durability": "persistent_only_when_archive_path_is_on_persistent_storage",
+            "archive_storage": "firebase_cloud_firestore",
             **result,
         }
 
