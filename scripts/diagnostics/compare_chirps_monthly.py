@@ -29,7 +29,8 @@ def fetch_monthly_collection(
     collection = ee.ImageCollection(collection_id).select("precipitation")
     start = ee.Date(START_DATE)
     end = ee.Date(END_DATE)
-    # Avoid truncating a near-integer month span (e.g. 141.999999) and\n    # silently dropping the final calendar month.\n    month_count = int(np.ceil(end.difference(start, "month").getInfo() - 1e-9))
+    # Avoid truncating a near-integer month span and dropping the final month.
+    month_count = int(np.ceil(end.difference(start, "month").getInfo()))
 
     def make_month_feature(offset):
         month_start = start.advance(offset, "month")
