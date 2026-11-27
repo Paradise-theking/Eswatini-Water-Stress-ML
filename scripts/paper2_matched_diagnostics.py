@@ -37,7 +37,7 @@ def main():
   tasks={"drought_state":binary,"onset":onset,"multistate":fstate,"direction":np.sign(fstate-st)}
   for fold,(ti,vi) in enumerate(folds(len(d)),1):
    for task,y in tasks.items():
-    valid=y.notna();tr=ti[valid.iloc[ti].to_numpy()];va=vi[valid.iloc[vi].to_numpy()]
+    valid=y.notna(); train_cutoff=vi[0]-h-1; ti_safe=ti[ti<=train_cutoff]; tr=ti_safe[valid.iloc[ti_safe].to_numpy()];va=vi[valid.iloc[vi].to_numpy()]
     if not len(tr) or not len(va):continue
     yt=y.iloc[tr].astype(int);yv=y.iloc[va].astype(int)
     if yt.nunique()<2: continue
@@ -56,5 +56,5 @@ def main():
      scores.append({**meta,"n":len(va),"accuracy":accuracy_score(yv,pred),"macro_f1":f1_score(yv,pred,labels=labels,average="macro",zero_division=0),"log_loss":log_loss(yv,full,labels=labels),"brier":float(np.mean(np.sum((np.eye(3)[[labels.index(int(v)) for v in yv]]-full)**2,axis=1)))})
  pd.DataFrame(rows).to_csv(OUT/"matched_validation_predictions.csv",index=False);sc=pd.DataFrame(scores);sc.to_csv(OUT/"matched_fold_metrics.csv",index=False)
  sc.groupby(["task","horizon"]).mean(numeric_only=True).reset_index().to_csv(OUT/"matched_metric_summary.csv",index=False)
- (OUT/"metadata.json").write_text(json.dumps({"timeline_folds":"common full monthly timeline; 60% initial segment then five contiguous validation blocks","horizons":H,"target":"future SWBA drought state; onset at t+h; 3-state severity and change in severity","pipeline":"fold-local median imputation, standardization, balanced logistic regression","final_test_used":False,"warning":"exploratory, sparse onset counts; class-weighted probabilities are not assumed calibrated"},indent=2))
+ (OUT/"metadata.json").write_text(json.dumps({"timeline_folds":"common full monthly timeline; 60% initial segment then five contiguous validation blocks; training origins excluded if their target date reaches validation boundary","horizons":H,"target":"future SWBA drought state; onset at t+h; 3-state severity and change in severity","pipeline":"fold-local median imputation, standardization, balanced logistic regression","final_test_used":False,"warning":"exploratory, sparse onset counts; class-weighted probabilities are not assumed calibrated"},indent=2))
 if __name__=="__main__":main()
