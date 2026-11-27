@@ -64,7 +64,7 @@ def main():
     d,X,state=prepare(); records=[]
     for h in HORIZONS:
         future=state.shift(-h)
-        target=(future-state).rename("direction")
+        target=np.sign(future-state).rename("direction")
         dat=pd.concat([X,target],axis=1).dropna(subset=["direction"])
         # exclude invalid feature rows only by imputation in model; keep alignment
         dat["direction"]=dat.direction.astype(int)
