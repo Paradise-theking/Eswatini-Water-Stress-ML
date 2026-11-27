@@ -132,6 +132,12 @@ def main():
                 ]
                 if model_rows.empty:
                     continue
+                # Balanced and unweighted classifiers share the exact same validation
+                # origins. Baselines are evaluated once per unique origin, not duplicated
+                # once for each classifier variant.
+                model_rows = model_rows.drop_duplicates(
+                    subset=["origin", "target_date", "actual"]
+                )
 
                 train_valid = target.iloc[safe_train].notna().to_numpy()
                 usable_train = safe_train[train_valid]
