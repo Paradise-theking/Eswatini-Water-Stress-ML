@@ -45,7 +45,7 @@ def smooth_distribution(counts, prior, alpha=1.0):
 
 
 def get_probabilities(task, baseline, train_idx, origin_idx, target_idx,
-                      target, state, dates, labels):
+                      target, state, dates, labels, horizon):
     y_train = target.iloc[train_idx]
     valid = y_train.notna().to_numpy()
     train_idx = np.asarray(train_idx)[valid]
@@ -75,7 +75,7 @@ def get_probabilities(task, baseline, train_idx, origin_idx, target_idx,
 
     if baseline == "target_month_climatology":
         target_month = dates[target_idx].month
-        month_mask = np.array([dates[idx].month == target_month for idx in train_idx])
+        month_mask = np.array([dates[idx + horizon].month == target_month for idx in train_idx])
         month_y = y_train.to_numpy()[month_mask]
         if labels is None:
             month_counts = np.array([(month_y == 0).sum(), (month_y == 1).sum()])
