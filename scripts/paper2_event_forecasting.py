@@ -53,7 +53,9 @@ def load_frame():
     y_onset={}
     dry=df["swba"]<=THRESHOLD
     for h in HORIZONS:
-        y_state[h]=dry.shift(-h).astype("float")
+        future_dry=dry.shift(-h).astype("float")
+        future_dry[df["swba"].shift(-h).isna()]=np.nan
+        y_state[h]=future_dry
         # Exact calendar target month t+h, and its prior month t+h-1.
         target=df["swba"].shift(-h)
         prior=df["swba"].shift(-(h-1))
@@ -102,9 +104,8 @@ def main():
         for fold,(tr,va) in enumerate(folds,1):
           train_x=xx.iloc[tr]; train_y=yy.iloc[tr]
           val_x=xx.iloc[va]; val_y=yy.iloc[va]
-          if train_y.nunique()<2 or val_y.nunique()<2:
-            # Still record fold data; probabilities are not meaningful for ROC.
-            pass
+          if train_y.nunique()<2:
+            continue
           model=Pipeline([("impute",SimpleImputer(strategy="median")),
              ("scale",StandardScaler()),("clf",LogisticRegression(
                C=1.0,max_iter=2000,class_weight="balanced"))])
