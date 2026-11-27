@@ -97,32 +97,41 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     df,X,ys,yo=load_frame()
     rows=[]
-    # Fold-wise scores for a regularized linear probability model, with class weights.
     for task,targets in [("future_state",ys),("future_onset",yo)]:
       for h,y0 in targets.items():
         dat=pd.concat([X,y0.rename("target")],axis=1).dropna(subset=["target"])
         xx=dat.drop(columns="target"); yy=dat.target.astype(int)
-        # Calendar gaps are respected; data availability and labels are aligned by index.
         folds=chronological_folds(dat.index)
         for fold,(tr,va) in enumerate(folds,1):
           train_x=xx.iloc[tr]; train_y=yy.iloc[tr]
           val_x=xx.iloc[va]; val_y=yy.iloc[va]
+          dates_train=dat.index[tr]; dates_val=dat.index[va]
+          foldmeta={"task":task,"horizon_months":h,"fold":fold,
+            "train_start":str(dates_train[0].date()),"train_end":str(dates_train[-1].date()),
+            "validation_start":str(dates_val[0].date()),"validation_end":str(dates_val[-1].date()),
+            "features":int(xx.shape[1])}
+          pprev=np.full(len(va),float(train_y.mean()))
+          rows.append({**foldmeta,"model":"train_prevalence","status":"ok",**metrics(val_y,pprev)})
+          train_month=pd.DataFrame({"y":train_y.values,"month":dates_train.month})
+          counts=train_month.groupby("month").y.agg(["sum","count"])
+          pseason=np.array([(counts.loc[m,"sum"]+1)/(counts.loc[m,"count"]+2)
+             if m in counts.index else float(train_y.mean()) for m in dates_val.month])
+          rows.append({**foldmeta,"model":"seasonal_rate","status":"ok",**metrics(val_y,pseason)})
           if train_y.nunique()<2:
+            rows.append({**foldmeta,"model":"balanced_logistic","status":"skipped_single_class",
+              "n":int(len(val_y)),"events":int(val_y.sum()),"event_fraction":float(val_y.mean()),
+              "precision":None,"recall":None,"f1":None,"brier":None,"pr_auc":None,"roc_auc":None})
             continue
           model=Pipeline([("impute",SimpleImputer(strategy="median")),
              ("scale",StandardScaler()),("clf",LogisticRegression(
                C=1.0,max_iter=2000,class_weight="balanced"))])
           model.fit(train_x,train_y)
           p=model.predict_proba(val_x)[:,1]
-          m=metrics(val_y,p)
-          rows.append({"task":task,"horizon_months":h,"fold":fold,
-             "train_start":str(dat.index[tr[0]].date()),"train_end":str(dat.index[tr[-1]].date()),
-             "validation_start":str(dat.index[va[0]].date()),"validation_end":str(dat.index[va[-1]].date()),
-             "features":int(xx.shape[1]),**m})
+          rows.append({**foldmeta,"model":"balanced_logistic","status":"ok",**metrics(val_y,p)})
     results=pd.DataFrame(rows)
     results.to_csv(OUT/"rolling_validation_scores.csv",index=False)
-    # Fold-level aggregated results; no fold-level model selection or threshold tuning.
-    summary=(results.groupby(["task","horizon_months"]).agg(
+    successful=results[results.status=="ok"]
+    summary=(successful.groupby(["task","horizon_months","model"]).agg(
        folds=("fold","count"),mean_pr_auc=("pr_auc","mean"),mean_brier=("brier","mean"),
        mean_precision=("precision","mean"),mean_recall=("recall","mean"),
        mean_f1=("f1","mean"),mean_events=("events","mean"),mean_n=("n","mean")
@@ -130,10 +139,11 @@ def main():
     summary.to_csv(OUT/"rolling_validation_summary.csv",index=False)
     meta={"source":str(SOURCE.relative_to(ROOT)),"threshold":THRESHOLD,
       "horizons_months":HORIZONS,"validation":"expanding chronological folds",
-      "minimum_initial_train_months":MIN_TRAIN,"validation_blocks":"remaining timeline divided into 5 chronological blocks",
-      "folds_requested":N_FOLDS,"classifier":"balanced LogisticRegression C=1",
-      "probability_threshold":0.5,"no_final_test_used":True,
-      "note":"Results are exploratory rolling validation; sparse event counts may render fold metrics unstable."}
+      "minimum_initial_train_months":MIN_TRAIN,"validation_blocks":"timeline remainder split into sequential blocks",
+      "folds_requested":N_FOLDS,"models":["balanced LogisticRegression C=1","training-fold event prevalence",
+      "month-of-year event-rate baseline with Laplace smoothing"],
+      "probability_decision_threshold":0.5,"no_final_test_used":True,
+      "note":"Exploratory rolling validation; sparse events may destabilize fold metrics. Baselines are computed from training folds only."}
     (OUT/"experiment_metadata.json").write_text(json.dumps(meta,indent=2))
     print(summary.to_string(index=False))
     print("Outputs:",OUT)
