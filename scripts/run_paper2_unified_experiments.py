@@ -1,4 +1,4 @@
-"""Run the Paper 2 event/state/transition experiments in one reproducible sequence."""
+"""Run the Paper 2 experiments sequentially and consolidate outputs."""
 from pathlib import Path
 import subprocess,sys,json,datetime
 ROOT=Path(__file__).resolve().parents[1]
@@ -7,15 +7,18 @@ SCRIPTS=["paper2_event_forecasting.py","paper2_transition_forecasting.py",
 OUT=ROOT/"outputs/research/paper2_unified_run"
 OUT.mkdir(parents=True,exist_ok=True)
 status=[]
-for script in SCRIPTS:
+def run(script):
     started=datetime.datetime.now(datetime.timezone.utc).isoformat()
     p=subprocess.run([sys.executable,str(ROOT/"scripts"/script)],cwd=ROOT,text=True,capture_output=True)
-    entry={"script":script,"started_utc":started,"exit_code":p.returncode,"stdout":p.stdout,"stderr":p.stderr}
-    status.append(entry)
+    status.append({"script":script,"started_utc":started,"exit_code":p.returncode,"stdout":p.stdout,"stderr":p.stderr})
     (OUT/(script.replace(".py",".log"))).write_text(p.stdout+"\n--- STDERR ---\n"+p.stderr)
     print(f"{script}: exit={p.returncode}")
-    if p.returncode:
-        print(p.stderr)
-(OUT/"run_manifest.json").write_text(json.dumps({"run_time_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"scripts":status},indent=2))
-if not any(x["exit_code"] for x in status):\n    collector=subprocess.run([sys.executable,str(ROOT/"scripts"/"consolidate_paper2_results.py")],cwd=ROOT,text=True,capture_output=True)\n    (OUT/"consolidation.log").write_text(collector.stdout+"\\n--- STDERR ---\\n"+collector.stderr)\n    status.append({"script":"consolidate_paper2_results.py","exit_code":collector.returncode,"stdout":collector.stdout,"stderr":collector.stderr})\nif any(x["exit_code"] for x in status):
-    sys.exit(1)
+    if p.returncode:print(p.stderr)
+    return p.returncode
+for script in SCRIPTS:
+    if run(script):break
+if not any(x["exit_code"] for x in status):
+    run("consolidate_paper2_results.py")
+manifest={"run_time_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"scripts":status}
+(OUT/"run_manifest.json").write_text(json.dumps(manifest,indent=2))
+if any(x["exit_code"] for x in status):sys.exit(1)
