@@ -1,0 +1,29 @@
+name: Paper 2 matched-origin diagnostics
+on:
+  push:
+    branches: [research/drought-event-audit]
+    paths:
+      - scripts/paper2_matched_diagnostics.py
+      - .github/workflows/paper2-matched-diagnostics.yml
+      - data/processed/expanded/mnjoli_water_stress_monthly_1981_2025_swba.csv
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install pandas numpy scikit-learn
+      - name: Run matched-origin diagnostics
+        run: python scripts/paper2_matched_diagnostics.py
+      - name: Upload diagnostic outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper2-matched-diagnostics
+          path: outputs/research/paper2_matched_diagnostics/
+          if-no-files-found: error
