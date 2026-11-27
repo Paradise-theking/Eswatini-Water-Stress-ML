@@ -146,7 +146,7 @@ def main():
                     for baseline in baseline_names:
                         probs = get_probabilities(
                             task, baseline, usable_train, origin_idx, target_idx,
-                            target, state, dates, labels,
+                            target, state, dates, labels, horizon,
                         )
                         if task in BINARY_TASKS:
                             positive_probability = float(probs[1])
