@@ -17,5 +17,5 @@ for script in SCRIPTS:
     if p.returncode:
         print(p.stderr)
 (OUT/"run_manifest.json").write_text(json.dumps({"run_time_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"scripts":status},indent=2))
-if any(x["exit_code"] for x in status):
+if not any(x["exit_code"] for x in status):\n    collector=subprocess.run([sys.executable,str(ROOT/"scripts"/"consolidate_paper2_results.py")],cwd=ROOT,text=True,capture_output=True)\n    (OUT/"consolidation.log").write_text(collector.stdout+"\\n--- STDERR ---\\n"+collector.stderr)\n    status.append({"script":"consolidate_paper2_results.py","exit_code":collector.returncode,"stdout":collector.stdout,"stderr":collector.stderr})\nif any(x["exit_code"] for x in status):
     sys.exit(1)
