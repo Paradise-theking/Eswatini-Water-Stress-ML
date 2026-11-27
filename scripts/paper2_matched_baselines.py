@@ -47,9 +47,9 @@ def smooth_distribution(counts, prior, alpha=1.0):
 def get_probabilities(task, baseline, train_idx, origin_idx, target_idx,
                       target, state, dates, labels):
     y_train = target.iloc[train_idx]
-    valid = y_train.notna()
-    y_train = y_train.loc[valid].astype(int)
-    train_idx = y_train.index
+    valid = y_train.notna().to_numpy()
+    train_idx = np.asarray(train_idx)[valid]
+    y_train = target.iloc[train_idx].astype(int)
     classes = list(labels) if labels is not None else [0, 1]
 
     if labels is None:
@@ -87,7 +87,7 @@ def get_probabilities(task, baseline, train_idx, origin_idx, target_idx,
         origin_state = state.iloc[origin_idx]
         if pd.isna(origin_state):
             return prior
-        state_mask = np.array([state.loc[idx] == origin_state for idx in train_idx])
+        state_mask = np.array([state.iloc[idx] == origin_state for idx in train_idx])
         conditional_y = y_train.to_numpy()[state_mask]
         if labels is None:
             conditional_counts = np.array([
