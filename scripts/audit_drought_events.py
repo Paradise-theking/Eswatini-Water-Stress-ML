@@ -37,8 +37,7 @@ def month_season(m):
 def episodes_for_threshold(df, threshold, value_col="swba"):
     valid = df[value_col].notna()
     dry = valid & (df[value_col] <= threshold)
-    # Consecutive calendar months; explicitly break runs on missing values or month gaps.
-    starts = dry & (~dry.shift(1, fill_value=False) | (df["date"].diff().dt.days > 40))
+    starts = dry & (~dry.shift(1, fill_value=False))
     episode_id = starts.cumsum().where(dry)
     records = []
     for eid, group in df.loc[dry].assign(_eid=episode_id[dry]).groupby("_eid"):
@@ -74,6 +73,8 @@ def main():
         raise ValueError(f"Duplicate monthly dates detected: {duplicate_dates}. Resolve before audit.")
     full_months = pd.date_range(df.date.min(), df.date.max(), freq="MS")
     missing_months = full_months.difference(df.date)
+    # Reindex to a complete calendar so missing months cannot be mistaken for transitions.
+    df = df.set_index("date").reindex(full_months).rename_axis("date").reset_index()
     df["season"] = df["date"].dt.month.map(month_season)
     df["year"] = df["date"].dt.year
     df["dry_1"] = df["swba"] <= -1.0
@@ -100,13 +101,9 @@ def main():
         })
     episodes_all=pd.concat(episode_frames,ignore_index=True) if episode_frames else pd.DataFrame()
     threshold_summary=pd.DataFrame(threshold_rows)
-
-    # Primary (-1) episode table
     primary=episodes_all.loc[episodes_all["threshold"]==-1.0].copy() if not episodes_all.empty else pd.DataFrame()
-    # Annual/seasonal counts
     annual=df.groupby("year").agg(valid_months=("swba","count"),dry_months=("dry_1","sum"),severe_months=("severe_2","sum"),dry_onsets=("onset_dry_1","sum"),severe_onsets=("onset_severe_2","sum")).reset_index()
     seasonal=df.groupby("season").agg(valid_months=("swba","count"),dry_months=("dry_1","sum"),severe_months=("severe_2","sum"),dry_onsets=("onset_dry_1","sum")).reset_index()
-
     event_labels=df[["date","swba","season","dry_1","severe_2","onset_dry_1","onset_severe_2"]].copy()
     event_labels.to_csv(OUT/"monthly_event_labels.csv",index=False)
     episodes_all.to_csv(OUT/"episode_inventory_all_thresholds.csv",index=False)
@@ -114,20 +111,19 @@ def main():
     threshold_summary.to_csv(OUT/"threshold_sensitivity.csv",index=False)
     annual.to_csv(OUT/"annual_event_summary.csv",index=False)
     seasonal.to_csv(OUT/"seasonal_event_summary.csv",index=False)
-
     metadata={
       "source":str(SOURCE.relative_to(ROOT)),
       "source_sha256":sha256_file(SOURCE),
       "rows_in_source":int(len(raw)),
       "date_column":date_col,"swba_column":swba_col,
-      "audit_rows_after_date_parse":int(len(df)),
+      "audit_calendar_rows":int(len(df)),
       "date_start":df.date.min().strftime("%Y-%m"),
       "date_end":df.date.max().strftime("%Y-%m"),
       "duplicate_months":duplicate_dates,
       "missing_calendar_months":[d.strftime("%Y-%m") for d in missing_months],
       "missing_swba_values":int(df.swba.isna().sum()),
       "thresholds":THRESHOLDS,
-      "definitions":"Dry state at or below threshold; episode is maximal contiguous monthly run. Missing/gapped months break episodes. Onset defined by transition from previous month above threshold; unknown previous value is not labeled negative.",
+      "definitions":"Dry state at or below threshold; episode is maximal contiguous monthly run. Missing values and calendar gaps break episodes. Onset defined by transition from previous calendar month above threshold; missing prior SWBA is not labeled negative.",
     }
     (OUT/"audit_metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
     print("="*72)
