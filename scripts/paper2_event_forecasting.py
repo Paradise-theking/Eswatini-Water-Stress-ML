@@ -65,18 +65,21 @@ def load_frame():
     return df,X,y_state,y_onset
 
 def chronological_folds(index, n=N_FOLDS, min_train=MIN_TRAIN, block=VALIDATION_BLOCK):
-    # Expanding folds; each block evaluated forward in time, no random shuffling.
+    # Partition the full timeline into an initial development segment and
+    # sequential validation blocks. Every later observation is evaluated once.
     total=len(index)
-    starts=[]
-    first=min_train
-    available=max(0,total-first)
-    block=min(block,max(1,available//n))
+    if total<=min_train: return []
+    first=max(min_train,int(total*0.60))
+    first=min(first,total-1)
+    remaining=total-first
+    boundaries=np.linspace(first,total,n+1,dtype=int)
+    folds=[]
     for i in range(n):
-        end_train=first+i*block
-        end_val=min(total,end_train+block)
-        if end_train>=total or end_val<=end_train: break
-        starts.append((np.arange(0,end_train),np.arange(end_train,end_val)))
-    return starts
+        end_train=boundaries[i]
+        end_val=boundaries[i+1]
+        if end_val<=end_train: continue
+        folds.append((np.arange(0,end_train),np.arange(end_train,end_val)))
+    return folds
 
 def metrics(y,p):
     y=np.asarray(y,dtype=int); p=np.asarray(p,dtype=float)
@@ -127,7 +130,7 @@ def main():
     summary.to_csv(OUT/"rolling_validation_summary.csv",index=False)
     meta={"source":str(SOURCE.relative_to(ROOT)),"threshold":THRESHOLD,
       "horizons_months":HORIZONS,"validation":"expanding chronological folds",
-      "minimum_initial_train_months":MIN_TRAIN,"validation_block_months":VALIDATION_BLOCK,
+      "minimum_initial_train_months":MIN_TRAIN,"validation_blocks":"remaining timeline divided into 5 chronological blocks",
       "folds_requested":N_FOLDS,"classifier":"balanced LogisticRegression C=1",
       "probability_threshold":0.5,"no_final_test_used":True,
       "note":"Results are exploratory rolling validation; sparse event counts may render fold metrics unstable."}
