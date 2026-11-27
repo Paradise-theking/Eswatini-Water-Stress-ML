@@ -80,9 +80,12 @@ def main():
     df["dry_1"] = df["swba"] <= -1.0
     df["severe_2"] = df["swba"] <= -2.0
     df["previous_swba"] = df["swba"].shift(1)
-    df["onset_dry_1"] = (df["swba"] <= -1.0) & (df["previous_swba"] > -1.0)
-    df["onset_severe_2"] = (df["swba"] <= -2.0) & (df["previous_swba"] > -2.0)
+    df["onset_dry_1"] = ((df["swba"] <= -1.0) & (df["previous_swba"] > -1.0)).astype(float)
+    df["onset_severe_2"] = ((df["swba"] <= -2.0) & (df["previous_swba"] > -2.0)).astype(float)
+    # A missing previous SWBA makes transition/onset status unknown, not negative.
     df.loc[df["previous_swba"].isna(), ["onset_dry_1","onset_severe_2"]] = np.nan
+    # A missing current SWBA likewise makes onset status unknown.
+    df.loc[df["swba"].isna(), ["onset_dry_1","onset_severe_2"]] = np.nan
 
     episode_frames=[]
     threshold_rows=[]
