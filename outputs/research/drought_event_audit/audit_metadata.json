@@ -1,0 +1,14 @@
+{
+  "source_path": "data/processed/expanded/mnjoli_water_stress_monthly_1981_2025_swba.csv",
+  "source_commit_ref": "research/drought-event-audit",
+  "row_count": 540,
+  "coverage": "1981-01 through 2025-12",
+  "swba_column": "swba_3month",
+  "thresholds": [
+    -0.5,
+    -1,
+    -1.5,
+    -2
+  ],
+  "calculation": "Direct reproducible analysis from fetched repository CSV using contiguous monthly values; not a confirmed GitHub Actions run."
+}
